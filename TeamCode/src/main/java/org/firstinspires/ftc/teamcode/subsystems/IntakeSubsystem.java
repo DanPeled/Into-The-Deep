@@ -19,6 +19,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CRServo spinServo;
     private final int maxArmLength = 857;
     MultipleTelemetry telemetry;
+
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         motor1 = hardwareMap.dcMotor.get("intakeMotor1");
         motor2 = hardwareMap.dcMotor.get("intakeMotor2");
@@ -27,6 +28,7 @@ public class IntakeSubsystem extends SubsystemBase {
         zServo = hardwareMap.servo.get("zAxisServo");
         gripServo = hardwareMap.servo.get("gripServo");
         spinServo = hardwareMap.crservo.get("spinServo");
+        resetEncoders();
         this.telemetry = telemetry;
 
     }    // make one button that extends the arm and lowers the claw while opening it
@@ -44,7 +46,7 @@ public class IntakeSubsystem extends SubsystemBase {
         }
     }
 
-    public void armGoToPos(int pos){
+    public void armGoToPos(int pos) {
         motor1.setTargetPosition(pos);
         motor1.setPower(0.4);
         motor2.setTargetPosition(pos);
@@ -89,6 +91,11 @@ public class IntakeSubsystem extends SubsystemBase {
         motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
+
+    public void powerMode() {
+        motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     // make second button that while pressing it it goes to half of height and pushes things

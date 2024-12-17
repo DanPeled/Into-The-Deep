@@ -22,7 +22,7 @@ public class DischargeSubsystem extends SubsystemBase {
         motor2 = hardwareMap.get(DcMotorEx.class, "dischargeMotor2");
         gearBoxServo = hardwareMap.servo.get("gearBoxServo");
         clawServo = hardwareMap.servo.get("clawServo");
-        motor1.setDirection(DcMotorSimple.Direction.REVERSE);
+        motor2.setDirection(DcMotorSimple.Direction.REVERSE);
         resetEncoders();
 
         this.telemetry = telemetry;
@@ -36,8 +36,8 @@ public class DischargeSubsystem extends SubsystemBase {
             motor1.setPower((Range.clip(power, -1, 0)));
             motor2.setPower((Range.clip(power, -1, 0)));
         } else {
-            motor1.setPower(-power);
-            motor2.setPower(-power);
+            motor1.setPower(power);
+            motor2.setPower(power);
         }
     }
 
@@ -65,8 +65,8 @@ public class DischargeSubsystem extends SubsystemBase {
     public void setPosition(int pos) {
         motor1.setTargetPosition(pos);
         motor2.setTargetPosition(pos);
-        motor1.setPower(-0.05);
-        motor2.setPower(-0.05);
+        motor1.setPower(0.2);
+        motor2.setPower(0.2);
         motor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }

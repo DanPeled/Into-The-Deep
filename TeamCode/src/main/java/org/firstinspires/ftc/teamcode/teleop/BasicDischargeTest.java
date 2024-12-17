@@ -35,8 +35,8 @@ public class BasicDischargeTest extends CommandOpMode {
         Button dPadRight = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_RIGHT);
         Button dPadLeft = new GamepadButton(systemGamepad,GamepadKeys.Button.DPAD_LEFT);
 
-        dPadUp.whenPressed(new DischargeGotoCmd(dischargeSubsystem,1000,10, telemetry));
-        dPadDown.whenPressed(new DischargeGotoCmd(dischargeSubsystem,100,10, telemetry));
+        dPadUp.whenPressed(new DischargeGotoCmd(dischargeSubsystem,700,10, telemetry));
+        dPadDown.whenPressed(new DischargeGotoCmd(dischargeSubsystem,300,10, telemetry));
         dPadRight.whenPressed(new DischargeReleaseCmd(dischargeSubsystem));
         dPadLeft.whenPressed(new DischargeHoldCmd(dischargeSubsystem));
 
