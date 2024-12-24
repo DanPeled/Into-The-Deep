@@ -35,11 +35,12 @@ public class SwerveCommands {
             telemetry.addData("X", x.get());
             telemetry.addData("Y", y.get());
             telemetry.addData("TURN", r.get());
-            swerveDrive.drive(x.get(), y.get(), r.get(), boost.get()/2);
+            swerveDrive.drive(x.get(), y.get(), r.get(), boost.get() / 2);
         }
     }
+
     public static class GotoCmd extends CommandBase {
-        double x,y, wantedAngle;
+        double x, y, wantedAngle;
         double[] currentPos;
         double boost;
         double sensitivity;
@@ -62,18 +63,18 @@ public class SwerveCommands {
         @Override
         public void execute() {
             currentPos = swerveDrive.getPosition();
-            double[] localVector = {x - currentPos[0],y - currentPos[1]};
+            double[] localVector = {x - currentPos[0], y - currentPos[1]};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
-            double length =  Range.clip(Math.hypot(localVector[0], localVector[1]),-1,1);
-            localVector[0] = Math.sin(MovementAngle * length);
-            localVector[1] = Math.cos(MovementAngle * length);
+            double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
+            localVector[0] = Math.sin(MovementAngle) * length;
+            localVector[1] = Math.cos(MovementAngle) * length;
             double angleDiff = Utils.calcDeltaAngle(wantedAngle, swerveDrive.getHeading()) * kp;
-            swerveDrive.drive(localVector[0], localVector[1], angleDiff,boost);
+            swerveDrive.drive(localVector[0], localVector[1], angleDiff, boost);
         }
 
         @Override
         public boolean isFinished() {
-            if(Math.hypot(currentPos[0] - x, currentPos[1] - y) < sensitivity){
+            if (Math.hypot(currentPos[0] - x, currentPos[1] - y) < sensitivity) {
                 return true;
             }
             return false;

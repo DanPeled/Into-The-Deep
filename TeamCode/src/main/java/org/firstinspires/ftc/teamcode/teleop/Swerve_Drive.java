@@ -347,10 +347,10 @@ public class Swerve_Drive extends LinearOpMode {
             wheels[3].chassisPos.set(cx/2, -cy/2);  // back right
             calcWheelsFieldPos();
 
-            wheels[0].servo.zeroAngle = 43; //-20;
-            wheels[1].servo.zeroAngle = 81; //-100;
-            wheels[2].servo.zeroAngle = 148; //-35;
-            wheels[3].servo.zeroAngle = 81; //-103;
+            wheels[0].servo.zeroAngle = 171; //-20;
+            wheels[1].servo.zeroAngle = 164; //-100;
+            wheels[2].servo.zeroAngle = 132; //-35;
+            wheels[3].servo.zeroAngle = 232; //-103;
         }
 
         void calcWheelsFieldPos() {

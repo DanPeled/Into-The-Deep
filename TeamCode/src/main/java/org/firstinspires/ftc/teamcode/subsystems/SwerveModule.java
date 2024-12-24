@@ -47,6 +47,7 @@ public class SwerveModule {
     public double getDeltaAngle(double angle){
         return Math.abs(Utils.calcDeltaAngle(angle, servo.getCurrentAngle()));
     }
+    public double getAngle(){return servo.getRawAngle();}
     public double getAngleError(){ return Utils.calcDeltaAngle(servo.targetAngle , servo.currentAngle); }
     public void setServoPower(double power){
         servo.setPower(power);

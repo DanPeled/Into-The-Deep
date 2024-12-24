@@ -18,6 +18,7 @@ public class WheelTest extends LinearOpMode {
     // fl: servo = 0, analog = 1, motor = 1
     // fr: servo = 3, analog = 3, motor = 2
     //0:350.64 1: 173 2:315 3: 54.83
+    //br:53,bl:133.21,
     SwerveModule bl,br, fl, fr,cr;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();

@@ -19,7 +19,7 @@ import org.opencv.core.Point;
 
 @Config
 public class SwerveDrive extends SubsystemBase {
-    private final ElapsedTime runtime = new ElapsedTime();
+    private final ElapsedTime angleTimer = new ElapsedTime();
     //    SwerveDriveKinematics kinematics = new SwerveDriveKinematics();
 //    SwerveDriveOdometry poseEstimator = new SwerveDriveOdometry();
     SwerveModule bl, br, fl, fr;
@@ -33,7 +33,6 @@ public class SwerveDrive extends SubsystemBase {
     final double rotationConpensation = 35.8;
     double wantedAngle = 0;
     boolean wasSpinning = false, isUsingAngleCorrection, wasTimeSelected;
-    double noTurnElapsedTime = 0;
     double timeTillCorrection = 0.25;
     public static double kp = 0.02;
     //    public double[] position = {0, 0};
@@ -82,8 +81,9 @@ public class SwerveDrive extends SubsystemBase {
             RobotLog.d("Gyro failed init" + " " + imu.isGyroCalibrated() + " " + imu.isAccelerometerCalibrated() + " " + imu.isMagnetometerCalibrated());
         }
 
-        imu.startAccelerationIntegration(null, null, 2);
         imu.initialize(parameters);
+        imu.startAccelerationIntegration(null, null, 2);
+
     }
 
     //like update but here
@@ -95,16 +95,16 @@ public class SwerveDrive extends SubsystemBase {
         }
         if (Math.abs(rotation) < -1) {
             if (wasSpinning) {
-                noTurnElapsedTime = runtime.seconds();
+                angleTimer.reset();
             }
             wasSpinning = false;
-            if (runtime.seconds() > noTurnElapsedTime + timeTillCorrection && !wasTimeSelected) {
+            if (angleTimer.seconds() > timeTillCorrection && !wasTimeSelected) {
                 wasTimeSelected = true;
                 isUsingAngleCorrection = true;
                 wantedAngle = getHeading();
             }
             if (isUsingAngleCorrection) {
-//                rotation += -Utils.signRoot(Utils.calcDeltaAngle(wantedAngle, getHeading()) * kp ) ;
+                // rotation += -Utils.signRoot(Utils.calcDeltaAngle(wantedAngle, getHeading()) * kp ) ;
                 rotation += (Utils.calcDeltaAngle(wantedAngle, getHeading())) * kp;
             }
 
@@ -146,14 +146,19 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void telemetry() {
-        telemetry.addData("fl power", fl.getPosition());
-        telemetry.addData("fr power", fr.getPosition());
-        telemetry.addData("bl power", bl.getPosition());
-        telemetry.addData("br power", br.getPosition());
+        telemetry.addData("fl error", fl.getAngleError());
+        telemetry.addData("fr error", fr.getAngleError());
+        telemetry.addData("bl error", bl.getAngleError());
+        telemetry.addData("br error", br.getAngleError());
         telemetry.addData("position: ", imu.getPosition());
+        telemetry.addData("fl angle", fl.servo.getCurrentAngle());
+        telemetry.addData("fr angle", fr.servo.getCurrentAngle());
+        telemetry.addData("bl angle", bl.servo.getCurrentAngle());
+        telemetry.addData("br angle", br.servo.getCurrentAngle());
 //       telemetry.addData("fl wanted", fl.getTargetHeading());
 //       telemetry.addData("fr wanted", fr.getTargetHeading());
-//       telemetry.addData("bl wanted", br.getTargetHeading());
+//       telemetry.addData("bl wanted", bl.getTargetHeading());
+//       telemetry.addData("br wanted", br.getTargetHeading());
 //       telemetry.addData("fl current", fl.getCurrentHeading());
 //       telemetry.addData("fr current", fr.getCurrentHeading());
 //       telemetry.addData("bl current", bl.getCurrentHeading());
@@ -222,19 +227,28 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void updateSwerveModules(double[][] wheelVectors) {
-        if ((fl.getDeltaAngle(wheelVectors[0][1]) + fr.getDeltaAngle(wheelVectors[1][1]) +
-                br.getDeltaAngle(wheelVectors[2][1]) + bl.getDeltaAngle(wheelVectors[3][1])) / 4 > 90) {
-            fl.setHeading(wheelVectors[0][1], true);
-            fr.setHeading(wheelVectors[1][1], true);
-            br.setHeading(wheelVectors[2][1], true);
-            bl.setHeading(wheelVectors[3][1], true);
-        } else {
-            fl.setHeading(wheelVectors[0][1], false);
-            fr.setHeading(wheelVectors[1][1], false);
-            br.setHeading(wheelVectors[2][1], false);
-            bl.setHeading(wheelVectors[3][1], false);
-        }
+        //TODO: disabled the angel optimization fix
+        //if ((fl.getDeltaAngle(wheelVectors[0][1]) + fr.getDeltaAngle(wheelVectors[1][1]) +
+        //        br.getDeltaAngle(wheelVectors[2][1]) + bl.getDeltaAngle(wheelVectors[3][1])) / 4 > 90) {
+        //    fl.setHeading(wheelVectors[0][1], true);
+        //    fr.setHeading(wheelVectors[1][1], true);
+        //    br.setHeading(wheelVectors[2][1], true);
+        //    bl.setHeading(wheelVectors[3][1], true);
+        //} else {
+        //    fl.setHeading(wheelVectors[0][1], false);
+        //    fr.setHeading(wheelVectors[1][1], false);
+        //    br.setHeading(wheelVectors[2][1], false);
+        //    bl.setHeading(wheelVectors[3][1], false);
+        //}
 
+        fl.setHeading(wheelVectors[0][1], false);
+        fr.setHeading(wheelVectors[1][1], false);
+        br.setHeading(wheelVectors[2][1], false);
+        bl.setHeading(wheelVectors[3][1], false);
+//        fl.setHeadingWithAngle(wheelVectors[0][1]);
+//        fr.setHeadingWithAngle(wheelVectors[1][1]);
+//        br.setHeadingWithAngle(wheelVectors[2][1]);
+//        bl.setHeadingWithAngle(wheelVectors[3][1]);
         fl.setPower(wheelVectors[0][0] * powerModifier);
         fr.setPower(wheelVectors[1][0] * powerModifier);
         br.setPower(wheelVectors[2][0] * powerModifier);

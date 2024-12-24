@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
-import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.CRServo;
@@ -10,23 +9,27 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-
 public class IntakeSubsystem extends SubsystemBase {
-    private final DcMotor motor1;
-    private final DcMotor motor2;
-    private final Servo xServo, zServo, gripServo;
-    private final CRServo spinServo;
-    private final int maxArmLength = 857;
+    private final DcMotor rMotor;
+    private final DcMotor lMotor;
+    private final Servo hServo; // claw up & down
+    private final Servo rServo; // claw rotation
+    private final Servo armsServo; // claw arms angle
+    private final CRServo spinServo; // claw up & down
+    private final int maxArmLength = 3000;
     MultipleTelemetry telemetry;
 
+    public final double slidesSpeed = 1;
+    public final double slidesLowSpeed = 0.25;
+
+
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
-        motor1 = hardwareMap.dcMotor.get("intakeMotor1");
-        motor2 = hardwareMap.dcMotor.get("intakeMotor2");
-        motor2.setDirection(DcMotorSimple.Direction.REVERSE);
-        xServo = hardwareMap.servo.get("xAxisServo");
-        zServo = hardwareMap.servo.get("zAxisServo");
-        gripServo = hardwareMap.servo.get("gripServo");
+        rMotor = hardwareMap.dcMotor.get("leftIntakeMotor");
+        lMotor = hardwareMap.dcMotor.get("rightIntakeMotor");
+        lMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        hServo = hardwareMap.servo.get("heightServo");
+        rServo = hardwareMap.servo.get("rotationServo");
+        armsServo = hardwareMap.servo.get("armsServo");
         spinServo = hardwareMap.crservo.get("spinServo");
         resetEncoders();
         this.telemetry = telemetry;
@@ -34,45 +37,52 @@ public class IntakeSubsystem extends SubsystemBase {
     }    // make one button that extends the arm and lowers the claw while opening it
 
     public void setArmPower(double power) {
-        if (motor1.getCurrentPosition() <= 0 || motor2.getCurrentPosition() <= 0) {
-            motor1.setPower(Range.clip(power, 0, 1));
-            motor2.setPower(Range.clip(power, 0, 1));
-        } else if (motor1.getCurrentPosition() >= maxArmLength || motor2.getCurrentPosition() >= maxArmLength) {
-            motor1.setPower(Range.clip(power, -1, 0));
-            motor2.setPower(Range.clip(power, -1, 0));
+        if (rMotor.getCurrentPosition() <= 0 || lMotor.getCurrentPosition() <= 0) {
+            rMotor.setPower(Range.clip(power, 0, 1));
+            lMotor.setPower(Range.clip(power, 0, 1));
+        } else if (rMotor.getCurrentPosition() >= maxArmLength || lMotor.getCurrentPosition() >= maxArmLength) {
+            rMotor.setPower(Range.clip(power, -1, 0));
+            lMotor.setPower(Range.clip(power, -1, 0));
         } else {
-            motor1.setPower(power);
-            motor2.setPower(power);
+            rMotor.setPower(power);
+            lMotor.setPower(power);
         }
+    }
+    public void setRawPower(double power){
+        rMotor.setPower(power);
+        lMotor.setPower(power);
     }
 
     public void armGoToPos(int pos) {
-        motor1.setTargetPosition(pos);
-        motor1.setPower(0.4);
-        motor2.setTargetPosition(pos);
-        motor2.setPower(0.4);
-        motor1.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        motor2.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        rMotor.setTargetPosition(pos);
+        lMotor.setTargetPosition(pos);
+        lMotor.setPower(slidesSpeed);
+        rMotor.setPower(slidesSpeed);
+        rMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+    public double getAveragePosition(){
+        return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition())/2;
     }
 
-    public void setZServoPosition(double position) {
-        zServo.setPosition(position);
+    public void setRotationServoPosition(double position) {
+        rServo.setPosition(position);
     }
 
     public double getZServoPosition() {
-        return zServo.getPosition();
+        return rServo.getPosition();
     }
 
-    public void setXServoPosition(double position) {
-        xServo.setPosition(position);
+    public void setHServoPosition(double position) {
+        hServo.setPosition(position);
     }
 
-    public void setGripStage(GripStages stage) {
-        gripServo.setPosition(stage.POSITION);
+    public void setArmsStage(double stage) {
+        armsServo.setPosition(stage);
     }
 
     public double getGripServoPosition() {
-        return gripServo.getPosition();
+        return armsServo.getPosition();
     }
 
     public void setSpinPower(double power) {
@@ -80,23 +90,26 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public int getMotorPosition() {
-        return motor1.getCurrentPosition();
+        return rMotor.getCurrentPosition();
     }
 
     public double getXServoPosition() {
-        return xServo.getPosition();
+        return hServo.getPosition();
     }
 
     public void resetEncoders() {
-        motor1.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor2.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        runWithoutEncoders();
+    }
+    public void runWithoutEncoders() {
+        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void powerMode() {
-        motor1.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        motor2.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
     // make second button that while pressing it it goes to half of height and pushes things
     // away and then lowers one more stage and picks up the sample

@@ -10,10 +10,10 @@ import lombok.Getter;
 
 @Config
 public class SteeringServo {
-    public static double noiseGain = 0.05;
-    public static double noiseCuttoff = 0.5;
+    public static double noiseGain = 0.035;
+    public static double noiseCuttoff = 2;
     public static double w = -0.7;
-    public static double p = 0.5;
+    public static double p = 0.25;
 
     private boolean idle = false;
     private double power = 0;
@@ -45,13 +45,17 @@ public class SteeringServo {
         return targetAngle;
     }
     double getEncoderVoltage(){
-        double v = encoder.getVoltage();
-        return v;
+        return encoder.getVoltage();
     }
 
     public double getCurrentAngle(){
         double v = getEncoderVoltage();
         currentAngle = ((v-min)/(max-min))*360 - angleOffset;
+        return currentAngle;
+    }
+    public double getRawAngle(){
+        double v = getEncoderVoltage();
+        currentAngle = ((v-min)/(max-min))*360;
         return currentAngle;
     }
     public void setAngleOffset(double angle){
@@ -80,13 +84,16 @@ public class SteeringServo {
 
         double error = calcDeltaAngle(targetAngle, currentAngle);
         double ne = -error /90;  // negative normalized error (-1..1)
+        //0.00334
+//        power = (w >= 0) ? (Utils.signRoot(ne) * (w) + ne * (1 - w)) * p :
+//                (ne * Math.abs(ne) *(Math.abs(w)) + ne *(1 + w)) * p ;
 
-        power = (w >= 0) ? (Utils.signRoot(ne) * (w) + ne * (1 - w)) * p :
-                (ne * Math.abs(ne) *(Math.abs(w)) + ne *(1 + w)) * p ;
-
+        power = p * ne /*+ 0.15 * Math.signum(ne)*/;
+        //
         if(Math.abs(error) > noiseCuttoff) {
             power += Math.signum(power) * Math.random() * noiseGain;
         }
+
         setPower(power);
     }
 
