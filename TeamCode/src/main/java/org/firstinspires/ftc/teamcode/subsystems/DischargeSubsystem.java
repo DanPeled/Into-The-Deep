@@ -24,6 +24,18 @@ public class DischargeSubsystem extends SubsystemBase {
     public final double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
+    public final int highChamberHeight = 1000;
+    public final int lowChamberHeight = 350;
+    public final int chamberReleaseDeltaSlides = 100;
+
+    public final int highBasketHeight = 1700;
+    public final int lowBasketHeight = 500;
+    public final int BasketReleaseDeltaDrive = 0;
+
+
+    public final double slidesSpeed = 1;
+    public final double slidesLowSpeed = 0.5;
+
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         lowerMotor = hardwareMap.get(DcMotorEx.class, "lower");
         upperMotor = hardwareMap.get(DcMotorEx.class, "upper");

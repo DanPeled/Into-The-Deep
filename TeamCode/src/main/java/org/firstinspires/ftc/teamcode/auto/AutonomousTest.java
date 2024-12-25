@@ -18,7 +18,7 @@ public class AutonomousTest extends CommandOpMode {
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
     @Override
     public void initialize() {
-        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry,this);
+        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry,this, true);
         register(swerveDrive);
         schedule(new GotoCmd(telemetry, swerveDrive, 0.5,0.5,27, 0.1,0.2));
     }

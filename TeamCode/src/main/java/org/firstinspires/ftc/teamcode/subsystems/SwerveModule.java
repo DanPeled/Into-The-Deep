@@ -1,9 +1,11 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 
 public class SwerveModule {
@@ -12,12 +14,14 @@ public class SwerveModule {
     double isMotorFlipped = 1;
     double headingOffset;
     double lastPos;
+
     public SwerveModule(DcMotor motor, CRServo servo, AnalogInput encoder, double headingOffset){
         this.motor = motor;
         this.motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         this.servo = new SteeringServo(servo, encoder,headingOffset);
         this.headingOffset = headingOffset;
         lastPos = getPosition();
+
     }
     public void zeroHeading(){
         isMotorFlipped = 1;

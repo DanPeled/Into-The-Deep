@@ -10,24 +10,49 @@ import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 import java.util.function.Supplier;
 
 public class SwerveCommands {
+    public static class NoOpCommand extends CommandBase {
+        public NoOpCommand(SwerveDrive swerveDrive) {
+            addRequirements(swerveDrive);
+        }
+
+        @Override
+        public void execute() {
+            // Do nothing
+        }
+
+        @Override
+        public boolean isFinished() {
+            return false; // Runs indefinitely
+        }
+    }
+
     public static class PowerCmd extends CommandBase {
         Supplier<Double> x;
         Supplier<Double> y;
         Supplier<Double> r;
         Supplier<Double> boost;
-        SwerveDrive swerveDrive;
-        Telemetry telemetry;
+        final SwerveDrive swerveDrive;
+        final Telemetry telemetry;
+        final boolean isFieldOriented;
+        final double rotationModifier = 0.65;
 
         public PowerCmd(Telemetry telemetry, SwerveDrive swerveDrive, Supplier<Double> x,
-                        Supplier<Double> y, Supplier<Double> r, Supplier<Double> boost) {
-            this.x = x;
+                        Supplier<Double> y, Supplier<Double> r, Supplier<Double> boost, boolean isFieldOriented) {
+            this.isFieldOriented = isFieldOriented;
+            this.x = () -> x.get()*rotationModifier;
             this.y = y;
             this.r = r;
             this.boost = boost;
             this.swerveDrive = swerveDrive;
             this.telemetry = telemetry;
 
+
             addRequirements(swerveDrive);
+        }
+
+        @Override
+        public void initialize() {
+            swerveDrive.setFieldOriented(isFieldOriented);
         }
 
         @Override

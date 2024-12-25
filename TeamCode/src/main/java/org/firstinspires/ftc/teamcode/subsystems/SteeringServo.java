@@ -1,9 +1,14 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
+import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
+import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.teleop.BasicSwerveOpMode;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 
 import lombok.Getter;
@@ -14,6 +19,19 @@ public class SteeringServo {
     public static double noiseCuttoff = 2;
     public static double w = -0.7;
     public static double p = 0.25;
+
+    private final double kp = 0.0022;
+    private final double ki = 0.00000052;
+    private final double kd = 0.0148;
+
+
+    double minPower = 0.02;
+    private double lastError = 0.0;
+    private double integral = 0.0;
+    private long lastTime = 0;
+    double derivative;
+    public double error;
+
 
     private boolean idle = false;
     private double power = 0;
@@ -26,6 +44,7 @@ public class SteeringServo {
 
     double min=0.007, max=3.277 ;
 
+
     public SteeringServo(CRServo servo, AnalogInput encoder, double headingOffset) {
         this.servo = servo;
         this.encoder = encoder;
@@ -33,8 +52,8 @@ public class SteeringServo {
     }
 
     public void setPower(double power) {
-        this.power = power;
-        servo.setPower(power);
+        this.power = -power;
+        servo.setPower(-power);
     }
 
     public void setTargetAngle(double target){
@@ -80,21 +99,45 @@ public class SteeringServo {
     }
 
     public void update() {
-        double currentAngle = getCurrentAngle();
+        long currentTime = System.currentTimeMillis();
 
-        double error = calcDeltaAngle(targetAngle, currentAngle);
-        double ne = -error /90;  // negative normalized error (-1..1)
-        //0.00334
-//        power = (w >= 0) ? (Utils.signRoot(ne) * (w) + ne * (1 - w)) * p :
-//                (ne * Math.abs(ne) *(Math.abs(w)) + ne *(1 + w)) * p ;
+        double currentAngle = 0;
+        double deltaTime = 0;
+        if(lastTime != 0) {
+            currentAngle = getCurrentAngle();
+            error = calcDeltaAngle(getTargetAngle(), currentAngle);
+            deltaTime = currentTime - lastTime;
+            integral += (error * deltaTime);
+            derivative = (error - lastError) / deltaTime;
 
-        power = p * ne /*+ 0.15 * Math.signum(ne)*/;
-        //
-        if(Math.abs(error) > noiseCuttoff) {
-            power += Math.signum(power) * Math.random() * noiseGain;
+            power = kp * error +
+                    ki * integral+
+                    kd * derivative;
+
+            if (power >= 0)
+                setPower(Range.clip(power, minPower, 1));
+            else
+                setPower(Range.clip(power, -1, -minPower));
         }
 
-        setPower(power);
+        lastError = error;
+        lastTime = currentTime;
+
+
+        //telemetry.addData("deltaTime", deltaTime);
+        //telemetry.addData("error", error);
+        //telemetry.addData("getTargetAngle", getTargetAngle());
+        //telemetry.addData("power", power);
+        //telemetry.addData("ki * integral", ki * integral);
+
+        //TelemetryPacket packet = new TelemetryPacket();
+
+
+
+        //
+        //if(Math.abs(error) > noiseCuttoff) {
+        //    power += Math.signum(power) * Math.random() * noiseGain;
+        //}
     }
 
 

@@ -5,10 +5,27 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 
 import java.util.function.Supplier;
 
 public class DischargeCommands {
+
+    public static class NoOpCommand extends CommandBase {
+        public NoOpCommand(DischargeSubsystem dischargeSubsystem) {
+            addRequirements(dischargeSubsystem);
+        }
+
+        @Override
+        public void execute() {
+            // Do nothing
+        }
+
+        @Override
+        public boolean isFinished() {
+            return false; // Runs indefinitely
+        }
+    }
 
     public static class DischargePowerCmd extends CommandBase {
         Supplier<Double> power;
@@ -28,6 +45,11 @@ public class DischargeCommands {
         public void execute() {
             dischargeSubsystem.setPower((power.get()));
             telemetry.addData("power", dischargeSubsystem.calcPowerValue(power.get()));
+        }
+
+        @Override
+        public void end(boolean interupted){
+
         }
     }
 
@@ -79,7 +101,7 @@ public class DischargeCommands {
         DischargeSubsystem dischargeSubsystem;
         int lastTick;
         double lastTime = 0;
-        final double maxDuration = 2.5;
+        final double maxDuration = 3;
         ElapsedTime elapsedTime = new ElapsedTime();
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
@@ -96,11 +118,11 @@ public class DischargeCommands {
 
         @Override
         public void execute() {
-            //if (dischargeSubsystem.getPosition() > 300) {
-                dischargeSubsystem.setRawPower(-0.8);
-            //} else {
-            //    dischargeSubsystem.setRawPower(-0.8);
-            //}
+            if (dischargeSubsystem.getPosition() > 600)
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
+             else
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
+
         }
 
         @Override
@@ -111,13 +133,14 @@ public class DischargeCommands {
                 }
 
                 double deltaTime = elapsedTime.seconds() - lastTime;
-                if (deltaTime > 0.1) {
+                if (deltaTime > 0.2) {
                     int deltaTick = dischargeSubsystem.getPosition() - lastTick;
                     lastTick = dischargeSubsystem.getPosition();
                     lastTime = elapsedTime.seconds();
-                    if (Math.abs(deltaTick) <= 2) {
+                    if (Math.abs(deltaTick) <= 5) {
                         return true;
                     }
+
                 }
             }
             else { // finish check for normal gear
@@ -132,7 +155,7 @@ public class DischargeCommands {
         public void end(boolean interrupted) {
             dischargeSubsystem.setPower(0);
 
-            if (dischargeSubsystem.getGearBoxRatio() == 1)
+            if (dischargeSubsystem.getGearBoxRatio() == 1 && !interrupted)
                 dischargeSubsystem.resetEncoders();
         }
     }
@@ -196,21 +219,36 @@ public class DischargeCommands {
         }
     }
 
-    public static class GearBoxSwapCmd extends CommandBase {
+    public static class GearBoxClimbCmd extends CommandBase {
         DischargeSubsystem dischargeSubsystem;
 
-        public GearBoxSwapCmd(DischargeSubsystem dischargeSubsystem) {
+        public GearBoxClimbCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
             addRequirements(dischargeSubsystem);
         }
 
         @Override
         public void initialize() {
-            if (dischargeSubsystem.getGearBoxRatio() == 1) {
-                dischargeSubsystem.climbMode();
-            } else {
-                dischargeSubsystem.dischargeMode();
-            }
+            dischargeSubsystem.climbMode();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class GearBoxDischargeCmd extends CommandBase {
+        DischargeSubsystem dischargeSubsystem;
+
+        public GearBoxDischargeCmd(DischargeSubsystem dischargeSubsystem) {
+            this.dischargeSubsystem = dischargeSubsystem;
+            addRequirements(dischargeSubsystem);
+        }
+
+        @Override
+        public void initialize() {
+            dischargeSubsystem.dischargeMode();
         }
 
         @Override

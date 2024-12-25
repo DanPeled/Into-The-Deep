@@ -30,13 +30,13 @@ public class DriveDischargeOpMode extends CommandOpMode {
     @Override
     public void initialize() {
         driverGamepad = new GamepadEx(gamepad1);
-        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this);
+        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this, true);
         register(swerveDrive);
 
 //        CommandScheduler.getInstance().setDefaultCommand(swerveDrive,new SwerveCommands.PowerCmd(telemetry, swerveDrive, driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX, () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)));
         swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
                 driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
-                () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER)));
+                () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
         systemGamepad = new GamepadEx(gamepad2);
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
@@ -52,7 +52,6 @@ public class DriveDischargeOpMode extends CommandOpMode {
 
         dPadUp.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, 1600, 10, telemetry));
         dPadDown.whenPressed(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
-        dPadRight.whenPressed(new DischargeCommands.GearBoxSwapCmd(dischargeSubsystem));
         dPadLeft.whenPressed(new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
         leftBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
         rightBumper.whenPressed(new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));

@@ -44,7 +44,6 @@ public class BasicDischargeTest extends CommandOpMode {
 
         dPadUp.whenPressed(new DischargeGotoCmd(dischargeSubsystem, 1600, 10, telemetry));
         dPadDown.whenPressed(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
-        dPadRight.whenPressed(new DischargeCommands.GearBoxSwapCmd(dischargeSubsystem));
         dPadLeft.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
         leftBumper.whenPressed(new DischargeReleaseCmd(dischargeSubsystem));
         rightBumper.whenPressed(new DischargeGrabCmd(dischargeSubsystem));

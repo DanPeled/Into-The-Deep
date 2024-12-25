@@ -11,6 +11,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.ImuIntegrator;
@@ -22,8 +23,9 @@ public class SwerveDrive extends SubsystemBase {
     private final ElapsedTime angleTimer = new ElapsedTime();
     //    SwerveDriveKinematics kinematics = new SwerveDriveKinematics();
 //    SwerveDriveOdometry poseEstimator = new SwerveDriveOdometry();
-    SwerveModule bl, br, fl, fr;
+    public SwerveModule bl, br, fl, fr;
     private final BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+    boolean isFieldOriented;
     BNO055IMU imu;
     private double[] movementVector;
     private double[][] rotationVector;
@@ -42,8 +44,8 @@ public class SwerveDrive extends SubsystemBase {
 
     private double powerModifier;
 
-    public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry, LinearOpMode opMode) {
-
+    public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry, LinearOpMode opMode, boolean isFieldOriented) {
+        this.isFieldOriented = isFieldOriented;
         this.telemetry = telemetry;
 
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
@@ -113,8 +115,12 @@ public class SwerveDrive extends SubsystemBase {
             wasTimeSelected = false;
             isUsingAngleCorrection = false;
         }
+        if(isFieldOriented)
+            movementVector = rotateVectors(boost * x, boost * y, getAdjustedHeading(rotation));
+        else
+            movementVector = rotateVectors(boost * x, boost * y,0);
 
-        movementVector = rotateVectors(boost * x, boost * y, getAdjustedHeading(rotation));  // Convert field speed to robot coordinates
+          // Convert field speed to robot coordinates
         rotationVector = getRotationVectors(rotation);
         wheelVectors = addVectors(rotationVector, movementVector);
         for (int i = 0; i < 4; i++) {
@@ -190,6 +196,10 @@ public class SwerveDrive extends SubsystemBase {
         return rotationVector;
     }
 
+    public void setFieldOriented(boolean orientation){
+        isFieldOriented = orientation;
+    }
+
     //adds the rotationVector and the movement vector making it what each wheel needs to do
     private double[][] addVectors(double[][] rotationVector, double[] movementVector) {
         double[][] vector = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
@@ -228,23 +238,23 @@ public class SwerveDrive extends SubsystemBase {
 
     private void updateSwerveModules(double[][] wheelVectors) {
         //TODO: disabled the angel optimization fix
-        //if ((fl.getDeltaAngle(wheelVectors[0][1]) + fr.getDeltaAngle(wheelVectors[1][1]) +
-        //        br.getDeltaAngle(wheelVectors[2][1]) + bl.getDeltaAngle(wheelVectors[3][1])) / 4 > 90) {
-        //    fl.setHeading(wheelVectors[0][1], true);
-        //    fr.setHeading(wheelVectors[1][1], true);
-        //    br.setHeading(wheelVectors[2][1], true);
-        //    bl.setHeading(wheelVectors[3][1], true);
-        //} else {
-        //    fl.setHeading(wheelVectors[0][1], false);
-        //    fr.setHeading(wheelVectors[1][1], false);
-        //    br.setHeading(wheelVectors[2][1], false);
-        //    bl.setHeading(wheelVectors[3][1], false);
-        //}
+        if ((fl.getDeltaAngle(wheelVectors[0][1]) + fr.getDeltaAngle(wheelVectors[1][1]) +
+                br.getDeltaAngle(wheelVectors[2][1]) + bl.getDeltaAngle(wheelVectors[3][1])) / 4 > 90) {
+            fl.setHeading(wheelVectors[0][1], true);
+            fr.setHeading(wheelVectors[1][1], true);
+            br.setHeading(wheelVectors[2][1], true);
+            bl.setHeading(wheelVectors[3][1], true);
+        } else {
+            fl.setHeading(wheelVectors[0][1], false);
+            fr.setHeading(wheelVectors[1][1], false);
+            br.setHeading(wheelVectors[2][1], false);
+            bl.setHeading(wheelVectors[3][1], false);
+        }
 
-        fl.setHeading(wheelVectors[0][1], false);
-        fr.setHeading(wheelVectors[1][1], false);
-        br.setHeading(wheelVectors[2][1], false);
-        bl.setHeading(wheelVectors[3][1], false);
+        //fl.setHeading(wheelVectors[0][1], false);
+        //fr.setHeading(wheelVectors[1][1], false);
+        //br.setHeading(wheelVectors[2][1], false);
+        //bl.setHeading(wheelVectors[3][1], false);
 //        fl.setHeadingWithAngle(wheelVectors[0][1]);
 //        fr.setHeadingWithAngle(wheelVectors[1][1]);
 //        br.setHeadingWithAngle(wheelVectors[2][1]);
