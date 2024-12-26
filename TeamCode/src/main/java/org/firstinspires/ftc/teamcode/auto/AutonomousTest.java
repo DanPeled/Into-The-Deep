@@ -20,7 +20,7 @@ public class AutonomousTest extends CommandOpMode {
     public void initialize() {
         swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry,this, true);
         register(swerveDrive);
-        schedule(new GotoCmd(telemetry, swerveDrive, 0.5,0.5,27, 0.1,0.2));
+        schedule(new GotoCmd(telemetry, swerveDrive, 0.0,0.2,0.0, 0.1,0.4));
     }
 
     @Override

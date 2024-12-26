@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
@@ -67,7 +68,7 @@ public class Echo extends CommandOpMode {
         controllersState = null;
 
 
-        schedule(new IntakeCommands.ReturnArmCmd(intakeSubsystem, true));
+        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
         schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
 
         while (opModeInInit()) {
@@ -121,10 +122,10 @@ public class Echo extends CommandOpMode {
                             , dischargeSubsystem.highBasketHeight, multipleTelemetry))); //go to high basket
 
                     systemB.whenPressed(new SequentialCommandGroup(
-                            new SetStateCommands.IntakeStateCmd(), //change to intake state
-                            new IntakeCommands.StartIntakeCmd(intakeSubsystem))).and(new Trigger(() -> !gamepad1.start));
+                            new IntakeCommands.StartIntakeCmd(intakeSubsystem), //change to intake state
+                            new SetStateCommands.IntakeStateCmd())).and(new Trigger(() -> !gamepad2.start));
 
-                    systemX.whenPressed(new IntakeCommands.ReturnArmCmd(intakeSubsystem, false));
+                    systemX.whenPressed(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, false));
 
                     break;
                 case INTAKE:
@@ -139,8 +140,9 @@ public class Echo extends CommandOpMode {
 
                     systemB.whenPressed(new IntakeCommands.reStartIntakeCmd(intakeSubsystem));
 
-                    systemY.whenPressed(new SequentialCommandGroup(new IntakeCommands.ReturnArmCmd(intakeSubsystem,false),
-                            new SetStateCommands.NoneStateCmd()));
+                    systemY.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.NoneStateCmd(),
+                            new IntakeCommands.ReturnArmForHMCmd(intakeSubsystem)));
 
                     systemDPadUp.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem ,0.5));
                     systemDPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem ,0));
@@ -216,6 +218,21 @@ public class Echo extends CommandOpMode {
         telemetry.addData("state", robotState);
         telemetry.addData("discharge slides pos", dischargeSubsystem.getLiftPosInCM());
         telemetry.addData("intake slides pos", intakeSubsystem.getMotorPosition());
+        TelemetryPacket packet = new TelemetryPacket();
+        packet.put("Error fl", (swerveDrive.fl.servo.error));
+        packet.put("target fl", Math.abs(swerveDrive.fl.servo.getTargetAngle()));
+        packet.put("Error fr", (swerveDrive.fr.servo.error));
+        packet.put("target fr", Math.abs(swerveDrive.fr.servo.getTargetAngle()));
+        packet.put("Error bl", (swerveDrive.bl.servo.error));
+        packet.put("target bl", Math.abs(swerveDrive.bl.servo.getTargetAngle()));
+        packet.put("Error br", (swerveDrive.br.servo.error));
+        packet.put("target br", Math.abs(swerveDrive.br.servo.getTargetAngle()));
+
+        packet.put("Min Bound", -25);
+        packet.put("Max Bound", 90);
+        packet.put("Min Error", -10);
+        packet.put("Max Error", 8);
+        dashboard.sendTelemetryPacket(packet);
         //telemetry.addData("discharge default command", dischargeSubsystem.getDefaultCommand().getName());
         //telemetry.addData("discharge current command", dischargeSubsystem.getCurrentCommand().getName());
         //telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());

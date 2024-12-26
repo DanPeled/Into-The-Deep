@@ -29,13 +29,25 @@ public class BasicSwerveOpMode extends CommandOpMode {
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
     GamepadEx driverGamepad;
-    public static double kp = 0.0022;
-    public static double ki = 0.00000052;
-    public static double kd = 0.0148;
-    private double kChange = 1.03;
+    //public static double kp = 0.0068;
+    //public static double ki = 0.00000072; // 0.00000052;
+    //public static double kd = 0.068;
+    public static double kp = 0.0068;
+    public static double ki = 0.0; // 0.00000052;
+    public static double kd = 0.0;
+    public static double minPower = 0.055;
+    private double kChange = 1.02;
+    final int[] targetChanges = {0,0,45,0,0,20,20,-50,-50,-50,0,0,0,30,30,30};
+    //final int[] targetChanges = {1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    //        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+    //        1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+    //        ,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+    //        ,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1
+    //        ,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1};
+    int count = 0;
     double targetAngle;
     long lastTargetChangeTime;
-    final double TARGET_INTERVAL = 1250;
+    final double TARGET_INTERVAL = 650;
     Random random = new Random();
 
     @Override
@@ -60,20 +72,24 @@ public class BasicSwerveOpMode extends CommandOpMode {
         long currentTime = System.currentTimeMillis();
         //setHeading
         if (currentTime - lastTargetChangeTime > TARGET_INTERVAL) {
-            targetAngle += 60;//random.nextInt(320)-160;
+            targetAngle += targetChanges[count%targetChanges.length];//random.nextInt(40) -20;
+            count++;
+
             targetAngle %= 360; // Keep within 0-360
             lastTargetChangeTime = currentTime;
         }
-        swerveDrive.fl.setHeading(targetAngle, false);
+        swerveDrive.fl.servo.setTargetAngle(targetAngle);
 
         if (gamepad1.dpad_up) {
-                   if (gamepad1.x) kp *= kChange;
-                   else if (gamepad1.a) ki *= kChange;
-                   else if (gamepad1.b) kd *= kChange;
-               } else if (gamepad1.dpad_down) {
+            if (gamepad1.x) kp *= kChange;
+            else if (gamepad1.a) ki *= kChange;
+            else if (gamepad1.b) kd *= kChange;
+            else if (gamepad1.y) minPower *= kChange;
+        } else if (gamepad1.dpad_down) {
             if (gamepad1.x) kp /= kChange;
             else if (gamepad1.a) ki /= kChange;
             else if (gamepad1.b) kd /= kChange;
+            else if (gamepad1.y) minPower /= kChange;
         }
 
 
@@ -82,27 +98,39 @@ public class BasicSwerveOpMode extends CommandOpMode {
         telemetry.update();
 
         telemetry.addData("kp", kp);
-        telemetry.addData("ki", ki*10000);
+        telemetry.addData("ki", ki * 10000);
         telemetry.addData("kd", kd);
+        telemetry.addData("minPower", minPower);
 
         telemetry.addData("ly: ", driverGamepad.getLeftX());
         telemetry.addData("rx: ", driverGamepad.getLeftY());
         telemetry.addData("lx: ", driverGamepad.getRightX());
         telemetry.addData("heading", swerveDrive.getHeading());
         TelemetryPacket packet = new TelemetryPacket();
-        packet.put("Error", swerveDrive.fl.servo.error);
+        packet.put("Error", (swerveDrive.fl.servo.error));
+        packet.put("targer", Math.abs(targetAngle));
+        packet.put("Min Bound", -25);
+        packet.put("Max Bound", 90);
+        packet.put("Min Error", -10);
+        packet.put("Max Error", 8);
+
+
         dashboard.sendTelemetryPacket(packet);
     }
-    public static double getKp(){
+
+    public static double getKp() {
         return kp;
     }
 
-    public static double getKi(){
+    public static double getKi() {
         return ki;
     }
 
-    public static double getKd(){
+    public static double getKd() {
         return kd;
+    }
+    public static double getMin() {
+        return minPower;
     }
 
 }

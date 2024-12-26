@@ -56,14 +56,14 @@ public class BasicIntakeTest extends CommandOpMode {
         //back.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
 
 
-        schedule(new IntakeCommands.ReturnArmCmd(intakeSubsystem, true));
+        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
 
         while (opModeInInit()) {
             CommandScheduler.getInstance().run();
         }
 
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, () -> systemGamepad.getLeftY()));
-        X.whenPressed(new IntakeCommands.ReturnArmCmd(intakeSubsystem, false));
+        X.whenPressed(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, false));
         A.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
         B.whenPressed(new IntakeCommands.StartIntakeCmd(intakeSubsystem));
     }

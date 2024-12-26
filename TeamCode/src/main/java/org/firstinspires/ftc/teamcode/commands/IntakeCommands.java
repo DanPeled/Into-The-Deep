@@ -361,8 +361,8 @@ public class IntakeCommands {
         }
     }
 
-    public static class ReturnArmCmd extends SequentialCommandGroup {
-        public ReturnArmCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
+    public static class ReturnArmForTransferCmd extends SequentialCommandGroup {
+        public ReturnArmForTransferCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
             addCommands(
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
                     new SetRotationCmd(intakeSubsystem, 0.5),
@@ -375,6 +375,20 @@ public class IntakeCommands {
         }
     }
 
+    public static class ReturnArmForHMCmd extends SequentialCommandGroup {
+        public ReturnArmForHMCmd(IntakeSubsystem intakeSubsystem) {
+            addCommands(
+                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
+                    new SetRotationCmd(intakeSubsystem, 0.5),
+                    //new Wait(intakeSubsystem, 0.0),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
+                    new Wait(intakeSubsystem, 1),
+                    new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),//for safety
+                    new SlideGotoCmd(intakeSubsystem, 300));
+            addRequirements(intakeSubsystem);
+        }
+    }
+
     public static class Transfer extends SequentialCommandGroup {
         final int slidesBackAfterTransfer = 10;
         public Transfer(IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem) {
@@ -382,7 +396,7 @@ public class IntakeCommands {
                     new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                     new ParallelCommandGroup(
                         new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                        new ReturnArmCmd(intakeSubsystem, false)),
+                        new ReturnArmForTransferCmd(intakeSubsystem, false)),
                     new DischargeGrabCmd(dischargeSubsystem),
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
                     new SpinCmd(intakeSubsystem, 0, -1),
