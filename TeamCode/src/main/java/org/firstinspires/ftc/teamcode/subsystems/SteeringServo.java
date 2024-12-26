@@ -20,9 +20,10 @@ public class SteeringServo {
     public static double w = -0.7;
     public static double p = 0.25;
 
-    private final double kp = 0.0022;
-    private final double ki = 0.00000052;
-    private final double kd = 0.0148;
+    private final double kp = 0.00334;
+//    private final double kp = 0.0022;
+//    private final double ki = 0.00000052;
+//    private final double kd = 0.0148;
 
 
     double minPower = 0.02;
@@ -109,10 +110,13 @@ public class SteeringServo {
             deltaTime = currentTime - lastTime;
             integral += (error * deltaTime);
             derivative = (error - lastError) / deltaTime;
-
-            power = kp * error +
-                    ki * integral+
-                    kd * derivative;
+            power = kp * error;
+//            power = kp * error +
+//                    ki * integral+
+//                    kd * derivative;
+//            power = BasicSwerveOpMode.getKp() * error +
+//                    BasicSwerveOpMode.getKi() * integral+
+//                    BasicSwerveOpMode.getKd() * derivative;
 
             if (power >= 0)
                 setPower(Range.clip(power, minPower, 1));

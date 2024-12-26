@@ -1,11 +1,12 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 
 import java.util.function.Supplier;
 
@@ -27,46 +28,50 @@ public class DischargeCommands {
         }
     }
 
-    public static class DischargePowerCmd extends CommandBase {
+    public static class DischargeManualGotoCmd extends CommandBase {
         Supplier<Double> power;
         DischargeSubsystem dischargeSubsystem;
         Telemetry telemetry;
+        ElapsedTime elapsedTime = new ElapsedTime();
+        double lastTimeMilli = 0;
 
-        public DischargePowerCmd(Supplier<Double> power, DischargeSubsystem dischargeSubsystem,
-                                 Telemetry telemetry) {
+
+        public DischargeManualGotoCmd(Supplier<Double> power, DischargeSubsystem dischargeSubsystem,
+                                      Telemetry telemetry) {
             this.telemetry = telemetry;
             this.power = power;
             this.dischargeSubsystem = dischargeSubsystem;
-            dischargeSubsystem.resetEncoders();
             addRequirements(dischargeSubsystem);
         }
 
         @Override
-        public void execute() {
-            dischargeSubsystem.setPower((power.get()));
-            telemetry.addData("power", dischargeSubsystem.calcPowerValue(power.get()));
+        public void initialize(){
+            elapsedTime.reset();
         }
 
         @Override
-        public void end(boolean interupted){
-
+        public void execute() {
+            double timeMilli = elapsedTime.milliseconds();
+            double deltaTime = timeMilli - lastTimeMilli;
+            if (Math.abs(power.get()) > 0.25) {
+                dischargeSubsystem.runWithEncoders();
+                dischargeSubsystem.changeTargetPos(-power.get() * deltaTime * (dischargeSubsystem.manualTicksPerSecond/1000.0));
+                dischargeSubsystem.goToTarget();
+            }
+            lastTimeMilli = timeMilli;
         }
     }
 
     public static class DischargeGotoCmd extends CommandBase {
         DischargeSubsystem dischargeSubsystem;
         Telemetry telemetry;
-        private final int pos, sensitivity;
-        private final double kp = 0.002;
-        ElapsedTime elapsedTime = new ElapsedTime();
+        private final int pos;
 
 
-        public DischargeGotoCmd(DischargeSubsystem dischargeSubsystem, int pos, int sensitivity,
-                                Telemetry telemetry) {
+        public DischargeGotoCmd(DischargeSubsystem dischargeSubsystem, int pos, Telemetry telemetry) {
 
             this.dischargeSubsystem = dischargeSubsystem;
             this.pos = pos;
-            this.sensitivity = sensitivity;
             this.telemetry = telemetry;
             addRequirements(dischargeSubsystem);
 
@@ -82,18 +87,14 @@ public class DischargeCommands {
 
         @Override
         public void initialize() {
-            elapsedTime.reset();
-            dischargeSubsystem.setPosition(pos);
+            dischargeSubsystem.runWithEncoders();
+            dischargeSubsystem.setTargetPos(pos);
+            dischargeSubsystem.goToTarget();
         }
 
         @Override
         public boolean isFinished() {
-            return Math.abs(dischargeSubsystem.getPosition() - pos) <= sensitivity;
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            dischargeSubsystem.timeUp = elapsedTime.seconds();
+            return true;
         }
     }
 
@@ -102,6 +103,7 @@ public class DischargeCommands {
         int lastTick;
         double lastTime = 0;
         final double maxDuration = 3;
+        final int minTragetOffset = 50;
         ElapsedTime elapsedTime = new ElapsedTime();
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
@@ -114,6 +116,7 @@ public class DischargeCommands {
             elapsedTime.reset();
             dischargeSubsystem.setPower(0);
             dischargeSubsystem.runWithoutEncoders();
+            addRequirements(dischargeSubsystem);
         }
 
         @Override
@@ -155,8 +158,11 @@ public class DischargeCommands {
         public void end(boolean interrupted) {
             dischargeSubsystem.setPower(0);
 
-            if (dischargeSubsystem.getGearBoxRatio() == 1 && !interrupted)
+            if (dischargeSubsystem.getGearBoxRatio() == 1 && !interrupted) {
+                dischargeSubsystem.minLiftPos = dischargeSubsystem.getPosition() + minTragetOffset;
+                dischargeSubsystem.setTargetPos(dischargeSubsystem.getPosition() + minTragetOffset);
                 dischargeSubsystem.resetEncoders();
+            }
         }
     }
 
@@ -256,5 +262,32 @@ public class DischargeCommands {
             return true;
         }
     }
+    public static class ChamberDischargeCmd extends SequentialCommandGroup{
+        public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry){
+            addCommands(new DischargeGotoCmd(dischargeSubsystem,dischargeSubsystem.highChamberHeight-250,telemetry),
+                    new WaitCommand(300), new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(100),
+                    new DischargeCommands.GoHomeCmd(dischargeSubsystem));
+        }
+    }
+
+    //public static class ChamberDischarge extends SequentialCommandGroup {
+    //    public SampleIntakeCmd(IntakeSubsystem intakeSubsystem) {
+    //        final double
+    //                spinPower = 1,
+    //                middleTime = 0.75,
+    //                grabbingTime = 0.5,
+    //                holdingPower = 0.05;
+//
+//
+    //        addCommands(
+    //                new ParallelCommandGroup(
+    //                        new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE),
+    //                        new IntakeCommands.SpinCmd(intakeSubsystem, -spinPower, middleTime)),
+    //                new ParallelCommandGroup(
+    //                        new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
+    //                        new IntakeCommands.SpinCmd(intakeSubsystem, spinPower, grabbingTime)),
+    //                new IntakeCommands.SpinCmd(intakeSubsystem, holdingPower, -1));
+    //    }
+    //}
 
 }

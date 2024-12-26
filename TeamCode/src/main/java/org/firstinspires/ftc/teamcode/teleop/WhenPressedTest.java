@@ -12,7 +12,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.DanEg.SetPowerCommand;
 import org.firstinspires.ftc.teamcode.DanEg.SampleSubsystem;
-import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargePowerCmd;
+import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeManualGotoCmd;
 
 @TeleOp
 public class WhenPressedTest extends CommandOpMode {
@@ -21,7 +21,7 @@ public class WhenPressedTest extends CommandOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
-    DischargePowerCmd dischargePowerCmd;
+    DischargeManualGotoCmd dischargePowerCmd;
 
     @Override
     public void initialize() {

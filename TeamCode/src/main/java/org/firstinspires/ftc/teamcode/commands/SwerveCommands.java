@@ -16,11 +16,6 @@ public class SwerveCommands {
         }
 
         @Override
-        public void execute() {
-            // Do nothing
-        }
-
-        @Override
         public boolean isFinished() {
             return false; // Runs indefinitely
         }
@@ -34,14 +29,14 @@ public class SwerveCommands {
         final SwerveDrive swerveDrive;
         final Telemetry telemetry;
         final boolean isFieldOriented;
-        final double rotationModifier = 0.65;
+        final double rotationModifier = 0.75;
 
         public PowerCmd(Telemetry telemetry, SwerveDrive swerveDrive, Supplier<Double> x,
                         Supplier<Double> y, Supplier<Double> r, Supplier<Double> boost, boolean isFieldOriented) {
             this.isFieldOriented = isFieldOriented;
-            this.x = () -> x.get()*rotationModifier;
+            this.x = x;
             this.y = y;
-            this.r = r;
+            this.r = () -> r.get()*rotationModifier;
             this.boost = boost;
             this.swerveDrive = swerveDrive;
             this.telemetry = telemetry;

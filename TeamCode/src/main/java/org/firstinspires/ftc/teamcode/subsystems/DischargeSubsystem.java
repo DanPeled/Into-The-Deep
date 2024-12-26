@@ -13,28 +13,32 @@ public class DischargeSubsystem extends SubsystemBase {
     private final DcMotorEx lowerMotor, upperMotor;
     private Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
-    double clawServoHoldPos = 0.42, clawServoReleasePos = 0.83;
+    double clawServoHoldPos = 0.32, clawServoReleasePos = 0.83;
     MultipleTelemetry telemetry;
     double gearBoxRatio = 1;
     public double timeUp = 0;
     private double liftPosInCM;
     private double lastMotorTicks;
 
+    private double targetPos = -1;
+
     public final double maxLiftPos = 1900;
-    public final double minLiftPos = 20;
+    public double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
-    public final int highChamberHeight = 1000;
+    public final int highChamberHeight = 880;
     public final int lowChamberHeight = 350;
     public final int chamberReleaseDeltaSlides = 100;
 
-    public final int highBasketHeight = 1700;
+    public final int highBasketHeight = 1800;
     public final int lowBasketHeight = 500;
     public final int BasketReleaseDeltaDrive = 0;
 
-
+    public final int manualTicksPerSecond = 550;
     public final double slidesSpeed = 1;
     public final double slidesLowSpeed = 0.5;
+
+
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         lowerMotor = hardwareMap.get(DcMotorEx.class, "lower");
@@ -95,13 +99,9 @@ public class DischargeSubsystem extends SubsystemBase {
         runWithoutEncoders();
     }
 
-    public void setPosition(int pos) {
-        lowerMotor.setTargetPosition(pos);
-        upperMotor.setTargetPosition(pos);
-        lowerMotor.setPower(1);
-        upperMotor.setPower(1);
-        lowerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        upperMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    public void goToTarget() {
+        lowerMotor.setTargetPosition((int)targetPos);
+        upperMotor.setTargetPosition((int)targetPos);
     }
 
     public int getPosition() {
@@ -133,10 +133,34 @@ public class DischargeSubsystem extends SubsystemBase {
         upperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    public void runWithEncoders() {
+        lowerMotor.setPower(slidesSpeed);
+        upperMotor.setPower(slidesSpeed);
+        lowerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        upperMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
     public double getLiftPosInCM() {
         int ct = getPosition();
         liftPosInCM += (ct - lastMotorTicks) / gearBoxRatio;
         lastMotorTicks = ct;
         return liftPosInCM;
+    }
+
+    public void setTargetPos(int targetPos) {
+        this.targetPos = targetPos;
+    }
+
+    public double getTargetPos() {
+       return targetPos;
+    }
+
+    public String getMode(){
+        return lowerMotor.getMode().toString();
+    }
+
+    public void changeTargetPos(double change) {
+        targetPos += change;
+        targetPos = Range.clip(targetPos, minLiftPos, maxLiftPos);
     }
 }

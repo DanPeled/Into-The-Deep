@@ -18,6 +18,8 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 
+import java.util.Random;
+
 
 @TeleOp(group = "swerve")
 public class BasicSwerveOpMode extends CommandOpMode {
@@ -27,10 +29,14 @@ public class BasicSwerveOpMode extends CommandOpMode {
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
     GamepadEx driverGamepad;
-    //public static double kp = 0.003;
-    //public static double ki = 0.000001;
-    //public static double kd = 0.03;
-    //private double kChange = 1.03;
+    public static double kp = 0.0022;
+    public static double ki = 0.00000052;
+    public static double kd = 0.0148;
+    private double kChange = 1.03;
+    double targetAngle;
+    long lastTargetChangeTime;
+    final double TARGET_INTERVAL = 1250;
+    Random random = new Random();
 
     @Override
     public void initialize() {
@@ -45,29 +51,39 @@ public class BasicSwerveOpMode extends CommandOpMode {
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
+        runtime.reset();
     }
 
     @Override
     public void run() {
 
-        //if (gamepad1.dpad_up) {
-        //           if (gamepad1.x) kp *= kChange;
-        //           else if (gamepad1.a) ki *= kChange;
-        //           else if (gamepad1.b) kd *= kChange;
-        //       } else if (gamepad1.dpad_down) {
-        //    if (gamepad1.x) kp /= kChange;
-        //    else if (gamepad1.a) ki /= kChange;
-        //    else if (gamepad1.b) kd /= kChange;
-        //}
+        long currentTime = System.currentTimeMillis();
+        //setHeading
+        if (currentTime - lastTargetChangeTime > TARGET_INTERVAL) {
+            targetAngle += 60;//random.nextInt(320)-160;
+            targetAngle %= 360; // Keep within 0-360
+            lastTargetChangeTime = currentTime;
+        }
+        swerveDrive.fl.setHeading(targetAngle, false);
+
+        if (gamepad1.dpad_up) {
+                   if (gamepad1.x) kp *= kChange;
+                   else if (gamepad1.a) ki *= kChange;
+                   else if (gamepad1.b) kd *= kChange;
+               } else if (gamepad1.dpad_down) {
+            if (gamepad1.x) kp /= kChange;
+            else if (gamepad1.a) ki /= kChange;
+            else if (gamepad1.b) kd /= kChange;
+        }
 
 
         super.run();
         telemetry.addData("e", "e");
         telemetry.update();
 
-        //telemetry.addData("kp", kp);
-        //telemetry.addData("ki", ki*10000);
-        //telemetry.addData("kd", kd);
+        telemetry.addData("kp", kp);
+        telemetry.addData("ki", ki*10000);
+        telemetry.addData("kd", kd);
 
         telemetry.addData("ly: ", driverGamepad.getLeftX());
         telemetry.addData("rx: ", driverGamepad.getLeftY());
@@ -77,17 +93,17 @@ public class BasicSwerveOpMode extends CommandOpMode {
         packet.put("Error", swerveDrive.fl.servo.error);
         dashboard.sendTelemetryPacket(packet);
     }
-    //public static double getKp(){
-    //    return kp;
-    //}
-//
-    //public static double getKi(){
-    //    return ki;
-    //}
-//
-    //public static double getKd(){
-    //    return kd;
-    //}
+    public static double getKp(){
+        return kp;
+    }
+
+    public static double getKi(){
+        return ki;
+    }
+
+    public static double getKd(){
+        return kd;
+    }
 
 }
 

@@ -23,7 +23,7 @@ public class DriveDischargeOpMode extends CommandOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
-    DischargeCommands.DischargePowerCmd dischargePowerCmd;
+    DischargeCommands.DischargeManualGotoCmd dischargePowerCmd;
     private ElapsedTime runtime = new ElapsedTime();
     private SwerveDrive swerveDrive;
 
@@ -41,7 +41,7 @@ public class DriveDischargeOpMode extends CommandOpMode {
         systemGamepad = new GamepadEx(gamepad2);
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         register(dischargeSubsystem);
-        dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargePowerCmd(() -> systemGamepad.getLeftY(), dischargeSubsystem, telemetry));
+        dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(() -> systemGamepad.getLeftY(), dischargeSubsystem, telemetry));
         Button dPadUp = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_UP);
         Button dPadDown = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_DOWN);
         Button dPadRight = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_RIGHT);
@@ -50,7 +50,7 @@ public class DriveDischargeOpMode extends CommandOpMode {
         Button rightBumper = new GamepadButton(systemGamepad, GamepadKeys.Button.RIGHT_BUMPER);
         Button A = new GamepadButton(systemGamepad, GamepadKeys.Button.A);
 
-        dPadUp.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, 1600, 10, telemetry));
+        dPadUp.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, 1600, telemetry));
         dPadDown.whenPressed(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
         dPadLeft.whenPressed(new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
         leftBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));

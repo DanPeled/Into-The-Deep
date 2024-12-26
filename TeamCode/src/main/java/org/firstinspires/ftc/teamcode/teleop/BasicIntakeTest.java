@@ -4,7 +4,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
-import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.button.Button;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -12,12 +11,7 @@ import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
-import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
-import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
-import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 
 @TeleOp
@@ -68,7 +62,7 @@ public class BasicIntakeTest extends CommandOpMode {
             CommandScheduler.getInstance().run();
         }
 
-        intakeSubsystem.setDefaultCommand(new IntakeCommands.SlidePowerCmd(intakeSubsystem, () -> systemGamepad.getLeftY()));
+        intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, () -> systemGamepad.getLeftY()));
         X.whenPressed(new IntakeCommands.ReturnArmCmd(intakeSubsystem, false));
         A.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
         B.whenPressed(new IntakeCommands.StartIntakeCmd(intakeSubsystem));

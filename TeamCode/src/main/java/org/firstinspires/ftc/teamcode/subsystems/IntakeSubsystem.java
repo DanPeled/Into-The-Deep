@@ -16,9 +16,13 @@ public class IntakeSubsystem extends SubsystemBase {
     private final Servo rServo; // claw rotation
     private final Servo armsServo; // claw arms angle
     private final CRServo spinServo; // claw up & down
-    private final int maxArmLength = 3000;
     MultipleTelemetry telemetry;
 
+    private double targetPos = -1;
+    private final int maxArmLength = 3000;
+    public int minSlidesPos = 10;
+
+    public final int manualTicksPerSecond = 800;
     public final double slidesSpeed = 1;
     public final double slidesLowSpeed = 0.25;
 
@@ -53,13 +57,13 @@ public class IntakeSubsystem extends SubsystemBase {
         lMotor.setPower(power);
     }
 
-    public void armGoToPos(int pos) {
-        rMotor.setTargetPosition(pos);
-        lMotor.setTargetPosition(pos);
-        lMotor.setPower(slidesSpeed);
-        rMotor.setPower(slidesSpeed);
-        rMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        lMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+    public double getTargetPos(){
+        return targetPos;
+    }
+
+    public void armGoToTarget() {
+        rMotor.setTargetPosition((int)targetPos);
+        lMotor.setTargetPosition((int)targetPos);
     }
     public double getAveragePosition(){
         return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition())/2;
@@ -107,10 +111,26 @@ public class IntakeSubsystem extends SubsystemBase {
         lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void powerMode() {
-        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    public void runWithEncoders() {
+        lMotor.setPower(slidesSpeed);
+        rMotor.setPower(slidesSpeed);
+        rMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
+
+    public void setTargetPos(int targetPos) {
+        this.targetPos = targetPos;
+    }
+
+    public void changeTargetPos(double change){
+        targetPos += change;
+        if (targetPos < minSlidesPos)
+            targetPos = minSlidesPos;
+        if (targetPos > maxArmLength)
+            targetPos = maxArmLength;
+    }
+
+
     // make second button that while pressing it it goes to half of height and pushes things
     // away and then lowers one more stage and picks up the sample
     // button 3: checks angle and returns to base position

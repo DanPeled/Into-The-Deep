@@ -7,6 +7,7 @@ import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.button.Button;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
+import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -49,6 +50,7 @@ public class Echo extends CommandOpMode {
     Button systemRightBumper, driverRightBumper;
     Button systemLeftBumper, driverLeftBumper;
     Button systemLeftStickButton, systemRightStickButton;
+    Button driverStart;
 
     @Override
     public void initialize() {
@@ -102,25 +104,25 @@ public class Echo extends CommandOpMode {
                             driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
                             () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
-                    intakeSubsystem.setDefaultCommand(new IntakeCommands.SlidePowerCmd(
+                    intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(
                             intakeSubsystem, systemGamepad::getLeftY));
 
-                    dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargePowerCmd(
+                    dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
 
                     systemA.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.ChamberStateCmd(), //change to chamber state
                             new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
-                            , dischargeSubsystem.highChamberHeight, 10, multipleTelemetry))); //go to chamber
+                            , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
 
                     systemY.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.BasketStateCmd(), //change to basket state
                             new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
-                            , dischargeSubsystem.highBasketHeight, 10, multipleTelemetry))); //go to high basket
+                            , dischargeSubsystem.highBasketHeight, multipleTelemetry))); //go to high basket
 
                     systemB.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.IntakeStateCmd(), //change to intake state
-                            new IntakeCommands.StartIntakeCmd(intakeSubsystem)));
+                            new IntakeCommands.StartIntakeCmd(intakeSubsystem))).and(new Trigger(() -> !gamepad1.start));
 
                     systemX.whenPressed(new IntakeCommands.ReturnArmCmd(intakeSubsystem, false));
 
@@ -130,16 +132,15 @@ public class Echo extends CommandOpMode {
                             systemGamepad::getRightX, () -> 0.0, () -> 0.0,
                             () -> 0.2, false));
 
-                    intakeSubsystem.setDefaultCommand(new IntakeCommands.SlidePowerCmd(intakeSubsystem,
+                    intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
                             systemGamepad::getLeftY));
 
                     systemA.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
 
-                    systemX.whenPressed(new SequentialCommandGroup(
-                            new SetStateCommands.NoneStateCmd(),
-                            new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)));
-
                     systemB.whenPressed(new IntakeCommands.reStartIntakeCmd(intakeSubsystem));
+
+                    systemY.whenPressed(new SequentialCommandGroup(new IntakeCommands.ReturnArmCmd(intakeSubsystem,false),
+                            new SetStateCommands.NoneStateCmd()));
 
                     systemDPadUp.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem ,0.5));
                     systemDPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem ,0));
@@ -147,12 +148,11 @@ public class Echo extends CommandOpMode {
 
                     break;
                 case BASKET:
-                case CHAMBER:
                     swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
                             driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
                             () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
-                    dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargePowerCmd(
+                    dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
 
                     systemRightBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
@@ -164,29 +164,62 @@ public class Echo extends CommandOpMode {
                     systemA.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.ChamberStateCmd(), //change to chamber state
                             new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
-                                    , dischargeSubsystem.highChamberHeight, 10, multipleTelemetry))); //go to chamber
+                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
 
                     systemY.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.BasketStateCmd(), //change to basket state
                             new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
-                                    , dischargeSubsystem.highBasketHeight, 10, multipleTelemetry))); //go to high basket
+                                    , dischargeSubsystem.highBasketHeight, multipleTelemetry))); //go to high basket
+
+                    break;
+                case CHAMBER:
+                    swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
+                            driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
+                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
+
+                    dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
+                            systemGamepad::getRightY, dischargeSubsystem, telemetry));
+
+                    systemRightBumper.whenPressed(new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem,telemetry));
+                    systemLeftBumper.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.NoneStateCmd(),
+                            new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
+
+
+                    systemA.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.ChamberStateCmd(), //change to chamber state
+                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
+                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
+
+                    systemY.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.BasketStateCmd(), //change to basket state
+                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
+                                    , dischargeSubsystem.highBasketHeight, multipleTelemetry))); //go to high basket
 
                     break;
             }
         }
+        if (driverX.get() && driverStart.get()){
+            swerveDrive.resetHeading();
+        }
+        if (systemA.get() && controllersState == RobotState.INTAKE)
+            systemX.whenPressed(new SequentialCommandGroup(
+                    new SetStateCommands.NoneStateCmd(),
+                    new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)));
+
         super.run();
-        prints();
+        telemetries();
     }
 
-    private void prints(){
+    private void telemetries(){
         telemetry.update();
         telemetry.addData("state", robotState);
         telemetry.addData("discharge slides pos", dischargeSubsystem.getLiftPosInCM());
         telemetry.addData("intake slides pos", intakeSubsystem.getMotorPosition());
-        telemetry.addData("discharge default command", dischargeSubsystem.getDefaultCommand().getName());
-        telemetry.addData("discharge current command", dischargeSubsystem.getCurrentCommand().getName());
-        telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());
-        telemetry.addData("intake current command", intakeSubsystem.getCurrentCommand().getName());
+        //telemetry.addData("discharge default command", dischargeSubsystem.getDefaultCommand().getName());
+        //telemetry.addData("discharge current command", dischargeSubsystem.getCurrentCommand().getName());
+        //telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());
+        //telemetry.addData("intake current command", intakeSubsystem.getCurrentCommand().getName());
     }
 
     public static void setRobotState(RobotState state) {
@@ -216,6 +249,7 @@ public class Echo extends CommandOpMode {
         driverDPadLeft = new GamepadButton(driverGamepad, GamepadKeys.Button.DPAD_LEFT);
         driverRightBumper = new GamepadButton(driverGamepad, GamepadKeys.Button.RIGHT_BUMPER);
         driverLeftBumper = new GamepadButton(driverGamepad, GamepadKeys.Button.LEFT_BUMPER);
+        driverStart = new GamepadButton(driverGamepad, GamepadKeys.Button.START);
 
     }
 }

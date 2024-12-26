@@ -40,7 +40,7 @@ public class SwerveDrive extends SubsystemBase {
     //    public double[] position = {0, 0};
     private final int ticksPerMeter = 1007;
     public static double minAngleError = 5, maxAngleError = 90;
-
+    private double correctedHeading = 0;
 
     private double powerModifier;
 
@@ -224,6 +224,9 @@ public class SwerveDrive extends SubsystemBase {
         Orientation orientation = imu.getAngularOrientation();
         return (-orientation.firstAngle) % 360;
     }
+    public void resetHeading(){
+        correctedHeading = getHeading();
+    }
 
     public double[] getPosition() {
         Position pos =  imu.getPosition();
@@ -233,7 +236,7 @@ public class SwerveDrive extends SubsystemBase {
 
     //for it to not go to the side when spinning and driving
     private double getAdjustedHeading(double rotation) {
-        return getHeading() + rotationConpensation * rotation;
+        return getHeading() + rotationConpensation * rotation - correctedHeading;
     }
 
     private void updateSwerveModules(double[][] wheelVectors) {
