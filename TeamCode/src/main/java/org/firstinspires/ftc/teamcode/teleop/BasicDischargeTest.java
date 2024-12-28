@@ -73,7 +73,7 @@ public class BasicDischargeTest extends CommandOpMode {
         //telemetry.addData("timeUp", dischargeSubsystem.timeUp);
 
         telemetry.addData("position", dischargeSubsystem.getPosition());
-        telemetry.addData("Target Pos", dischargeSubsystem.getTargetPos());
+        telemetry.addData("Target Pos", dischargeSubsystem.getTargetPosInTicks());
         //telemetry.addData("mode", dischargeSubsystem.getMode());
         //String commandName = dischargeSubsystem.getCurrentCommand().getName();
         //telemetry.addData("command", commandName==null ? "null" : commandName);

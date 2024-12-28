@@ -17,10 +17,10 @@ public class DischargeSubsystem extends SubsystemBase {
     MultipleTelemetry telemetry;
     double gearBoxRatio = 1;
     public double timeUp = 0;
+
     private double liftPosInCM;
     private double lastMotorTicks;
-
-    private double targetPos = -1;
+    private double targetPosInTicks = -1;
 
     public final double maxLiftPos = 1900;
     public double minLiftPos = 20;
@@ -36,7 +36,7 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 550;
     public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.5;
+    public final double slidesLowSpeed = 0.65;
 
 
 
@@ -100,8 +100,8 @@ public class DischargeSubsystem extends SubsystemBase {
     }
 
     public void goToTarget() {
-        lowerMotor.setTargetPosition((int)targetPos);
-        upperMotor.setTargetPosition((int)targetPos);
+        lowerMotor.setTargetPosition((int) targetPosInTicks);
+        upperMotor.setTargetPosition((int) targetPosInTicks);
     }
 
     public int getPosition() {
@@ -147,20 +147,21 @@ public class DischargeSubsystem extends SubsystemBase {
         return liftPosInCM;
     }
 
-    public void setTargetPos(int targetPos) {
-        this.targetPos = targetPos;
+    public void setTargetPosInTicks(double newTargetPosInCM) {
+        newTargetPosInCM = Range.clip(newTargetPosInCM, minLiftPos, maxLiftPos);
+        this.targetPosInTicks = (int)(getPosition() + (newTargetPosInCM - getLiftPosInCM()) * gearBoxRatio);
     }
 
-    public double getTargetPos() {
-       return targetPos;
+    public double getTargetPosInTicks() {
+       return targetPosInTicks;
     }
+
 
     public String getMode(){
         return lowerMotor.getMode().toString();
     }
 
     public void changeTargetPos(double change) {
-        targetPos += change;
-        targetPos = Range.clip(targetPos, minLiftPos, maxLiftPos);
+        setTargetPosInTicks(getLiftPosInCM() + change);
     }
 }

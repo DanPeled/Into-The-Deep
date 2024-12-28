@@ -12,6 +12,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
+import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
+import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 
 @TeleOp
@@ -41,31 +43,31 @@ public class BasicIntakeTest extends CommandOpMode {
         Button X = new GamepadButton(systemGamepad, GamepadKeys.Button.X);
         Button back = new GamepadButton(systemGamepad, GamepadKeys.Button.BACK);
         //important stuff
-        //Y.whenPressed(new IntakeCommands.SlideGotoCmd(intakeSubsystem, 500));
-        //A.whenPressed(new IntakeCommands.SlideHomeCmd(intakeSubsystem));
-        //dPadUp.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.LOWER));
-        //dPadDown.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER));
-        //dPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0));
-        //dPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 1));
-        //leftBumper.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TOP));
-        //rightBumper.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM));
-        //leftStickButton.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER));
-        //rightStickButton.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE));
-        //B.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, 0.5, 0));
-        //X.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, -0.5, 2));
-        //back.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
+        Y.whenPressed(new IntakeCommands.SlideGotoCmd(intakeSubsystem, 500));
+        A.whenPressed(new IntakeCommands.SlideHomeCmd(intakeSubsystem, false));
+        dPadUp.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.LOWER));
+        dPadDown.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER));
+        dPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0));
+        dPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 1));
+        leftBumper.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TOP));
+        rightBumper.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM));
+        leftStickButton.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER));
+        rightStickButton.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE));
+        B.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, 0.5, 0));
+        X.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, -0.5, 2));
+        back.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
 
 
-        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
+        //schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
 
         while (opModeInInit()) {
             CommandScheduler.getInstance().run();
         }
 
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, () -> systemGamepad.getLeftY()));
-        X.whenPressed(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, false));
-        A.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
-        B.whenPressed(new IntakeCommands.StartIntakeCmd(intakeSubsystem));
+        //X.whenPressed(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, false));
+        //A.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
+        //B.whenPressed(new IntakeCommands.StartIntakeCmd(intakeSubsystem));
     }
 
     @Override

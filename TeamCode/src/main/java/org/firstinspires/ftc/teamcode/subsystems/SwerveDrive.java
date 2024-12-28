@@ -41,12 +41,33 @@ public class SwerveDrive extends SubsystemBase {
     private final int ticksPerMeter = 1007;
     public static double minAngleError = 5, maxAngleError = 90;
     private double correctedHeading = 0;
-
+    private final Point startingPos;
+    private Point positionAdjustment = new Point(0,0);
     private double powerModifier;
 
     public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry, LinearOpMode opMode, boolean isFieldOriented) {
         this.isFieldOriented = isFieldOriented;
         this.telemetry = telemetry;
+        startingPos = new Point(0,0);
+        bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
+                hardwareMap.get(CRServo.class, "bl_servo"),
+                hardwareMap.analogInput.get("bl_encoder"), 314.64);
+        br = new SwerveModule(hardwareMap.get(DcMotor.class, "br_motor"),
+                hardwareMap.get(CRServo.class, "br_servo"),
+                hardwareMap.analogInput.get("br_encoder"), 54.93);
+        fl = new SwerveModule(hardwareMap.get(DcMotor.class, "fl_motor"),
+                hardwareMap.get(CRServo.class, "fl_servo"),
+                hardwareMap.analogInput.get("fl_encoder"), 353.5);
+        fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
+                hardwareMap.get(CRServo.class, "fr_servo"),
+                hardwareMap.analogInput.get("fr_encoder"), 346.9);
+
+        initImu(hardwareMap, telemetry, opMode);
+    }
+    public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry, LinearOpMode opMode, boolean isFieldOriented, Point startingPos) {
+        this.isFieldOriented = isFieldOriented;
+        this.telemetry = telemetry;
+        this.startingPos = startingPos;
 
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
                 hardwareMap.get(CRServo.class, "bl_servo"),
@@ -228,12 +249,19 @@ public class SwerveDrive extends SubsystemBase {
         correctedHeading = getHeading();
     }
 
-    public double[] getPosition() {
-        Position pos =  imu.getPosition();
-        double [] array = {pos.x, pos.y};
-        return array;
+    public Point getPosition() {
+        Position imuPos =  imu.getPosition();
+        return new Point(imuPos.x + startingPos.x , imuPos.y + startingPos.y);
     }
-
+    public Point getAdjustedPosition() {
+        Position imuPos =  imu.getPosition();
+        return new Point(imuPos.x + startingPos.x + positionAdjustment.x,
+                imuPos.y + startingPos.y + positionAdjustment.y);
+    }
+    public void setPosition(Point position){
+        Point currentPos = getPosition();
+        positionAdjustment = new Point(position.x - currentPos.x, position.y - currentPos.y);
+    }
     //for it to not go to the side when spinning and driving
     private double getAdjustedHeading(double rotation) {
         return getHeading() + rotationConpensation * rotation - correctedHeading;

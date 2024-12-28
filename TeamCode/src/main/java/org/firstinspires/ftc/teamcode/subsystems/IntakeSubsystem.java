@@ -24,7 +24,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 800;
     public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.25;
+    public final double slidesLowSpeed = 0.4;
 
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -35,7 +35,7 @@ public class IntakeSubsystem extends SubsystemBase {
         rServo = hardwareMap.servo.get("rotationServo");
         armsServo = hardwareMap.servo.get("armsServo");
         spinServo = hardwareMap.crservo.get("spinServo");
-        resetEncoders();
+        //resetEncoders();
         this.telemetry = telemetry;
 
     }    // make one button that extends the arm and lowers the claw while opening it

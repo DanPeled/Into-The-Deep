@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
+import org.opencv.core.Point;
 
 import java.util.function.Supplier;
 
@@ -61,7 +62,7 @@ public class SwerveCommands {
 
     public static class GotoCmd extends CommandBase {
         double x, y, wantedAngle;
-        double[] currentPos;
+        Point currentPos;
         double boost;
         double sensitivity;
         double kp = 0.02;
@@ -82,8 +83,8 @@ public class SwerveCommands {
 
         @Override
         public void execute() {
-            currentPos = swerveDrive.getPosition();
-            double[] localVector = {x - currentPos[0], y - currentPos[1]};
+            currentPos = swerveDrive.getAdjustedPosition();
+            double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
             double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
             localVector[0] = Math.sin(MovementAngle) * length;
@@ -94,10 +95,29 @@ public class SwerveCommands {
 
         @Override
         public boolean isFinished() {
-            if (Math.hypot(currentPos[0] - x, currentPos[1] - y) < sensitivity) {
+            if (Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) {
                 return true;
             }
             return false;
+        }
+    }
+
+    public static class SetPosition extends CommandBase{
+        Point pos;
+        SwerveDrive swerveDrive;
+        public SetPosition(SwerveDrive swerveDrive, Point pos){
+            this.pos = pos;
+            this.swerveDrive = swerveDrive;
+        }
+
+        @Override
+        public void initialize() {
+            swerveDrive.setPosition(pos);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
         }
     }
 }

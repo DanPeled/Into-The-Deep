@@ -88,7 +88,7 @@ public class DischargeCommands {
         @Override
         public void initialize() {
             dischargeSubsystem.runWithEncoders();
-            dischargeSubsystem.setTargetPos(pos);
+            dischargeSubsystem.setTargetPosInTicks(pos);
             dischargeSubsystem.goToTarget();
         }
 
@@ -121,7 +121,7 @@ public class DischargeCommands {
 
         @Override
         public void execute() {
-            if (dischargeSubsystem.getPosition() > 600)
+            if (dischargeSubsystem.getPosition() > 300)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
              else
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
@@ -134,6 +134,8 @@ public class DischargeCommands {
                 if (elapsedTime.seconds() > maxDuration) {
                     return true;
                 }
+                if (elapsedTime.seconds() < 0.4)
+                    return false;
 
                 double deltaTime = elapsedTime.seconds() - lastTime;
                 if (deltaTime > 0.2) {
@@ -160,7 +162,7 @@ public class DischargeCommands {
 
             if (dischargeSubsystem.getGearBoxRatio() == 1 && !interrupted) {
                 dischargeSubsystem.minLiftPos = dischargeSubsystem.getPosition() + minTragetOffset;
-                dischargeSubsystem.setTargetPos(dischargeSubsystem.getPosition() + minTragetOffset);
+                dischargeSubsystem.setTargetPosInTicks(dischargeSubsystem.getPosition() + minTragetOffset);
                 dischargeSubsystem.resetEncoders();
             }
         }
