@@ -243,7 +243,7 @@ public class SwerveDrive extends SubsystemBase {
     //get chassis heading in degrees
     public double getHeading() {
         Orientation orientation = imu.getAngularOrientation();
-        return (-orientation.firstAngle) % 360;
+        return (-orientation.firstAngle) % 360 + 180;
     }
     public void resetHeading(){
         correctedHeading = getHeading();
@@ -333,6 +333,7 @@ public class SwerveDrive extends SubsystemBase {
         angle = Math.toRadians(br.getCurrentHeading() + heading);
         position[0] += Math.sin(angle) * posDiff / (4 * ticksPerMeter);
         position[1] += Math.cos(angle) * posDiff / (4 * ticksPerMeter);
+
         return position;
     }
 

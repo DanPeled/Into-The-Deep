@@ -58,6 +58,10 @@ public class SwerveCommands {
             telemetry.addData("TURN", r.get());
             swerveDrive.drive(x.get(), y.get(), r.get(), boost.get() / 2);
         }
+        @Override
+        public void end(boolean interrupted) {
+            swerveDrive.drive(0,0,0,0);
+        }
     }
 
     public static class GotoCmd extends CommandBase {
@@ -89,8 +93,9 @@ public class SwerveCommands {
             double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
             localVector[0] = Math.sin(MovementAngle) * length;
             localVector[1] = Math.cos(MovementAngle) * length;
-            double angleDiff = Utils.calcDeltaAngle(wantedAngle, swerveDrive.getHeading()) * kp;
+            double angleDiff = Utils.calcDeltaAngle(wantedAngle, swerveDrive.getHeading() -180) * kp;
             swerveDrive.drive(localVector[0], localVector[1], angleDiff, boost);
+            telemetry.addData("pos difference", Math.hypot(currentPos.x - x, currentPos.y - y));
         }
 
         @Override
@@ -100,6 +105,8 @@ public class SwerveCommands {
             }
             return false;
         }
+
+
     }
 
     public static class SetPosition extends CommandBase{

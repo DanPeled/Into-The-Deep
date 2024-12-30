@@ -54,7 +54,7 @@ public class DischargeCommands {
             double timeMilli = elapsedTime.milliseconds();
             double deltaTime = timeMilli - lastTimeMilli;
             if (Math.abs(power.get()) > 0.25) {
-                dischargeSubsystem.runWithEncoders();
+                dischargeSubsystem.runToPosition();
                 dischargeSubsystem.changeTargetPos(-power.get() * deltaTime * (dischargeSubsystem.manualTicksPerSecond/1000.0));
                 dischargeSubsystem.goToTarget();
             }
@@ -87,7 +87,7 @@ public class DischargeCommands {
 
         @Override
         public void initialize() {
-            dischargeSubsystem.runWithEncoders();
+            dischargeSubsystem.runToPosition();
             dischargeSubsystem.setTargetPosInTicks(pos);
             dischargeSubsystem.goToTarget();
         }

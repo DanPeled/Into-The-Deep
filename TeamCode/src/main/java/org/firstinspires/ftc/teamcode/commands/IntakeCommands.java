@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -12,6 +13,7 @@ import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGrabCmd;
 
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class IntakeCommands {
@@ -311,6 +313,24 @@ public class IntakeCommands {
                 intakeSubsystem.setSpinPower(0);
         }
     }
+    public static class SetPowerCmd extends CommandBase{
+        IntakeSubsystem intakeSubsystem;
+        double power;
+        public SetPowerCmd(IntakeSubsystem intakeSubsystem, double power){
+            this.intakeSubsystem = intakeSubsystem;
+            this.power = power;
+        }
+
+        @Override
+        public void initialize() {
+            intakeSubsystem.setRawPower(power);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
 
     public static class Wait extends CommandBase {
         IntakeSubsystem intakeSubsystem;
@@ -414,7 +434,6 @@ public class IntakeCommands {
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),//for safety
                     new SlideHomeCmd(intakeSubsystem, initTime));
             //addRequirements(intakeSubsystem);
-            IntakeManualGoToCmd.setEnabled(true);
         }
     }
 
@@ -446,11 +465,20 @@ public class IntakeCommands {
                     new ParallelCommandGroup(
                         new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                         new ReturnArmForTransferCmd(intakeSubsystem, false)),
-                    new DischargeGrabCmd(dischargeSubsystem),
-                    new Wait(intakeSubsystem, 0.3),
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
-                    new SpinCmd(intakeSubsystem, 0, -1),
-                    new SlideGotoCmd(intakeSubsystem, intakeSubsystem.minSlidesPos+slidesBackAfterTransfer));
+                    new SetPowerCmd(intakeSubsystem,-0.18),
+                    new Wait(intakeSubsystem, 0.2), //for safety
+                    new ParallelCommandGroup(
+                        //new SpinCmd(intakeSubsystem,-0.1, -1),
+                        new DischargeCommands.GoHomeCmd(dischargeSubsystem), //for safety
+                        new DischargeGrabCmd(dischargeSubsystem),
+                        new Wait(intakeSubsystem, 0.8)), //for safety
+
+                    new SetArmsStageCmd(intakeSubsystem ,ArmsStages.TRANSFER),
+                    new SetPowerCmd(intakeSubsystem,0),
+                    new SpinCmd(intakeSubsystem,-0.1, -1),
+                    new Wait(intakeSubsystem, 0.4),
+                    new SlideGotoCmd(intakeSubsystem, intakeSubsystem.minSlidesPos+slidesBackAfterTransfer),
+                    new SpinCmd(intakeSubsystem,0, -1));
                     //new Wait(intakeSubsystem,0.35));
 
             IntakeManualGoToCmd.setEnabled(true);

@@ -55,7 +55,7 @@ public class BasicDischargeTest extends CommandOpMode {
         Y.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
         B.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem,dischargeSubsystem.highChamberHeight-210,telemetry));
 
-        schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
+        //schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
 
         while (opModeInInit()) {
             CommandScheduler.getInstance().run();

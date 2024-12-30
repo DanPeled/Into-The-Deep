@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.button.Button;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
@@ -18,10 +19,14 @@ import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.SetStateCommands;
 import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
+import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
+import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
+
+import java.util.function.Supplier;
 
 @TeleOp
 public class Echo extends CommandOpMode {
@@ -30,6 +35,9 @@ public class Echo extends CommandOpMode {
     DischargeSubsystem dischargeSubsystem;
     IntakeSubsystem intakeSubsystem;
     //LimeLightSubsystem limeLightSubsystem;
+
+    Supplier<Double> swerveX, swerveY, swerveR;
+    double lowSwerveSpeed = 0.3;
 
     static RobotState robotState;
     static RobotState controllersState;
@@ -67,17 +75,24 @@ public class Echo extends CommandOpMode {
         robotState = RobotState.NONE;
         controllersState = null;
 
+        //init commands
+        schedule(new SequentialCommandGroup(
+                    new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
+                    new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
+                    new IntakeCommands.Wait(intakeSubsystem, 1),
+                    new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
+                    new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                    new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER)));
+        IntakeCommands.IntakeManualGoToCmd.setEnabled(true);
 
-//        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
-//        schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
 
-//        while (opModeInInit()) {
-//            super.run();
-//        }
+        while (opModeInInit()) {
+            super.run();
+        }
 
-        swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
-                () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
+        //swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
+        //        driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
+        //        () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
     }
 
@@ -102,8 +117,26 @@ public class Echo extends CommandOpMode {
             controllersState = robotState;
             switch (robotState) {
                 case NONE:
+                    swerveR = () -> driverGamepad.getRightX();
+
+                    if (driverDPadUp.get())
+                        swerveY = () -> driverGamepad.getLeftY() + lowSwerveSpeed;
+                    else if
+                        (driverDPadLeft.get()) swerveY = () -> driverGamepad.getLeftY() - lowSwerveSpeed;
+                    else
+                        swerveY = () -> driverGamepad.getLeftY();
+                    if (driverDPadRight.get())
+                        swerveX = () -> driverGamepad.getLeftX() + lowSwerveSpeed;
+                    else if (driverDPadLeft.get())
+                        swerveX = () -> driverGamepad.getLeftX() - lowSwerveSpeed;
+                    else
+                        swerveX = () -> driverGamepad.getLeftX();
+
+                    telemetry.addData("x",swerveX);
+                    telemetry.addData("y",swerveY);
+                    telemetry.update();
                     swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
+                            swerveX, swerveY, swerveR,
                             () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
                     schedule(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
@@ -128,15 +161,26 @@ public class Echo extends CommandOpMode {
 
                     systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
 
-                    systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+//                    systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+//
+//                    systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
-                    systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
-
+                    systemLeftBumper.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.NoneStateCmd(),
+                            new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
                     break;
                 case INTAKE:
+
+                    swerveY = () -> 0.0;
+                    swerveR = () -> driverGamepad.getRightX();
+
+                    if (driverDPadRight.get()) swerveX = () -> systemGamepad.getRightX() + lowSwerveSpeed;
+                    else if (driverDPadLeft.get()) swerveX = () -> systemGamepad.getRightX() - lowSwerveSpeed;
+                    else swerveX = () -> systemGamepad.getRightX()*0.5;
+
                     swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            systemGamepad::getRightX, () -> 0.0, () -> 0.0,
-                            () -> 0.2, false));
+                            swerveX , swerveY, swerveR,
+                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), false));
 
                     schedule(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
                             systemGamepad::getLeftY));
@@ -150,17 +194,30 @@ public class Echo extends CommandOpMode {
                             new SetStateCommands.NoneStateCmd()));
 
                     systemX.whenPressed(new SequentialCommandGroup(
-                            new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
-                            new SetStateCommands.NoneStateCmd()));
+                            new SetStateCommands.NoneStateCmd(),
+                            new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)));
 
                     systemDPadUp.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.5));
                     systemDPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0));
                     systemDPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 1));
 
+                    systemLeftBumper.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.NoneStateCmd(),
+                            new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
+
                     break;
                 case BASKET:
+                    swerveR = () -> driverGamepad.getRightX();
+
+                    if (driverDPadUp.get()) swerveY = () -> driverGamepad.getLeftY() + lowSwerveSpeed;
+                    else if (driverDPadLeft.get()) swerveY = () -> driverGamepad.getLeftY() - lowSwerveSpeed;
+                    else swerveY = () -> driverGamepad.getLeftY();
+                    if (driverDPadRight.get()) swerveX = () -> driverGamepad.getLeftX() + lowSwerveSpeed;
+                    else if (driverDPadLeft.get()) swerveX = () -> driverGamepad.getLeftX() - lowSwerveSpeed;
+                    else swerveX = () -> driverGamepad.getLeftX();
+
                     swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
+                            swerveX, swerveY, swerveR,
                             () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
@@ -186,14 +243,26 @@ public class Echo extends CommandOpMode {
 
                     break;
                 case CHAMBER:
+                    swerveR = () -> driverGamepad.getRightX();
+
+                    if (driverDPadUp.get()) swerveY = () -> driverGamepad.getLeftY() + lowSwerveSpeed;
+                    else if (driverDPadLeft.get()) swerveY = () -> driverGamepad.getLeftY() - lowSwerveSpeed;
+                    else swerveY = () -> driverGamepad.getLeftY();
+                    if (driverDPadRight.get()) swerveX = () -> driverGamepad.getLeftX() + lowSwerveSpeed;
+                    else if (driverDPadLeft.get()) swerveX = () -> driverGamepad.getLeftX() - lowSwerveSpeed;
+                    else swerveX = () -> driverGamepad.getLeftX();
+
+
                     swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
+                            swerveX, swerveY, swerveR,
                             () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
 
-                    systemRightBumper.whenPressed(new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry));
+                    systemRightBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+
+
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.NoneStateCmd(),
                             new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
@@ -225,13 +294,13 @@ public class Echo extends CommandOpMode {
     }
 
     private void telemetries() {
-          multipleTelemetry.addData("posX", swerveDrive.getAdjustedPosition().x);
-          multipleTelemetry.addData("posY", swerveDrive.getAdjustedPosition().y);
-          multipleTelemetry.update();
-//        telemetry.update();
-//        telemetry.addData("state", robotState);
-//        telemetry.addData("discharge slides pos", dischargeSubsystem.getLiftPosInCM());
-//        telemetry.addData("intake slides pos", intakeSubsystem.getMotorPosition());
+        multipleTelemetry.addData("posX", gamepad1.left_stick_x);
+        multipleTelemetry.addData("posY", gamepad1.left_stick_y);
+        multipleTelemetry.update();
+        telemetry.update();
+        telemetry.addData("state", robotState);
+        telemetry.addData("discharge slides pos", dischargeSubsystem.getLiftPosInCM());
+        telemetry.addData("intake slides pos", intakeSubsystem.getMotorPosition());
 //        telemetry.addData("intake manual slides", IntakeCommands.IntakeManualGoToCmd.isEnabled());
 //        TelemetryPacket packet = new TelemetryPacket();
 //        packet.put("Error fl", (swerveDrive.fl.servo.error));

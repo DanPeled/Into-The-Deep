@@ -13,7 +13,7 @@ public class DischargeSubsystem extends SubsystemBase {
     private final DcMotorEx lowerMotor, upperMotor;
     private Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
-    double clawServoHoldPos = 0.32, clawServoReleasePos = 0.83;
+    final double clawServoHoldPos = 0.13, clawServoReleasePos = 0.65;
     MultipleTelemetry telemetry;
     double gearBoxRatio = 1;
     public double timeUp = 0;
@@ -35,8 +35,8 @@ public class DischargeSubsystem extends SubsystemBase {
     public final int BasketReleaseDeltaDrive = 0;
 
     public final int manualTicksPerSecond = 550;
-    public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.65;
+    public final double slidesSpeed = 0.7;
+    public final double slidesLowSpeed = 0.45;
 
 
 
@@ -133,7 +133,7 @@ public class DischargeSubsystem extends SubsystemBase {
         upperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void runWithEncoders() {
+    public void runToPosition() {
         lowerMotor.setPower(slidesSpeed);
         upperMotor.setPower(slidesSpeed);
         lowerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);

@@ -23,7 +23,6 @@ public class ImuIntegrator implements BNO055IMU.AccelerationIntegrator {
 
     final double tile = 0.6;
 
-
     private boolean useDashBoard;
     final double meters_to_inches = 39.37008;
     private ArrayList<Double> pathx;
