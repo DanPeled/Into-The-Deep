@@ -30,9 +30,9 @@ public class SteeringServo {
     //private final double ki = 0.00000072;
     //private final double kd = 0.068;
 
-    private final double kp = 0.0035;
-    private final double ki = 0.0;
-    private final double kd = 0.0;
+    public static double kp = 0.0035;
+    public static double ki = 0.0;
+    public static double kd = 0.0;
 
 
 

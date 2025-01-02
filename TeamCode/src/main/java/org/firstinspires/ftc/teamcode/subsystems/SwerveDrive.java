@@ -29,7 +29,7 @@ public class SwerveDrive extends SubsystemBase {
     BNO055IMU imu;
     private double[] movementVector;
     private double[][] rotationVector;
-    private double[][] wheelVectors;
+    private double[][] wheelVectors = {{0,0},{0,0},{0,0},{0,0}};
     MultipleTelemetry telemetry;
     double boost = 0.35;
     final double rotationConpensation = 35.8;
@@ -268,7 +268,7 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void updateSwerveModules(double[][] wheelVectors) {
-        //TODO: disabled the angel optimization fix
+        //TODO: disabled the angle optimization fix
         if ((fl.getDeltaAngle(wheelVectors[0][1]) + fr.getDeltaAngle(wheelVectors[1][1]) +
                 br.getDeltaAngle(wheelVectors[2][1]) + bl.getDeltaAngle(wheelVectors[3][1])) / 4 > 90) {
             fl.setHeading(wheelVectors[0][1], true);
@@ -335,6 +335,18 @@ public class SwerveDrive extends SubsystemBase {
         position[1] += Math.cos(angle) * posDiff / (4 * ticksPerMeter);
 
         return position;
+    }
+    public double[] getTargetAngles(){
+        return new double[]{wheelVectors[0][1],
+                wheelVectors[1][1],
+                wheelVectors[2][1],
+                wheelVectors[3][1]};
+    }
+    public double[] getCurrentAngles(){
+        return new double[]{fl.getCurrentHeading(),
+            fr.getCurrentHeading(),
+            br.getCurrentHeading(),
+            bl.getCurrentHeading()};
     }
 
 //    public void update() {
