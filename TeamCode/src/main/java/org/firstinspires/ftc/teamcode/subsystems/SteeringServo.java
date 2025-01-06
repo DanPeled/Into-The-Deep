@@ -1,15 +1,9 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.config.Config;
-import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
-import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.hardware.AnalogInput;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.util.Range;
-
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.teleop.BasicSwerveOpMode;
-import org.firstinspires.ftc.teamcode.utils.Utils;
 
 import lombok.Getter;
 
@@ -30,22 +24,29 @@ public class SteeringServo {
     //private final double ki = 0.00000072;
     //private final double kd = 0.068;
 
-    public static double kp = 0.0035;
-    public static double ki = 0.0;
-    public static double kd = 0.0;
+    public static double kp = 0.225;
+    public static double ki = 0.3;
+    public static double kd = 0.015;
+    public static double ks = 0;
+    public double speed = 0;
+    public static double minPower = 0.015;
+//    public static double kp = 0.45;
+//    public static double ki = 0.3;
+//    public static double kd = 0.02;
+//    public static double ks = 0;
+//    public double speed = 0;
+//    public static double minPower = 0.03;//0.0335
+    public static double tolerance = 0;
 
-
-
-    double minPower = 0.04;
     private double lastError = 0.0;
-    private double integral = 0.0;
-    private long lastTime = 0;
-    double derivative;
+    public double integral = 0.0;
+    private double lastTime = 0;
+    public double derivative;
     public double error;
 
 
     private boolean idle = false;
-    private double power = 0;
+    public double power = 0;
     private CRServo servo;
     private AnalogInput encoder;
     private double angleOffset;
@@ -115,37 +116,47 @@ public class SteeringServo {
         return delta;
     }
 
+    public void setSpeed(double S){
+        this.speed = S;
+    }
+
     public void update() {
-        long currentTime = System.currentTimeMillis();
-
-        double currentAngle = 0;
+        double currentTime = (double)System.currentTimeMillis() / 1000;  // seconds
         double deltaTime = 0;
+
+        double currentAngle = getCurrentAngle();
+        error = calcDeltaAngle(getTargetAngle(), currentAngle);
+        power = 0;
+
+        double errNorm = error / 100;
         if (lastTime != 0) {
-            currentAngle = getCurrentAngle();
-            error = calcDeltaAngle(getTargetAngle(), currentAngle);
-            deltaTime = currentTime - lastTime;
-            integral += (error * deltaTime);
-            derivative = (error - lastError) / deltaTime;
-            power = kp * error +
-                    ki * integral+
-                    kd * derivative;
+            //double errCurved =
 
-            if (power >= 0)
-                setPower(Range.clip(power, minPower, 1));
-            else
-                setPower(Range.clip(power, -1, -minPower));
+            if (Math.abs(error) < tolerance){
+                power = 0;
+                integral = 0;
+            }
+            else {
 
-            //power = BasicSwerveOpMode.getKp() * error +
-            //        BasicSwerveOpMode.getKi() * integral +
-            //        BasicSwerveOpMode.getKd() * derivative;
-//
-            //if (power >= 0)
-            //    setPower(Range.clip(power, BasicSwerveOpMode.getMin(), 1));
-            //else
-            //    setPower(Range.clip(power, -1, -BasicSwerveOpMode.getMin()));
+                deltaTime = currentTime - lastTime;
+                integral += (errNorm * deltaTime);
+                if (Math.signum(integral) != Math.signum(error)) {
+                    integral = 0;
+                }
+                derivative = (errNorm - lastError) / deltaTime;
+
+                power = kp * errNorm +
+                        ki * integral +
+                        kd * derivative;
+
+                power += minPower * Math.signum(power);
+                power = Range.clip(power,-1,1);
+            }
+
+            setPower(power);
         }
 
-        lastError = error;
+        lastError = errNorm;
         lastTime = currentTime;
 
 

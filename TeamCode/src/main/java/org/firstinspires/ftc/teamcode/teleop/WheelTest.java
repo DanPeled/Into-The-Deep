@@ -27,16 +27,16 @@ public class WheelTest extends LinearOpMode {
     public void runOpMode(){
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
                 hardwareMap.get(CRServo.class, "bl_servo"),
-                hardwareMap.analogInput.get("bl_encoder"),147.85321100917432);
+                hardwareMap.analogInput.get("bl_encoder"), 314.64);
         br = new SwerveModule(hardwareMap.get(DcMotor.class, "br_motor"),
                 hardwareMap.get(CRServo.class, "br_servo"),
-                hardwareMap.analogInput.get("br_encoder"),77.94495412844036);
+                hardwareMap.analogInput.get("br_encoder"), 54.93);
         fl = new SwerveModule(hardwareMap.get(DcMotor.class, "fl_motor"),
                 hardwareMap.get(CRServo.class, "fl_servo"),
-                hardwareMap.analogInput.get("fl_encoder"),44.697247706422026);
+                hardwareMap.analogInput.get("fl_encoder"), 356.5);
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
-                hardwareMap.analogInput.get("fr_encoder"),84);
+                hardwareMap.analogInput.get("fr_encoder"), 346.9);
         cr = fl;
         // FLONG
         waitForStart();
@@ -67,26 +67,27 @@ public class WheelTest extends LinearOpMode {
 
             cr.setHeadingWithAngle(wantedAngle);
             cr.setPower(power);
+//            cr.update();
 
             if(gamepad1.dpad_right){
-                cr.setServoPower(0.07);
-            } else if(gamepad1.dpad_left){
-                cr.setServoPower(-0.07);
-            }
+                    cr.setServoPower(0.07);
+                } else if(gamepad1.dpad_left){
+                    cr.setServoPower(-0.07);
+                }
             else if(gamepad1.right_stick_button){
-                cr.servo.setPower(0);
-                cr.setHeadingWithAngle(0);
-                cr.update();
-            }
+                    cr.servo.setPower(0);
+                    cr.setHeadingWithAngle(0);
+                    cr.update();
+                }
             else if (Math.pow(gamepad1.right_stick_y,2) + Math.pow(gamepad1.right_stick_x,2) <= 0.99){
-               cr.servo.setPower(0);
-            }else {
-                cr.servo.setPower(0);
-                cr.update();
-            }
+                   cr.servo.setPower(0);
+                }else {
+                    cr.servo.setPower(0);
+                    cr.update();
+                }
             if(gamepad1.back){
-                cr.zeroHeading();
-            }
+                    cr.zeroHeading();
+                }
             multipleTelemetry.addData("wanted angle: ", wantedAngle);
             multipleTelemetry.addData("X", gamepad1.right_stick_x);
             multipleTelemetry.addData("y", -gamepad1.right_stick_y);

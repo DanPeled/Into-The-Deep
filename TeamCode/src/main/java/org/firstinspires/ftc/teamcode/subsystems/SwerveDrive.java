@@ -11,7 +11,6 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.teamcode.ImuIntegrator;
@@ -26,10 +25,12 @@ public class SwerveDrive extends SubsystemBase {
     public SwerveModule bl, br, fl, fr;
     private final BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     boolean isFieldOriented;
+    public static boolean cos = false;
+    public double averageError = 0;
     BNO055IMU imu;
     private double[] movementVector;
     private double[][] rotationVector;
-    private double[][] wheelVectors = {{0,0},{0,0},{0,0},{0,0}};
+    private double[][] wheelVectors = {{0, 0}, {0, 0}, {0, 0}, {0, 0}};
     MultipleTelemetry telemetry;
     double boost = 0.35;
     final double rotationConpensation = 35.8;
@@ -39,16 +40,16 @@ public class SwerveDrive extends SubsystemBase {
     public static double kp = 0.02;
     //    public double[] position = {0, 0};
     private final int ticksPerMeter = 1007;
-    public static double minAngleError = 5, maxAngleError = 90;
+    public static double minAngleError = 500;
     private double correctedHeading = 0;
     private final Point startingPos;
-    private Point positionAdjustment = new Point(0,0);
+    private Point positionAdjustment = new Point(0, 0);
     private double powerModifier;
 
     public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry, LinearOpMode opMode, boolean isFieldOriented) {
         this.isFieldOriented = isFieldOriented;
         this.telemetry = telemetry;
-        startingPos = new Point(0,0);
+        startingPos = new Point(0, 0);
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
                 hardwareMap.get(CRServo.class, "bl_servo"),
                 hardwareMap.analogInput.get("bl_encoder"), 314.64);
@@ -64,6 +65,7 @@ public class SwerveDrive extends SubsystemBase {
 
         initImu(hardwareMap, telemetry, opMode);
     }
+
     public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry, LinearOpMode opMode, boolean isFieldOriented, Point startingPos) {
         this.isFieldOriented = isFieldOriented;
         this.telemetry = telemetry;
@@ -77,10 +79,11 @@ public class SwerveDrive extends SubsystemBase {
                 hardwareMap.analogInput.get("br_encoder"), 54.93);
         fl = new SwerveModule(hardwareMap.get(DcMotor.class, "fl_motor"),
                 hardwareMap.get(CRServo.class, "fl_servo"),
-                hardwareMap.analogInput.get("fl_encoder"), 353.5);
+                hardwareMap.analogInput.get("fl_encoder"), 356.5);
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
                 hardwareMap.analogInput.get("fr_encoder"), 346.9);
+
 
         initImu(hardwareMap, telemetry, opMode);
     }
@@ -136,12 +139,12 @@ public class SwerveDrive extends SubsystemBase {
             wasTimeSelected = false;
             isUsingAngleCorrection = false;
         }
-        if(isFieldOriented)
+        if (isFieldOriented)
             movementVector = rotateVectors(boost * x, boost * y, getAdjustedHeading(rotation));
         else
-            movementVector = rotateVectors(boost * x, boost * y,0);
+            movementVector = rotateVectors(boost * x, boost * y, 0);
 
-          // Convert field speed to robot coordinates
+        // Convert field speed to robot coordinates
         rotationVector = getRotationVectors(rotation);
         wheelVectors = addVectors(rotationVector, movementVector);
         for (int i = 0; i < 4; i++) {
@@ -173,15 +176,15 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     private void telemetry() {
-        telemetry.addData("fl error", fl.getAngleError());
-        telemetry.addData("fr error", fr.getAngleError());
-        telemetry.addData("bl error", bl.getAngleError());
-        telemetry.addData("br error", br.getAngleError());
-        telemetry.addData("position: ", imu.getPosition());
-        telemetry.addData("fl angle", fl.servo.getCurrentAngle());
-        telemetry.addData("fr angle", fr.servo.getCurrentAngle());
-        telemetry.addData("bl angle", bl.servo.getCurrentAngle());
-        telemetry.addData("br angle", br.servo.getCurrentAngle());
+//        telemetry.addData("fl error", fl.getAngleError());
+//        telemetry.addData("fr error", fr.getAngleError());
+//        telemetry.addData("bl error", bl.getAngleError());
+//        telemetry.addData("br error", br.getAngleError());
+//        telemetry.addData("position: ", imu.getPosition());
+//        telemetry.addData("fl angle", fl.servo.getCurrentAngle());
+//        telemetry.addData("fr angle", fr.servo.getCurrentAngle());
+//        telemetry.addData("bl angle", bl.servo.getCurrentAngle());
+//        telemetry.addData("br angle", br.servo.getCurrentAngle());
 //       telemetry.addData("fl wanted", fl.getTargetHeading());
 //       telemetry.addData("fr wanted", fr.getTargetHeading());
 //       telemetry.addData("bl wanted", bl.getTargetHeading());
@@ -217,7 +220,7 @@ public class SwerveDrive extends SubsystemBase {
         return rotationVector;
     }
 
-    public void setFieldOriented(boolean orientation){
+    public void setFieldOriented(boolean orientation) {
         isFieldOriented = orientation;
     }
 
@@ -245,23 +248,27 @@ public class SwerveDrive extends SubsystemBase {
         Orientation orientation = imu.getAngularOrientation();
         return (-orientation.firstAngle) % 360 + 180;
     }
-    public void resetHeading(){
+
+    public void resetHeading() {
         correctedHeading = getHeading();
     }
 
     public Point getPosition() {
-        Position imuPos =  imu.getPosition();
-        return new Point(imuPos.x + startingPos.x , imuPos.y + startingPos.y);
+        Position imuPos = imu.getPosition();
+        return new Point(imuPos.x + startingPos.x, imuPos.y + startingPos.y);
     }
+
     public Point getAdjustedPosition() {
-        Position imuPos =  imu.getPosition();
+        Position imuPos = imu.getPosition();
         return new Point(imuPos.x + startingPos.x + positionAdjustment.x,
                 imuPos.y + startingPos.y + positionAdjustment.y);
     }
-    public void setPosition(Point position){
+
+    public void setPosition(Point position) {
         Point currentPos = getPosition();
         positionAdjustment = new Point(position.x - currentPos.x, position.y - currentPos.y);
     }
+
     //for it to not go to the side when spinning and driving
     private double getAdjustedHeading(double rotation) {
         return getHeading() + rotationConpensation * rotation - correctedHeading;
@@ -290,6 +297,18 @@ public class SwerveDrive extends SubsystemBase {
 //        fr.setHeadingWithAngle(wheelVectors[1][1]);
 //        br.setHeadingWithAngle(wheelVectors[2][1]);
 //        bl.setHeadingWithAngle(wheelVectors[3][1]);
+        averageError = (Math.abs(fl.getAngleError()) + Math.abs(fr.getAngleError()) +
+                Math.abs(br.getAngleError()) + Math.abs(bl.getAngleError())) / 4;
+
+        if (cos) {
+            powerModifier = Math.abs(Math.cos(Math.toRadians(averageError)));
+        } else {
+            if (averageError > minAngleError) {
+                powerModifier = 0;
+            } else {
+                powerModifier = 1;
+            }
+        }
         fl.setPower(wheelVectors[0][0] * powerModifier);
         fr.setPower(wheelVectors[1][0] * powerModifier);
         br.setPower(wheelVectors[2][0] * powerModifier);
@@ -336,17 +355,19 @@ public class SwerveDrive extends SubsystemBase {
 
         return position;
     }
-    public double[] getTargetAngles(){
+
+    public double[] getTargetAngles() {
         return new double[]{wheelVectors[0][1],
                 wheelVectors[1][1],
                 wheelVectors[2][1],
                 wheelVectors[3][1]};
     }
-    public double[] getCurrentAngles(){
+
+    public double[] getCurrentAngles() {
         return new double[]{fl.getCurrentHeading(),
-            fr.getCurrentHeading(),
-            br.getCurrentHeading(),
-            bl.getCurrentHeading()};
+                fr.getCurrentHeading(),
+                br.getCurrentHeading(),
+                bl.getCurrentHeading()};
     }
 
 //    public void update() {

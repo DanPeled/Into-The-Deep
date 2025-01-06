@@ -24,7 +24,9 @@ import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
+import org.firstinspires.ftc.teamcode.subsystems.SteeringServo;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.subsystems.SwerveModule;
 
 import java.util.function.Supplier;
 
@@ -61,12 +63,18 @@ public class Echo extends CommandOpMode {
     Button systemLeftStickButton, systemRightStickButton;
     Button driverStart;
 
+    SwerveModule[] modules = new SwerveModule[4];
+
     @Override
     public void initialize() {
         driverGamepad = new GamepadEx(gamepad1);
         systemGamepad = new GamepadEx(gamepad2);
 
         swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this, true);
+        modules[0] = swerveDrive.fl;
+        modules[1] = swerveDrive.fr;
+        modules[2] = swerveDrive.bl;
+        modules[3] = swerveDrive.br;
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         //limeLightSubsystem = new LimeLightSubsystem(hardwareMap, multipleTelemetry);
@@ -294,13 +302,26 @@ public class Echo extends CommandOpMode {
     }
 
     private void telemetries() {
-        multipleTelemetry.addData("posX", gamepad1.left_stick_x);
-        multipleTelemetry.addData("posY", gamepad1.left_stick_y);
+        for (int m = 0; m < 4; m++){
+            multipleTelemetry.addData("Error " + m, (modules[m].servo.error));
+            multipleTelemetry.addData("target " + m, (modules[m].servo.getTargetAngle()));
+            multipleTelemetry.addData("angle " + m, (modules[m].servo.getCurrentAngle()));
+            multipleTelemetry.addData("power " + m, (modules[m].servo.power));
+            multipleTelemetry.addData("P " + m, (modules[m].servo.error * SteeringServo.kp));
+            multipleTelemetry.addData("I " + m, (modules[m].servo.integral * SteeringServo.ki));
+            multipleTelemetry.addData("D " + m, (modules[m].servo.derivative * SteeringServo.kd));
+        }
+        multipleTelemetry.addData("top", 50);
+        multipleTelemetry.addData("bottom", -50);
         multipleTelemetry.update();
-        telemetry.update();
-        telemetry.addData("state", robotState);
-        telemetry.addData("discharge slides pos", dischargeSubsystem.getLiftPosInCM());
-        telemetry.addData("intake slides pos", intakeSubsystem.getMotorPosition());
+
+//        multipleTelemetry.addData("posX", gamepad1.left_stick_x);
+//        multipleTelemetry.addData("posY", gamepad1.left_stick_y);
+//        multipleTelemetry.update();
+//        telemetry.update();
+//        telemetry.addData("state", robotState);
+//        telemetry.addData("discharge slides pos", dischargeSubsystem.getLiftPosInCM());
+//        telemetry.addData("intake slides pos", intakeSubsystem.getMotorPosition());
 //        telemetry.addData("intake manual slides", IntakeCommands.IntakeManualGoToCmd.isEnabled());
 //        TelemetryPacket packet = new TelemetryPacket();
 //        packet.put("Error fl", (swerveDrive.fl.servo.error));
