@@ -20,6 +20,9 @@ import org.opencv.core.Point;
 @Config
 public class SwerveDrive extends SubsystemBase {
     private final ElapsedTime angleTimer = new ElapsedTime();
+    private final ElapsedTime wheelTimer = new ElapsedTime();
+    private double timeSwitched = -1;
+    private boolean isOptimised = true;
     //    SwerveDriveKinematics kinematics = new SwerveDriveKinematics();
 //    SwerveDriveOdometry poseEstimator = new SwerveDriveOdometry();
     public SwerveModule bl, br, fl, fr;
@@ -173,6 +176,11 @@ public class SwerveDrive extends SubsystemBase {
         fr.update();
         br.update();
         bl.update();
+        fl.setServoPower(0);
+        fr.setServoPower(0);
+        bl.setServoPower(0);
+        br.setServoPower(0);
+
     }
 
     private void telemetry() {
@@ -250,7 +258,7 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     public void resetHeading() {
-        correctedHeading = getHeading();
+        correctedHeading = getHeading() + 180;
     }
 
     public Point getPosition() {
@@ -270,14 +278,33 @@ public class SwerveDrive extends SubsystemBase {
     }
 
     //for it to not go to the side when spinning and driving
-    private double getAdjustedHeading(double rotation) {
+    public double getAdjustedHeading(double rotation) {
         return getHeading() + rotationConpensation * rotation - correctedHeading;
     }
 
     private void updateSwerveModules(double[][] wheelVectors) {
+        double averageVectorAngle = (fl.getDeltaAngle(wheelVectors[0][1]) + fr.getDeltaAngle(wheelVectors[1][1]) +
+                br.getDeltaAngle(wheelVectors[2][1]) + bl.getDeltaAngle(wheelVectors[3][1])) / 4;
         //TODO: disabled the angle optimization fix
-        if ((fl.getDeltaAngle(wheelVectors[0][1]) + fr.getDeltaAngle(wheelVectors[1][1]) +
-                br.getDeltaAngle(wheelVectors[2][1]) + bl.getDeltaAngle(wheelVectors[3][1])) / 4 > 90) {
+        if (averageVectorAngle > 90 && (wheelTimer.seconds() > (timeSwitched + 0.15) || isOptimised)) {
+            if (!isOptimised) {
+                isOptimised = true;
+                timeSwitched = wheelTimer.seconds();
+            }
+            fl.setHeading(wheelVectors[0][1], true);
+            fr.setHeading(wheelVectors[1][1], true);
+            br.setHeading(wheelVectors[2][1], true);
+            bl.setHeading(wheelVectors[3][1], true);
+        } else if ((averageVectorAngle < 90) && (wheelTimer.seconds() > (timeSwitched + 0.15) || !isOptimised)) {
+            if (isOptimised) {
+                isOptimised = false;
+                timeSwitched = wheelTimer.seconds();
+            }
+            fl.setHeading(wheelVectors[0][1], false);
+            fr.setHeading(wheelVectors[1][1], false);
+            br.setHeading(wheelVectors[2][1], false);
+            bl.setHeading(wheelVectors[3][1], false);
+        } else if (isOptimised) {
             fl.setHeading(wheelVectors[0][1], true);
             fr.setHeading(wheelVectors[1][1], true);
             br.setHeading(wheelVectors[2][1], true);
@@ -289,14 +316,7 @@ public class SwerveDrive extends SubsystemBase {
             bl.setHeading(wheelVectors[3][1], false);
         }
 
-        //fl.setHeading(wheelVectors[0][1], false);
-        //fr.setHeading(wheelVectors[1][1], false);
-        //br.setHeading(wheelVectors[2][1], false);
-        //bl.setHeading(wheelVectors[3][1], false);
-//        fl.setHeadingWithAngle(wheelVectors[0][1]);
-//        fr.setHeadingWithAngle(wheelVectors[1][1]);
-//        br.setHeadingWithAngle(wheelVectors[2][1]);
-//        bl.setHeadingWithAngle(wheelVectors[3][1]);
+
         averageError = (Math.abs(fl.getAngleError()) + Math.abs(fr.getAngleError()) +
                 Math.abs(br.getAngleError()) + Math.abs(bl.getAngleError())) / 4;
 

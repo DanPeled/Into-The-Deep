@@ -127,4 +127,26 @@ public class SwerveCommands {
             return true;
         }
     }
+
+    public static class SetRotationCmd extends CommandBase {
+        double wantedHeading;
+        SwerveDrive swerveDrive;
+
+        public SetRotationCmd(SwerveDrive swerveDrive, double wantedHeading) {
+            this.swerveDrive = swerveDrive;
+            this.wantedHeading = wantedHeading;
+            addRequirements(swerveDrive);
+        }
+
+        @Override
+        public void initialize() {
+            double error = Utils.calcDeltaAngle(wantedHeading, swerveDrive.getAdjustedHeading(0));
+            swerveDrive.drive(0, 0, error / 90, 0.2);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
 }
