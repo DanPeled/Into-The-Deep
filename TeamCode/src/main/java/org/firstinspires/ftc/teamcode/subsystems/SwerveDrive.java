@@ -55,16 +55,16 @@ public class SwerveDrive extends SubsystemBase {
         startingPos = new Point(0, 0);
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
                 hardwareMap.get(CRServo.class, "bl_servo"),
-                hardwareMap.analogInput.get("bl_encoder"), 314.64);
+                hardwareMap.analogInput.get("bl_encoder"), 314.64);//314.64
         br = new SwerveModule(hardwareMap.get(DcMotor.class, "br_motor"),
                 hardwareMap.get(CRServo.class, "br_servo"),
-                hardwareMap.analogInput.get("br_encoder"), 54.93);
+                hardwareMap.analogInput.get("br_encoder"), 54.93);//54.93
         fl = new SwerveModule(hardwareMap.get(DcMotor.class, "fl_motor"),
                 hardwareMap.get(CRServo.class, "fl_servo"),
-                hardwareMap.analogInput.get("fl_encoder"), 353.5);
+                hardwareMap.analogInput.get("fl_encoder"), 0);//353.5
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
-                hardwareMap.analogInput.get("fr_encoder"), 346.9);
+                hardwareMap.analogInput.get("fr_encoder"), 346.9);//346.9
 
         initImu(hardwareMap, telemetry, opMode);
     }
@@ -167,7 +167,7 @@ public class SwerveDrive extends SubsystemBase {
 
     }
 
-    private void idle() {
+    public void idle() {
         fl.setPower(0);
         fr.setPower(0);
         bl.setPower(0);

@@ -121,9 +121,8 @@ public class SteeringServo {
     }
 
     public void update() {
-        double currentTime = (double)System.currentTimeMillis() / 1000;  // seconds
-        double deltaTime = 0;
-
+        double currentTime = (double) System.currentTimeMillis() / 1000;  // seconds
+        double deltaTime;
         double currentAngle = getCurrentAngle();
         error = calcDeltaAngle(getTargetAngle(), currentAngle);
         power = 0;

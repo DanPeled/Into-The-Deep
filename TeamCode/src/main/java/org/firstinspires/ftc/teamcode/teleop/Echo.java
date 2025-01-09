@@ -64,6 +64,7 @@ public class Echo extends CommandOpMode {
 
     @Override
     public void initialize() {
+        SwerveDrive.minAngleError = 100000;
         driverGamepad = new GamepadEx(gamepad1);
         systemGamepad = new GamepadEx(gamepad2);
 
@@ -114,8 +115,8 @@ public class Echo extends CommandOpMode {
             CommandScheduler.getInstance().setDefaultCommand(swerveDrive, new SwerveCommands.NoOpCommand(swerveDrive));
             CommandScheduler.getInstance().setDefaultCommand(intakeSubsystem, new IntakeCommands.NoOpCommand(intakeSubsystem));
             CommandScheduler.getInstance().setDefaultCommand(dischargeSubsystem, new DischargeCommands.NoOpCommand(dischargeSubsystem));
-            driverA.whileHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0))
-                    .and(new Trigger(() -> !driverStart.get()));
+//            driverA.whenHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0))
+//                    .and(new Trigger(() -> !driverStart.get()));
 
             //systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
             //systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
@@ -291,6 +292,7 @@ public class Echo extends CommandOpMode {
         if (driverX.get() && driverStart.get()) {
             swerveDrive.resetHeading();
         }
+
         //if (systemA.get() && controllersState == RobotState.INTAKE)
         //    systemX.whenPressed(new SequentialCommandGroup(
         //            new SetStateCommands.NoneStateCmd(),
@@ -301,7 +303,14 @@ public class Echo extends CommandOpMode {
     }
 
     private void telemetries() {
-        for (int m = 0; m < 4; m++){
+//        multipleTelemetry.addData("y",swerveDrive.getPosition().y);
+//        multipleTelemetry.addData("bl pos", swerveDrive.bl.getPosition());
+//        multipleTelemetry.addData("br pos", swerveDrive.br.getPosition());
+//        multipleTelemetry.addData("fl pos", swerveDrive.fl.getPosition());
+//        multipleTelemetry.addData("fr pos", swerveDrive.fr.getPosition());
+//        multipleTelemetry.update();
+//        multipleTelemetry.addData("x",swerveDrive.getPosition().x);
+        for (int m = 0; m < 4; m++) {
             multipleTelemetry.addData("Error " + m, (modules[m].servo.error));
             multipleTelemetry.addData("target " + m, (modules[m].servo.getTargetAngle()));
             multipleTelemetry.addData("angle " + m, (modules[m].servo.getCurrentAngle()));

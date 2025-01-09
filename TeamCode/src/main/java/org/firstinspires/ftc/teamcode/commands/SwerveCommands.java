@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.qualcomm.robotcore.util.Range;
 
@@ -37,7 +38,7 @@ public class SwerveCommands {
             this.isFieldOriented = isFieldOriented;
             this.x = x;
             this.y = y;
-            this.r = () -> r.get()*rotationModifier;
+            this.r = () -> r.get() * rotationModifier;
             this.boost = boost;
             this.swerveDrive = swerveDrive;
             this.telemetry = telemetry;
@@ -58,9 +59,10 @@ public class SwerveCommands {
             telemetry.addData("TURN", r.get());
             swerveDrive.drive(x.get(), y.get(), r.get(), boost.get() / 2);
         }
+
         @Override
         public void end(boolean interrupted) {
-            swerveDrive.drive(0,0,0,0);
+            swerveDrive.drive(0, 0, 0, 0);
         }
     }
 
@@ -70,10 +72,12 @@ public class SwerveCommands {
         double boost;
         double sensitivity;
         double kp = 0.02;
+        final double minPower = 0.05;
         SwerveDrive swerveDrive;
         Telemetry telemetry;
 
-        public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y, double wantedAngle, double sensitivity, double boost) {
+        public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y,
+                       double wantedAngle, double sensitivity, double boost) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;
@@ -81,6 +85,7 @@ public class SwerveCommands {
             this.sensitivity = sensitivity;
             this.swerveDrive = swerveDrive;
             this.telemetry = telemetry;
+            SwerveDrive.minAngleError = 10;
 
             addRequirements(swerveDrive);
         }
@@ -91,9 +96,10 @@ public class SwerveCommands {
             double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
             double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
+            length += Math.signum(length) * minPower;
             localVector[0] = Math.sin(MovementAngle) * length;
             localVector[1] = Math.cos(MovementAngle) * length;
-            double angleDiff = Utils.calcDeltaAngle(wantedAngle, swerveDrive.getHeading() -180) * kp;
+            double angleDiff = Utils.calcDeltaAngle(wantedAngle, swerveDrive.getHeading() - 180) * kp;
             swerveDrive.drive(localVector[0], localVector[1], angleDiff, boost);
             telemetry.addData("pos difference", Math.hypot(currentPos.x - x, currentPos.y - y));
         }
@@ -106,13 +112,17 @@ public class SwerveCommands {
             return false;
         }
 
-
+        @Override
+        public void end(boolean interrupted) {
+            swerveDrive.idle();
+        }
     }
 
-    public static class SetPosition extends CommandBase{
+    public static class SetPosition extends CommandBase {
         Point pos;
         SwerveDrive swerveDrive;
-        public SetPosition(SwerveDrive swerveDrive, Point pos){
+
+        public SetPosition(SwerveDrive swerveDrive, Point pos) {
             this.pos = pos;
             this.swerveDrive = swerveDrive;
         }
@@ -128,8 +138,11 @@ public class SwerveCommands {
         }
     }
 
+    @Config
     public static class SetRotationCmd extends CommandBase {
         double wantedHeading;
+        double error, lastError = 0, proportional, lastTime = 0, Integral, derivative;
+        public static double kp = 0.011, ki = 0.001, kd = 0.002;
         SwerveDrive swerveDrive;
 
         public SetRotationCmd(SwerveDrive swerveDrive, double wantedHeading) {
@@ -139,14 +152,26 @@ public class SwerveCommands {
         }
 
         @Override
-        public void initialize() {
-            double error = Utils.calcDeltaAngle(wantedHeading, swerveDrive.getAdjustedHeading(0));
-            swerveDrive.drive(0, 0, error / 90, 0.2);
+        public void execute() {
+            double currentTime = (double) System.currentTimeMillis() / 1000;
+            double deltaTime = currentTime - lastTime;
+            if (lastTime != 0) {
+                error = Utils.calcDeltaAngle(wantedHeading + 180, swerveDrive.getAdjustedHeading(0));
+                proportional = error * kp;
+                Integral += error * ki * deltaTime;
+                if (Math.signum(Integral) != Math.signum(error)) {
+                    Integral = 0;
+                }
+                derivative = (lastError - error) * kd / deltaTime;
+                swerveDrive.drive(0, 0, proportional + Integral + derivative, 0.5);
+            }
+            lastError = error;
+            lastTime = currentTime;
         }
 
         @Override
         public boolean isFinished() {
-            return true;
+            return false;
         }
     }
 }
