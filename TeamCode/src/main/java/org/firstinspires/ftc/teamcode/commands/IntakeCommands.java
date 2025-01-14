@@ -4,7 +4,9 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
+import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
@@ -163,7 +165,7 @@ public class IntakeCommands {
         public SetArmsStageCmd(IntakeSubsystem subsystem, double armsStage) {
             this.subsystem = subsystem;
             this.armsStage = armsStage;
-//            addRequirements(subsystem);
+            addRequirements(subsystem);
         }
 
         @Override
@@ -234,7 +236,7 @@ public class IntakeCommands {
 
 
             currentInstance = this;
-            //addRequirements(intakeSubsystem);
+            addRequirements(intakeSubsystem);
         }
 
         public static void setEnabled(boolean enabled) {
@@ -291,7 +293,7 @@ public class IntakeCommands {
         //power from -1 to 1
         public SpinCmd(IntakeSubsystem intakeSubsystem, double power, double duration) {
             this.intakeSubsystem = intakeSubsystem;
-            addRequirements(intakeSubsystem);
+//            addRequirements(intakeSubsystem);
             this.duration = duration;
             this.power = power;
         }
@@ -424,8 +426,7 @@ public class IntakeCommands {
         public ReturnArmForTransferCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
             IntakeManualGoToCmd.setEnabled(false);
 
-            addCommands(
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
+            addCommands(new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
                     new SetRotationCmd(intakeSubsystem, 0.5),
                     //new Wait(intakeSubsystem, 0.0),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
@@ -433,16 +434,16 @@ public class IntakeCommands {
                     //new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),//for safety
                     new SlideHomeCmd(intakeSubsystem, initTime));
-            //addRequirements(intakeSubsystem);
+            addRequirements(intakeSubsystem);
         }
     }
 
-    public static class ReturnArmForHMCmd extends SequentialCommandGroup {
+    public static class ReturnArmForHMCmd extends ParallelRaceGroup {
 
         public ReturnArmForHMCmd(IntakeSubsystem intakeSubsystem) {
             IntakeManualGoToCmd.setEnabled(false);
 
-            addCommands(
+            addCommands(new SequentialCommandGroup(
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
                     new SetRotationCmd(intakeSubsystem, 0.5),
                     //new Wait(intakeSubsystem, 0.0),
@@ -450,7 +451,8 @@ public class IntakeCommands {
                     new Wait(intakeSubsystem, 1),
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),//for safety
-                    new SlideGotoCmd(intakeSubsystem, 300));
+                    new SlideGotoCmd(intakeSubsystem, 300)), new WaitCommand(5000));
+            addRequirements(intakeSubsystem);
 
             IntakeManualGoToCmd.setEnabled(true);
         }

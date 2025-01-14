@@ -4,7 +4,9 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.InstantCommand;
+import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -21,30 +23,40 @@ public class ChamberOnly extends CommandOpMode {
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
     SwerveDrive swerveDrive;
     DischargeSubsystem dischargeSubsystem;
+
     @Override
     public void initialize() {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
 
-        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this, true,new Point(2.33,0.2));
-        register(swerveDrive,dischargeSubsystem);
+        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this, true, new Point(1.8, 0.2));
+        register(swerveDrive, dischargeSubsystem);
 
-        while (opModeInInit());
+        swerveDrive.bl.setHeading(0, false);
+        swerveDrive.br.setHeading(0, false);
+        swerveDrive.fl.setHeading(0, false);
+        swerveDrive.fr.setHeading(0, false);
+        schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
+        while (opModeInInit()) {
+            super.run();
+            swerveDrive.bl.update();
+            swerveDrive.br.update();
+            swerveDrive.fl.update();
+            swerveDrive.fr.update();
+        }
 
         schedule(new SequentialCommandGroup(
-                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry),
-                new SwerveCommands.GotoCmd(telemetry,swerveDrive,1.61,0.20,0.0,0.05,0.1).withTimeout(5000),
-                new SwerveCommands.GotoCmd(telemetry,swerveDrive,1.61,1.06,0.0,0.05,0.1).withTimeout(5000),
-//                new SwerveCommands.SetPosition(swerveDrive,new Point(swerveDrive.getPosition().x, 1.06)),
-                new SwerveCommands.GotoCmd(telemetry,swerveDrive,1.61,1.01,0.0,0.03,0.15).withTimeout(3000),
-                //discharge get to chamber pos
-                new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),//chamber discharge
-                new SwerveCommands.GotoCmd(telemetry,swerveDrive,2.33,0.2,0.0,0.05,0.1).withTimeout(5000),
-                new SwerveCommands.GotoCmd(telemetry,swerveDrive,3.33,0.2,0.0,0.05,0.1)));
+                new ParallelCommandGroup(
+                        new SwerveCommands.GotoCmd(telemetry, swerveDrive, 1.8, 0.95, 0, 0.005, 0.2),
+                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)),
+                new WaitCommand(2000),
+                new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry)));
     }
 
     @Override
     public void run() {
-        telemetry.addData("pos",swerveDrive.getPosition());
+        telemetry.addData("pos", swerveDrive.getPosition());
+        telemetry.addData("distance", swerveDrive.getDistance());
         telemetry.update();
         super.run();
     }

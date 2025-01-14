@@ -101,13 +101,19 @@ public class DischargeCommands {
     public static class GoHomeCmd extends CommandBase {
         DischargeSubsystem dischargeSubsystem;
         int lastTick;
-        double lastTime = 0;
-        final double maxDuration = 3;
-        final int minTragetOffset = 50;
+        //        double lastTime = 0;
+        final double maxDuration;
+        final int minTargetOffset = 50;
         ElapsedTime elapsedTime = new ElapsedTime();
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
+            maxDuration = 3;
+        }
+
+        public GoHomeCmd(DischargeSubsystem dischargeSubsystem, double maxDuration) {
+            this.dischargeSubsystem = dischargeSubsystem;
+            this.maxDuration = maxDuration;
         }
 
         @Override
@@ -123,37 +129,38 @@ public class DischargeCommands {
         public void execute() {
             if (dischargeSubsystem.getPosition() > 300)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
-             else
+            else
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
 
         }
 
         @Override
         public boolean isFinished() {
-            if (dischargeSubsystem.getGearBoxRatio() == 1) { // finish check for normal gear
-                if (elapsedTime.seconds() > maxDuration) {
-                    return true;
-                }
-                if (elapsedTime.seconds() < 0.4)
-                    return false;
-
-                double deltaTime = elapsedTime.seconds() - lastTime;
-                if (deltaTime > 0.2) {
-                    int deltaTick = dischargeSubsystem.getPosition() - lastTick;
-                    lastTick = dischargeSubsystem.getPosition();
-                    lastTime = elapsedTime.seconds();
-                    if (Math.abs(deltaTick) <= 5) {
-                        return true;
-                    }
-
-                }
-            }
-            else { // finish check for normal gear
-                if (dischargeSubsystem.getLiftPosInCM() < dischargeSubsystem.minClimbLiftPos){
-                    return true;
-                }
-            }
-            return false;
+            return dischargeSubsystem.isHome() || elapsedTime.seconds() > maxDuration;
+//            if (dischargeSubsystem.getGearBoxRatio() == 1) { // finish check for normal gear
+//                if (elapsedTime.seconds() > maxDuration) {
+//                    return true;
+//                }
+//                if (elapsedTime.seconds() < 0.4)
+//                    return false;
+//
+//                double deltaTime = elapsedTime.seconds() - lastTime;
+//                if (deltaTime > 0.2) {
+//                    int deltaTick = dischargeSubsystem.getPosition() - lastTick;
+//                    lastTick = dischargeSubsystem.getPosition();
+//                    lastTime = elapsedTime.seconds();
+//                    if (Math.abs(deltaTick) <= 5) {
+//                        return true;
+//                    }
+//
+//                }
+//            }
+//            else { // finish check for normal gear
+//                if (dischargeSubsystem.getLiftPosInCM() < dischargeSubsystem.minClimbLiftPos){
+//                    return true;
+//                }
+//            }
+//            return false;
         }
 
         @Override
@@ -161,8 +168,8 @@ public class DischargeCommands {
             dischargeSubsystem.setPower(0);
 
             if (dischargeSubsystem.getGearBoxRatio() == 1 && !interrupted) {
-                dischargeSubsystem.minLiftPos = dischargeSubsystem.getPosition() + minTragetOffset;
-                dischargeSubsystem.setTargetPosInTicks(dischargeSubsystem.getPosition() + minTragetOffset);
+                dischargeSubsystem.minLiftPos = dischargeSubsystem.getPosition() + minTargetOffset;
+                dischargeSubsystem.setTargetPosInTicks(dischargeSubsystem.getPosition() + minTargetOffset);
                 dischargeSubsystem.resetEncoders();
             }
         }

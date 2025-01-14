@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.subsystems;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
@@ -7,12 +8,16 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.teamcode.ImuIntegrator;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.opencv.core.Point;
@@ -26,6 +31,7 @@ public class SwerveDrive extends SubsystemBase {
     //    SwerveDriveKinematics kinematics = new SwerveDriveKinematics();
 //    SwerveDriveOdometry poseEstimator = new SwerveDriveOdometry();
     public SwerveModule bl, br, fl, fr;
+    private DistanceSensor distanceSensor;
     private final BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
     boolean isFieldOriented;
     public static boolean cos = false;
@@ -48,10 +54,17 @@ public class SwerveDrive extends SubsystemBase {
     private final Point startingPos;
     private Point positionAdjustment = new Point(0, 0);
     private double powerModifier;
+    private Point lastPos = new Point(0, 0);
+    FtcDashboard dashboard;
+    Telemetry dashboardTelemetry;
+    MultipleTelemetry multipleTelemetry;
 
     public SwerveDrive(HardwareMap hardwareMap, MultipleTelemetry telemetry, LinearOpMode opMode, boolean isFieldOriented) {
         this.isFieldOriented = isFieldOriented;
         this.telemetry = telemetry;
+        dashboard = FtcDashboard.getInstance();
+        dashboardTelemetry = dashboard.getTelemetry();
+        multipleTelemetry = new MultipleTelemetry(this.telemetry, dashboardTelemetry);
         startingPos = new Point(0, 0);
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
                 hardwareMap.get(CRServo.class, "bl_servo"),
@@ -65,7 +78,7 @@ public class SwerveDrive extends SubsystemBase {
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
                 hardwareMap.analogInput.get("fr_encoder"), 346.9);//346.9
-
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
         initImu(hardwareMap, telemetry, opMode);
     }
 
@@ -86,6 +99,7 @@ public class SwerveDrive extends SubsystemBase {
         fr = new SwerveModule(hardwareMap.get(DcMotor.class, "fr_motor"),
                 hardwareMap.get(CRServo.class, "fr_servo"),
                 hardwareMap.analogInput.get("fr_encoder"), 346.9);
+        distanceSensor = hardwareMap.get(DistanceSensor.class, "distanceSensor");
 
 
         initImu(hardwareMap, telemetry, opMode);
@@ -161,8 +175,14 @@ public class SwerveDrive extends SubsystemBase {
         updateSwerveModules(wheelVectors);
 
         telemetry();
-        telemetry.addData("power modifier", powerModifier);
-        telemetry.addData("maxAngleError", angleError);
+//        telemetry.addData("power modifier", powerModifier);
+//        telemetry.addData("maxAngleError", angleError);
+//        telemetry.addData("x velocity", imu.getVelocity().xVeloc);
+//        telemetry.addData("y velocity", imu.getVelocity().yVeloc);
+        multipleTelemetry.addData("bl", bl.getTargetHeading());
+        multipleTelemetry.addData("br", br.getTargetHeading());
+        multipleTelemetry.addData("fr", fr.getTargetHeading());
+        multipleTelemetry.addData("fl", fl.getTargetHeading());
         telemetry.update();
 
     }
@@ -172,10 +192,10 @@ public class SwerveDrive extends SubsystemBase {
         fr.setPower(0);
         bl.setPower(0);
         br.setPower(0);
-        fl.update();
-        fr.update();
-        br.update();
-        bl.update();
+        fl.updateMotor();
+        fr.updateMotor();
+        br.updateMotor();
+        bl.updateMotor();
         fl.setServoPower(0);
         fr.setServoPower(0);
         bl.setServoPower(0);
@@ -317,6 +337,7 @@ public class SwerveDrive extends SubsystemBase {
         }
 
 
+
         averageError = (Math.abs(fl.getAngleError()) + Math.abs(fr.getAngleError()) +
                 Math.abs(br.getAngleError()) + Math.abs(bl.getAngleError())) / 4;
 
@@ -388,6 +409,10 @@ public class SwerveDrive extends SubsystemBase {
                 fr.getCurrentHeading(),
                 br.getCurrentHeading(),
                 bl.getCurrentHeading()};
+    }
+
+    public double getDistance() {
+        return distanceSensor.getDistance(DistanceUnit.CM);
     }
 
 //    public void update() {

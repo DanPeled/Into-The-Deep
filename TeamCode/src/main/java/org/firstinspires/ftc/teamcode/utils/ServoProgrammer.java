@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class ServoProgrammer extends LinearOpMode {
     Servo servo;
     double position = 0;
-    //0.39 close 0.74 open
+    //0.2 close 0.37 open
     @Override
     public void runOpMode() throws InterruptedException {
         servo = hardwareMap.get(Servo.class, "servo");

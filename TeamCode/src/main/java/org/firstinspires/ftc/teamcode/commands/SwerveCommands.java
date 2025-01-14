@@ -72,7 +72,7 @@ public class SwerveCommands {
         double boost;
         double sensitivity;
         double kp = 0.02;
-        final double minPower = 0.05;
+        final double minPower = 0.04;
         SwerveDrive swerveDrive;
         Telemetry telemetry;
 
@@ -85,7 +85,7 @@ public class SwerveCommands {
             this.sensitivity = sensitivity;
             this.swerveDrive = swerveDrive;
             this.telemetry = telemetry;
-            SwerveDrive.minAngleError = 10;
+//            SwerveDrive.minAngleError = 10;
 
             addRequirements(swerveDrive);
         }
@@ -106,15 +106,28 @@ public class SwerveCommands {
 
         @Override
         public boolean isFinished() {
-            if (Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) {
-                return true;
-            }
-            return false;
+            return Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity;
         }
 
         @Override
         public void end(boolean interrupted) {
             swerveDrive.idle();
+        }
+    }
+
+    public static class SplineGotoCmd extends CommandBase {
+        SwerveDrive swerveDrive;
+        double boost, sensitivity;
+        Point[] points;
+
+        public SplineGotoCmd(SwerveDrive swerveDrive, Point p0, Point p1, Point p2, double boost, double sensitivity) {
+            this.swerveDrive = swerveDrive;
+            this.boost = boost;
+            this.sensitivity = sensitivity;
+            points[0] = p0;
+            points[1] = p1;
+            points[2] = p2;
+
         }
     }
 

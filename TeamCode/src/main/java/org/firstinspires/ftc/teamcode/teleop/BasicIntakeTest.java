@@ -66,14 +66,14 @@ public class BasicIntakeTest extends CommandOpMode {
 
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, () -> systemGamepad.getLeftY()));
         //X.whenPressed(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, false));
-        //A.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
+//        A.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
         //B.whenPressed(new IntakeCommands.StartIntakeCmd(intakeSubsystem));
     }
 
     @Override
     public void run() {
         super.run();
-        telemetry.addData(" right motor pos", intakeSubsystem.getMotorPosition());
+        telemetry.addData("motor pos", intakeSubsystem.getAveragePosition());
         telemetry.update();
     }
 }

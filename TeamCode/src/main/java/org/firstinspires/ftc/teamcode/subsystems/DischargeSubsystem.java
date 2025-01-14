@@ -7,13 +7,15 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
 public class DischargeSubsystem extends SubsystemBase {
     private final DcMotorEx lowerMotor, upperMotor;
     private Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
-    final double clawServoHoldPos = 0.13, clawServoReleasePos = 0.65;
+    final double clawServoHoldPos = 0.2, clawServoReleasePos = 0.37;
+    private final TouchSensor touchSensor;
     MultipleTelemetry telemetry;
     double gearBoxRatio = 1;
     public double timeUp = 0;
@@ -39,12 +41,12 @@ public class DischargeSubsystem extends SubsystemBase {
     public final double slidesLowSpeed = 0.45;
 
 
-
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         lowerMotor = hardwareMap.get(DcMotorEx.class, "lower");
         upperMotor = hardwareMap.get(DcMotorEx.class, "upper");
         gearBoxServo = hardwareMap.servo.get("gearBoxServo");
         clawServo = hardwareMap.servo.get("clawServo");
+        touchSensor = hardwareMap.get(TouchSensor.class, "dischargeTs");
         lowerMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         gearBoxServo.setPosition(servoDischargePos);
         resetEncoders();
@@ -149,19 +151,23 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public void setTargetPosInTicks(double newTargetPosInCM) {
         newTargetPosInCM = Range.clip(newTargetPosInCM, minLiftPos, maxLiftPos);
-        this.targetPosInTicks = (int)(getPosition() + (newTargetPosInCM - getLiftPosInCM()) * gearBoxRatio);
+        this.targetPosInTicks = (int) (getPosition() + (newTargetPosInCM - getLiftPosInCM()) * gearBoxRatio);
     }
 
     public double getTargetPosInTicks() {
-       return targetPosInTicks;
+        return targetPosInTicks;
     }
 
 
-    public String getMode(){
+    public String getMode() {
         return lowerMotor.getMode().toString();
     }
 
     public void changeTargetPos(double change) {
         setTargetPosInTicks(getLiftPosInCM() + change);
+    }
+
+    public boolean isHome() {
+        return touchSensor.isPressed();
     }
 }

@@ -50,7 +50,6 @@ public class BasicDischargeTest extends CommandOpMode {
         dPadLeft.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
         leftBumper.whenPressed(new DischargeReleaseCmd(dischargeSubsystem));
         rightBumper.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
-        A.whileHeld(new DischargeCommands.DischargeClawTestCmd(() -> systemGamepad.getRightX(), dischargeSubsystem, telemetry));
         X.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
         Y.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
         B.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem,dischargeSubsystem.highChamberHeight-210,telemetry));
@@ -74,6 +73,7 @@ public class BasicDischargeTest extends CommandOpMode {
 
         telemetry.addData("position", dischargeSubsystem.getPosition());
         telemetry.addData("Target Pos", dischargeSubsystem.getTargetPosInTicks());
+        telemetry.addData("touch", dischargeSubsystem.isHome());
         //telemetry.addData("mode", dischargeSubsystem.getMode());
         //String commandName = dischargeSubsystem.getCurrentCommand().getName();
         //telemetry.addData("command", commandName==null ? "null" : commandName);
