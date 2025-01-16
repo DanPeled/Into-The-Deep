@@ -83,14 +83,14 @@ public class Echo extends CommandOpMode {
         controllersState = null;
 
         //init commands
-        schedule(new SequentialCommandGroup(
+//        schedule(new SequentialCommandGroup(
 //                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
 //                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
-                new IntakeCommands.Wait(intakeSubsystem, 1),
-                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
+//                new IntakeCommands.Wait(intakeSubsystem, 1),
+//                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
 //                new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true)));
-        IntakeCommands.IntakeManualGoToCmd.setEnabled(true);
+//                new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true)));
+//        IntakeCommands.IntakeManualGoToCmd.setEnabled(true);
 
 
         while (opModeInInit()) {
@@ -154,7 +154,7 @@ public class Echo extends CommandOpMode {
 
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
-                    driverA.whileHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0));
+                    driverA.whenHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0));
 
                     systemA.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.ChamberStateCmd(), //change to chamber state
@@ -335,7 +335,7 @@ public class Echo extends CommandOpMode {
 //        telemetry.addData("distance", swerveDrive.getDistance());
 //        multipleTelemetry.addData("top", 50);
 //        multipleTelemetry.addData("bottom", -50);
-        multipleTelemetry.addData("pos", intakeSubsystem.getAveragePosition());
+        multipleTelemetry.addData("angle", swerveDrive.getHeading());
         multipleTelemetry.update();
 
 //        multipleTelemetry.addData("posX", gamepad1.left_stick_x);

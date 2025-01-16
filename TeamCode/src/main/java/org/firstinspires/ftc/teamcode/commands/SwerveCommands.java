@@ -68,10 +68,13 @@ public class SwerveCommands {
 
     public static class GotoCmd extends CommandBase {
         double x, y, wantedAngle;
+        double error, lastError, lastTime;
+        double proportional, Integral, derivative;
+        double kp = 0.025, ki = 0.0005, kd = -0.006;
         Point currentPos;
         double boost;
         double sensitivity;
-        double kp = 0.02;
+        double rotation = 0;
         final double minPower = 0.04;
         SwerveDrive swerveDrive;
         Telemetry telemetry;
@@ -99,14 +102,28 @@ public class SwerveCommands {
             length += Math.signum(length) * minPower;
             localVector[0] = Math.sin(MovementAngle) * length;
             localVector[1] = Math.cos(MovementAngle) * length;
-            double angleDiff = Utils.calcDeltaAngle(wantedAngle, swerveDrive.getHeading() - 180) * kp;
-            swerveDrive.drive(localVector[0], localVector[1], angleDiff, boost);
-            telemetry.addData("pos difference", Math.hypot(currentPos.x - x, currentPos.y - y));
+            double currentTime = (double) System.currentTimeMillis() / 1000;
+            double deltaTime = currentTime - lastTime;
+            if (lastTime != 0) {
+                error = Utils.calcDeltaAngle(wantedAngle + 180, swerveDrive.getAdjustedHeading(0));
+                proportional = Range.clip(error, -100, 100) * kp;
+                Integral += Range.clip(error, -30, 30) * deltaTime;
+                if (Math.signum(Integral) != Math.signum(error)) {
+                    Integral = 0;
+                }
+                derivative = (lastError - error) / deltaTime;
+                rotation = proportional + Integral * ki + derivative * kd + Math.signum(proportional + Integral * ki + derivative * kd) * 0.04;
+                rotation = rotation * 0.65 / (boost * 0.7 + 0.3);
+            }
+            lastError = error;
+            lastTime = currentTime;
+            swerveDrive.drive(localVector[0], localVector[1], rotation, boost);
         }
 
         @Override
         public boolean isFinished() {
-            return Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity;
+            return ((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) &&
+                    (Math.abs(wantedAngle + 180 - swerveDrive.getAdjustedHeading(0)) < 3));
         }
 
         @Override
@@ -116,8 +133,16 @@ public class SwerveCommands {
     }
 
     public static class SplineGotoCmd extends CommandBase {
+        double x, y, wantedAngle;
+        double error, lastError, lastTime;
+        double proportional, Integral, derivative;
+        double kp = 0.025, ki = 0.0005, kd = -0.006;
+        Point currentPos;
+        double boost;
+        double sensitivity;
+        double rotation = 0;
+        final double minPower = 0.04;
         SwerveDrive swerveDrive;
-        double boost, sensitivity;
         Point[] points;
 
         public SplineGotoCmd(SwerveDrive swerveDrive, Point p0, Point p1, Point p2, double boost, double sensitivity) {
@@ -127,15 +152,78 @@ public class SwerveCommands {
             points[0] = p0;
             points[1] = p1;
             points[2] = p2;
+        }
+
+        @Override
+        public void execute() {
+            double t = Range.clip(findClosestT(swerveDrive.getPosition(), points[0], points[1], points[2]) + 0.15, 0, 1);
+            Point wantedPosition = new Point(Math.pow(1 - t, 2) * points[0].x + 2 * t * (1 - t) *
+                    points[1].x + Math.pow(t, 2) * points[2].x,
+                    Math.pow(1 - t, 2) * points[0].y + 2 * t * (1 - t) *
+                            points[1].y + Math.pow(t, 2) * points[2].y);
+            currentPos = swerveDrive.getAdjustedPosition();
+            double[] localVector = {x - currentPos.x, y - currentPos.y};
+            double MovementAngle = Math.atan2(localVector[0], localVector[1]);
+            double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
+            length += Math.signum(length) * minPower;
+            localVector[0] = Math.sin(MovementAngle) * length;
+            localVector[1] = Math.cos(MovementAngle) * length;
+            double currentTime = (double) System.currentTimeMillis() / 1000;
+            double deltaTime = currentTime - lastTime;
+            if (lastTime != 0) {
+                error = Utils.calcDeltaAngle(wantedAngle + 180, swerveDrive.getAdjustedHeading(0));
+                proportional = Range.clip(error, -100, 100) * kp;
+                Integral += Range.clip(error, -30, 30) * deltaTime;
+                if (Math.signum(Integral) != Math.signum(error)) {
+                    Integral = 0;
+                }
+                derivative = (lastError - error) / deltaTime;
+                rotation = proportional + Integral * ki + derivative * kd + Math.signum(proportional + Integral * ki + derivative * kd) * 0.04;
+                rotation = rotation * 0.65 / (boost * 0.7 + 0.3);
+            }
+            lastError = error;
+            lastTime = currentTime;
+            swerveDrive.drive(localVector[0], localVector[1], rotation, boost);
 
         }
+
+        @Override
+        public boolean isFinished() {
+            return ((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) &&
+                    (Math.abs(wantedAngle + 180 - swerveDrive.getAdjustedHeading(0)) < 3));
+        }
+
+        public double findClosestT(Point current, Point P0, Point P1, Point P2) {
+            double lower = 0.0, upper = 1.0, tolerance = 0.005; // Precision of the search
+            while (upper - lower > tolerance) {
+                double mid = (lower + upper) / 2.0;
+                double left = bezierDistance(mid - tolerance, current.x, current.y, P0, P1, P2);
+                double right = bezierDistance(mid + tolerance, current.y, current.y, P0, P1, P2);
+                if (left < right) {
+                    upper = mid;
+                } else {
+                    lower = mid;
+                }
+            }
+            return (lower + upper) / 2.0;
+        }
+
+        private double bezierDistance(double t, double a, double b, Point P0, Point P1, Point P2) {
+            // Calculate Bézier curve point at t
+            double x_t = Math.pow(1 - t, 2) * P0.x + 2 * t * (1 - t) * P1.x + Math.pow(t, 2) * P2.x;
+            double y_t = Math.pow(1 - t, 2) * P0.y + 2 * t * (1 - t) * P1.y + Math.pow(t, 2) * P2.y;
+
+            // Calculate Euclidean distance to the point (a, b)
+            return Math.sqrt(Math.pow(x_t - a, 2) + Math.pow(y_t - b, 2));
+        }
+
     }
 
-    public static class SetPosition extends CommandBase {
+    public static class SetPositionCmd extends CommandBase {
         Point pos;
         SwerveDrive swerveDrive;
 
-        public SetPosition(SwerveDrive swerveDrive, Point pos) {
+        public SetPositionCmd(SwerveDrive swerveDrive, Point pos) {
             this.pos = pos;
             this.swerveDrive = swerveDrive;
         }
@@ -155,7 +243,7 @@ public class SwerveCommands {
     public static class SetRotationCmd extends CommandBase {
         double wantedHeading;
         double error, lastError = 0, proportional, lastTime = 0, Integral, derivative;
-        public static double kp = 0.011, ki = 0.001, kd = 0.002;
+        public static double kp = 0.025, ki = 0.0005, kd = -0.006;
         SwerveDrive swerveDrive;
 
         public SetRotationCmd(SwerveDrive swerveDrive, double wantedHeading) {
@@ -170,13 +258,16 @@ public class SwerveCommands {
             double deltaTime = currentTime - lastTime;
             if (lastTime != 0) {
                 error = Utils.calcDeltaAngle(wantedHeading + 180, swerveDrive.getAdjustedHeading(0));
-                proportional = error * kp;
-                Integral += error * ki * deltaTime;
+                proportional = Range.clip(error, -100, 100) * kp;
+                Integral += Range.clip(error, -30, 30) * deltaTime;
                 if (Math.signum(Integral) != Math.signum(error)) {
                     Integral = 0;
                 }
-                derivative = (lastError - error) * kd / deltaTime;
-                swerveDrive.drive(0, 0, proportional + Integral + derivative, 0.5);
+                derivative = (lastError - error) / deltaTime;
+                swerveDrive.drive(0, 0,
+                        proportional + Integral * ki + derivative * kd +
+                                Math.signum(proportional + Integral * ki + derivative * kd) * 0.04,
+                        0.5);
             }
             lastError = error;
             lastTime = currentTime;
@@ -185,6 +276,12 @@ public class SwerveCommands {
         @Override
         public boolean isFinished() {
             return false;
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            Integral = 0;
+            derivative = 0;
         }
     }
 }

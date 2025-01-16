@@ -179,10 +179,12 @@ public class SwerveDrive extends SubsystemBase {
 //        telemetry.addData("maxAngleError", angleError);
 //        telemetry.addData("x velocity", imu.getVelocity().xVeloc);
 //        telemetry.addData("y velocity", imu.getVelocity().yVeloc);
-        multipleTelemetry.addData("bl", bl.getTargetHeading());
-        multipleTelemetry.addData("br", br.getTargetHeading());
-        multipleTelemetry.addData("fr", fr.getTargetHeading());
-        multipleTelemetry.addData("fl", fl.getTargetHeading());
+        telemetry.addData("min", 0);
+        telemetry.addData("max", 360);
+        multipleTelemetry.addData("bl", bl.getCurrentHeading());
+        multipleTelemetry.addData("br", br.getCurrentHeading());
+        multipleTelemetry.addData("fr", fr.getCurrentHeading());
+        multipleTelemetry.addData("fl", fl.getCurrentHeading());
         telemetry.update();
 
     }
