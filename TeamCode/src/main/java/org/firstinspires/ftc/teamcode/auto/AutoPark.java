@@ -7,6 +7,7 @@ import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
@@ -18,6 +19,7 @@ import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 import org.opencv.core.Point;
 
+@Disabled
 @Autonomous
 public class AutoPark extends CommandOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -26,6 +28,7 @@ public class AutoPark extends CommandOpMode {
     SwerveDrive swerveDrive;
     DischargeSubsystem dischargeSubsystem;
     IntakeSubsystem intakeSubsystem;
+
     @Override
     public void initialize() {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);

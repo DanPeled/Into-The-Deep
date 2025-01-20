@@ -32,7 +32,7 @@ public class BasicDischargeTest extends CommandOpMode {
         systemGamepad = new GamepadEx(gamepad2);
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         register(dischargeSubsystem);
-        dischargeSubsystem.setDefaultCommand(new DischargeManualGotoCmd(() -> systemGamepad.getLeftY(), dischargeSubsystem, telemetry));
+//        dischargeSubsystem.setDefaultCommand(new DischargeManualGotoCmd(() -> systemGamepad.getLeftY(), dischargeSubsystem, telemetry));
         Button dPadUp = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_UP);
         Button dPadDown = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_DOWN);
         Button dPadRight = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_RIGHT);
@@ -52,8 +52,8 @@ public class BasicDischargeTest extends CommandOpMode {
         rightBumper.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
         X.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
         Y.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
-        B.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem,dischargeSubsystem.highChamberHeight-210,telemetry));
-
+        B.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 210, telemetry));
+        A.whenPressed(new DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry));
         //schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
 
         while (opModeInInit()) {

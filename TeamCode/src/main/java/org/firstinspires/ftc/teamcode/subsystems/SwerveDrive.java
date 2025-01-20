@@ -181,10 +181,10 @@ public class SwerveDrive extends SubsystemBase {
 //        telemetry.addData("y velocity", imu.getVelocity().yVeloc);
         telemetry.addData("min", 0);
         telemetry.addData("max", 360);
-        multipleTelemetry.addData("bl", bl.getCurrentHeading());
-        multipleTelemetry.addData("br", br.getCurrentHeading());
-        multipleTelemetry.addData("fr", fr.getCurrentHeading());
-        multipleTelemetry.addData("fl", fl.getCurrentHeading());
+//        multipleTelemetry.addData("bl", bl.getCurrentHeading());
+//        multipleTelemetry.addData("br", br.getCurrentHeading());
+//        multipleTelemetry.addData("fr", fr.getCurrentHeading());
+//        multipleTelemetry.addData("fl", fl.getCurrentHeading());
         telemetry.update();
 
     }
@@ -226,6 +226,10 @@ public class SwerveDrive extends SubsystemBase {
 //       telemetry.addData("rotationConpensation: ", rotationConpensation);
 //       telemetry.addData("heading", getHeading());
 //       telemetry.update();
+    }
+
+    public void setInitialHeading(double heading) {
+        correctedHeading = heading;
     }
 
     //rotate a vector by an angle for field oriented

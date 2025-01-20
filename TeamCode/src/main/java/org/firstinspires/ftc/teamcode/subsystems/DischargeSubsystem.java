@@ -24,7 +24,7 @@ public class DischargeSubsystem extends SubsystemBase {
     private double lastMotorTicks;
     private double targetPosInTicks = -1;
 
-    public final double maxLiftPos = 1900;
+    public final double maxLiftPos = 1600;
     public double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
@@ -32,13 +32,13 @@ public class DischargeSubsystem extends SubsystemBase {
     public final int lowChamberHeight = 350;
     public final int chamberReleaseDeltaSlides = 100;
 
-    public final int highBasketHeight = 1800;
+    public final int highBasketHeight = 1500;
     public final int lowBasketHeight = 500;
     public final int BasketReleaseDeltaDrive = 0;
 
-    public final int manualTicksPerSecond = 550;
-    public final double slidesSpeed = 0.7;
-    public final double slidesLowSpeed = 0.45;
+    public final int manualTicksPerSecond = 1200;
+    public final double slidesSpeed = 0.75;
+    public final double slidesLowSpeed = 0.3;
 
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {

@@ -372,7 +372,7 @@ public class IntakeCommands {
                     new SetRotationCmd(subsystem, 0.5),
                     new SlideGotoCmd(subsystem, pos),
                     new ClawStageCmd(subsystem, ClawStages.LOWER),
-                    new Wait(subsystem, 0.3),
+                    new Wait(subsystem, 0.0),
                     new SetArmsStageCmd(subsystem, ArmsStages.TOP));
 
             IntakeManualGoToCmd.setEnabled(true);
@@ -409,7 +409,6 @@ public class IntakeCommands {
                     holdingPower = 0.05;
 
             IntakeManualGoToCmd.setEnabled(true);
-            addRequirements(intakeSubsystem);
 
             addCommands(
                     new ParallelCommandGroup(
@@ -419,6 +418,7 @@ public class IntakeCommands {
                             new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
                             new SpinCmd(intakeSubsystem, spinPower, grabbingTime)),
                     new SpinCmd(intakeSubsystem, holdingPower, -1));
+            addRequirements(intakeSubsystem);
         }
     }
 
@@ -428,9 +428,9 @@ public class IntakeCommands {
 
             addCommands(new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
                     new SetRotationCmd(intakeSubsystem, 0.5),
-                    //new Wait(intakeSubsystem, 0.0),
+                    new Wait(intakeSubsystem, 0.25),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
-                    new Wait(intakeSubsystem, 0.75),
+                    new Wait(intakeSubsystem, 0.25),
                     //new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),//for safety
                     new SlideHomeCmd(intakeSubsystem, initTime));
@@ -465,26 +465,27 @@ public class IntakeCommands {
             addCommands(
                     new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                     new ParallelCommandGroup(
-                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                        new ReturnArmForTransferCmd(intakeSubsystem, false)),
-                    new SetPowerCmd(intakeSubsystem,-0.18),
-                    new Wait(intakeSubsystem, 0.2), //for safety
-                    new ParallelCommandGroup(
-                        //new SpinCmd(intakeSubsystem,-0.1, -1),
-                        new DischargeCommands.GoHomeCmd(dischargeSubsystem), //for safety
-                        new DischargeGrabCmd(dischargeSubsystem),
-                        new Wait(intakeSubsystem, 0.8)), //for safety
-
-                    new SetArmsStageCmd(intakeSubsystem ,ArmsStages.TRANSFER),
-                    new SetPowerCmd(intakeSubsystem,0),
-                    new SpinCmd(intakeSubsystem,-0.1, -1),
+                            new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                            new ReturnArmForTransferCmd(intakeSubsystem, false)),
+                    new SetPowerCmd(intakeSubsystem, -0.18),
+                    new Wait(intakeSubsystem, 0.1), //for safety
+                    // new ParallelCommandGroup(
+                    //new SpinCmd(intakeSubsystem,-0.1, -1),
+                    //new DischargeCommands.GoHomeCmd(dischargeSubsystem), //for safety
+                    //     new DischargeGrabCmd(dischargeSubsystem),
+                    //     new Wait(intakeSubsystem, 0.8)), //for safety
+                    new DischargeGrabCmd(dischargeSubsystem),
+                    new Wait(intakeSubsystem, 0.25),
+                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
+                    new SetPowerCmd(intakeSubsystem, 0),
+                    new SpinCmd(intakeSubsystem, -0.1, -1),
                     new Wait(intakeSubsystem, 0.4),
-                    new SlideGotoCmd(intakeSubsystem, intakeSubsystem.minSlidesPos+slidesBackAfterTransfer),
-                    new SpinCmd(intakeSubsystem,0, -1));
+                    new SlideGotoCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer),
+                    new SpinCmd(intakeSubsystem, 0, -1));
                     //new Wait(intakeSubsystem,0.35));
 
             IntakeManualGoToCmd.setEnabled(true);
-            //addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
+            addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
         }
 
 

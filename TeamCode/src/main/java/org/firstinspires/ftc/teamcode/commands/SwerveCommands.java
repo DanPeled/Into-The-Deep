@@ -54,9 +54,9 @@ public class SwerveCommands {
 
         @Override
         public void execute() {
-            telemetry.addData("X", x.get());
-            telemetry.addData("Y", y.get());
-            telemetry.addData("TURN", r.get());
+//            telemetry.addData("X", x.get());
+//            telemetry.addData("Y", y.get());
+//            telemetry.addData("TURN", r.get());
             swerveDrive.drive(x.get(), y.get(), r.get(), boost.get() / 2);
         }
 
@@ -67,7 +67,7 @@ public class SwerveCommands {
     }
 
     public static class GotoCmd extends CommandBase {
-        double x, y, wantedAngle;
+        double x, y, wantedAngle, wantedDistance;
         double error, lastError, lastTime;
         double proportional, Integral, derivative;
         double kp = 0.025, ki = 0.0005, kd = -0.006;
@@ -80,7 +80,7 @@ public class SwerveCommands {
         Telemetry telemetry;
 
         public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y,
-                       double wantedAngle, double sensitivity, double boost) {
+                       double wantedAngle, double sensitivity, double wantedDistance, double boost) {
             this.x = x;
             this.y = y;
             this.wantedAngle = wantedAngle;
@@ -88,6 +88,7 @@ public class SwerveCommands {
             this.sensitivity = sensitivity;
             this.swerveDrive = swerveDrive;
             this.telemetry = telemetry;
+            this.wantedDistance = wantedDistance;
 //            SwerveDrive.minAngleError = 10;
 
             addRequirements(swerveDrive);
@@ -122,8 +123,8 @@ public class SwerveCommands {
 
         @Override
         public boolean isFinished() {
-            return ((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) &&
-                    (Math.abs(wantedAngle + 180 - swerveDrive.getAdjustedHeading(0)) < 3));
+            return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (swerveDrive.getDistance() <= wantedDistance))
+                    && (Math.abs(wantedAngle + 180 - swerveDrive.getAdjustedHeading(0)) < 3));
         }
 
         @Override
@@ -242,7 +243,7 @@ public class SwerveCommands {
     @Config
     public static class SetRotationCmd extends CommandBase {
         double wantedHeading;
-        double error, lastError = 0, proportional, lastTime = 0, Integral, derivative;
+        double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;
         public static double kp = 0.025, ki = 0.0005, kd = -0.006;
         SwerveDrive swerveDrive;
 
