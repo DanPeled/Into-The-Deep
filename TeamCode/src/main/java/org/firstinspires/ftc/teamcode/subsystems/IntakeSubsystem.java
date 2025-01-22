@@ -22,7 +22,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final int maxArmLength = 3000;
     public int minSlidesPos = 10;
 
-    public final int manualTicksPerSecond = 800;
+    public final int manualTicksPerSecond = 900;
     public final double slidesSpeed = 1;
     public final double slidesLowSpeed = 0.4;
 

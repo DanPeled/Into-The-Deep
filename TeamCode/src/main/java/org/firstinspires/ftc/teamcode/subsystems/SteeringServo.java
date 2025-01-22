@@ -23,7 +23,7 @@ public class SteeringServo {
     //private final double kp = 0.0068;
     //private final double ki = 0.00000072;
     //private final double kd = 0.068;
-
+    public static double PIDMod = 1;
     public static double kp = 0.225;
     public static double ki = 0.3;
     public static double kd = 0.015;
@@ -144,12 +144,12 @@ public class SteeringServo {
                 }
                 derivative = (errNorm - lastError) / deltaTime;
 
-                power = kp * errNorm +
-                        ki * integral +
-                        kd * derivative;
+                power = PIDMod * kp * errNorm +
+                        PIDMod * ki * integral +
+                        PIDMod * kd * derivative;
 
-                power += minPower * Math.signum(power);
-                power = Range.clip(power,-1,1);
+                power += PIDMod * minPower * Math.signum(power);
+                power = Range.clip(power, -1, 1);
             }
 
             setPower(power);

@@ -87,9 +87,11 @@ public class DischargeCommands {
 
         @Override
         public void initialize() {
-            dischargeSubsystem.runToPosition();
-            dischargeSubsystem.setTargetPosInTicks(pos);
-            dischargeSubsystem.goToTarget();
+            if (!IntakeCommands.Transfer.transferring) {
+                dischargeSubsystem.runToPosition();
+                dischargeSubsystem.setTargetPosInTicks(pos);
+                dischargeSubsystem.goToTarget();
+            }
         }
 
         @Override
@@ -108,12 +110,14 @@ public class DischargeCommands {
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
-            maxDuration = 3;
+            maxDuration = 5;
+            addRequirements(dischargeSubsystem);
         }
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem, double maxDuration) {
             this.dischargeSubsystem = dischargeSubsystem;
             this.maxDuration = maxDuration;
+            addRequirements(dischargeSubsystem);
         }
 
         @Override
@@ -122,12 +126,13 @@ public class DischargeCommands {
             elapsedTime.reset();
             dischargeSubsystem.setPower(0);
             dischargeSubsystem.runWithoutEncoders();
-            addRequirements(dischargeSubsystem);
         }
 
         @Override
         public void execute() {
-            if (dischargeSubsystem.getPosition() > 300)
+            if (dischargeSubsystem.getPosition() < 60) {
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
+            } else if (dischargeSubsystem.getPosition() > 450)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
             else
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);

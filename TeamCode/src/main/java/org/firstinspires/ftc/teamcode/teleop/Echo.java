@@ -147,31 +147,34 @@ public class Echo extends CommandOpMode {
                             swerveX, swerveY, swerveR,
                             () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
 
-                    schedule(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, systemGamepad::getLeftY));
+                    intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, systemGamepad::getLeftY));
 
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
                     driverA.whenHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0));
 
                     systemA.whenPressed(new SequentialCommandGroup(
+                            new IntakeCommands.WaitForTransferEnd(),
                             new SetStateCommands.ChamberStateCmd(), //change to chamber state
-                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
-                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
+                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)));
+
+//                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
+//                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
 
                     systemY.whenPressed(new SequentialCommandGroup(
-                            new SetStateCommands.BasketStateCmd(), //change to basket state
-                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
-                                    , dischargeSubsystem.highBasketHeight, multipleTelemetry))); //go to high basket
+                            new IntakeCommands.WaitForTransferEnd(),
+                            new SetStateCommands.BasketStateCmd(), //change to chamber state
+                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry))); //go to high basket
 
                     systemB.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.StartIntakeCmd(intakeSubsystem),
                             new SetStateCommands.IntakeStateCmd())).and(new Trigger(() -> !driverStart.get()));
 
-                    systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
+                    //systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
 
-//                    systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
-//
-//                    systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
+                    systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+
+                    systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.NoneStateCmd(),
@@ -185,13 +188,14 @@ public class Echo extends CommandOpMode {
                     //        () -> 0.3, true));
 
                     swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            swerveX, swerveY, swerveR,
+                            systemGamepad::getLeftX, () -> 0.0, swerveR,
                             () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), false));
 
                     intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
                             systemGamepad::getLeftY));
 
-                    systemA.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
+                    systemA.whenPressed(new IntakeCommands.SampleReverseIntakeCmd(intakeSubsystem));
+                    systemA.whenReleased(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
 
                     systemB.whenPressed(new IntakeCommands.reStartIntakeCmd(intakeSubsystem));
 
@@ -200,8 +204,8 @@ public class Echo extends CommandOpMode {
                             new SetStateCommands.NoneStateCmd()));
 
                     systemX.whenPressed(new SequentialCommandGroup(
-                            new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
-                            new SetStateCommands.NoneStateCmd()));
+                            new SetStateCommands.NoneStateCmd(),
+                            new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)));
 
                     systemDPadUp.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.5));
                     systemDPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0));
@@ -230,7 +234,10 @@ public class Echo extends CommandOpMode {
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
 
-                    systemRightBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+                    systemRightBumper.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.NoneStateCmd(),
+                            new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem)));
+
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.NoneStateCmd(),
                             new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
@@ -268,7 +275,10 @@ public class Echo extends CommandOpMode {
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
 
-                    systemRightBumper.whenPressed(new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry));
+
+                    systemRightBumper.whenPressed(new SequentialCommandGroup(
+                            new SetStateCommands.NoneStateCmd(),
+                            new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry)));
 
 
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(
@@ -310,20 +320,22 @@ public class Echo extends CommandOpMode {
 //        multipleTelemetry.addData("fr pos", swerveDrive.fr.getPosition());
 //        multipleTelemetry.update();
 //        multipleTelemetry.addData("x",swerveDrive.getPosition().x);
-//        for (int m = 0; m < 4; m++) {
-//            multipleTelemetry.addData("Error " + m, (modules[m].servo.error));
-//            multipleTelemetry.addData("target " + m, (modules[m].servo.getTargetAngle()));
-//            multipleTelemetry.addData("angle " + m, (modules[m].servo.getCurrentAngle()));
-//            multipleTelemetry.addData("power " + m, (modules[m].servo.power));
-//            multipleTelemetry.addData("P " + m, (modules[m].servo.error * SteeringServo.kp));
-//            multipleTelemetry.addData("I " + m, (modules[m].servo.integral * SteeringServo.ki));
-//            multipleTelemetry.addData("D " + m, (modules[m].servo.derivative * SteeringServo.kd));
-//        }
+        for (int m = 0; m < 4; m++) {
+            multipleTelemetry.addData("Error " + m, (modules[m].servo.error));
+            multipleTelemetry.addData("target " + m, (modules[m].servo.getTargetAngle()));
+            multipleTelemetry.addData("angle " + m, (modules[m].servo.getCurrentAngle()));
+            multipleTelemetry.addData("power " + m, (modules[m].servo.power));
+            multipleTelemetry.addData("P " + m, (modules[m].servo.error * SteeringServo.kp));
+            multipleTelemetry.addData("I " + m, (modules[m].servo.integral * SteeringServo.ki));
+            multipleTelemetry.addData("D " + m, (modules[m].servo.derivative * SteeringServo.kd));
+        }
 //        telemetry.addData("distance", swerveDrive.getDistance());
 //        multipleTelemetry.addData("top", 50);
 //        multipleTelemetry.addData("bottom", -50);
         multipleTelemetry.addData("distance", swerveDrive.getDistance());
         multipleTelemetry.addData("angle", swerveDrive.getHeading());
+        telemetry.addData("upper motor", dischargeSubsystem.getPosition());
+        telemetry.addData("lower motor", dischargeSubsystem.getPosition2());
         multipleTelemetry.update();
 
 //        multipleTelemetry.addData("posX", gamepad1.left_stick_x);

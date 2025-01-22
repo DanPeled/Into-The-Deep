@@ -89,7 +89,21 @@ public class SwerveCommands {
             this.swerveDrive = swerveDrive;
             this.telemetry = telemetry;
             this.wantedDistance = wantedDistance;
-//            SwerveDrive.minAngleError = 10;
+
+            addRequirements(swerveDrive);
+        }
+
+        public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y,
+                       double wantedAngle, double sensitivity, double boost) {
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.boost = boost;
+            this.sensitivity = sensitivity;
+            this.swerveDrive = swerveDrive;
+            this.telemetry = telemetry;
+            this.wantedDistance = -1;
+
 
             addRequirements(swerveDrive);
         }

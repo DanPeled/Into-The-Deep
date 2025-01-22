@@ -29,7 +29,7 @@ public class BasketOnly extends CommandOpMode {
 
         swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this, true, new Point(0.82, 0.2));
         register(swerveDrive, dischargeSubsystem);
-        swerveDrive.setInitialHeading(180);
+        swerveDrive.setHeading(180);
         swerveDrive.bl.setHeading(0, false);
         swerveDrive.br.setHeading(0, false);
         swerveDrive.fl.setHeading(0, false);
@@ -44,12 +44,13 @@ public class BasketOnly extends CommandOpMode {
             swerveDrive.fr.update();
         }
 
-        schedule(new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.82, 0.8, 0, 0.03, -1, 0.2),
-                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 0, 0.03, -1, 0.2),
+        schedule(
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.82, 0.8, 0, 0.03, 0.2),
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 0, 0.03, 0.2),
                 new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
-                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.55, 0, 0.03, -1, 0.2),
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.55, 0, 0.03, 0.2),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 0, 0.03, -1, 0.2),
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 0, 0.03, 0.2),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem)
         );
     }

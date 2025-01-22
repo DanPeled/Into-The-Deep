@@ -228,9 +228,6 @@ public class SwerveDrive extends SubsystemBase {
 //       telemetry.update();
     }
 
-    public void setInitialHeading(double heading) {
-        correctedHeading = heading;
-    }
 
     //rotate a vector by an angle for field oriented
     private double[] rotateVectors(double x, double y, double heading) {
@@ -285,6 +282,10 @@ public class SwerveDrive extends SubsystemBase {
 
     public void resetHeading() {
         correctedHeading = getHeading() + 180;
+    }
+
+    public void setHeading(double heading) {
+        correctedHeading = heading + 180;
     }
 
     public Point getPosition() {
