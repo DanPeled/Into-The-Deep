@@ -78,6 +78,7 @@ public class SwerveCommands {
         final double minPower = 0.04;
         SwerveDrive swerveDrive;
         Telemetry telemetry;
+        boolean noRotation = false;
 
         public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y,
                        double wantedAngle, double sensitivity, double wantedDistance, double boost) {
@@ -104,6 +105,20 @@ public class SwerveCommands {
             this.telemetry = telemetry;
             this.wantedDistance = -1;
 
+            addRequirements(swerveDrive);
+        }
+
+        public GotoCmd(Telemetry telemetry, SwerveDrive swerveDrive, double x, double y,
+                       double wantedAngle, double sensitivity, double boost, boolean noRotation) {
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.boost = boost;
+            this.sensitivity = sensitivity;
+            this.swerveDrive = swerveDrive;
+            this.telemetry = telemetry;
+            this.wantedDistance = -1;
+            this.noRotation = noRotation;
 
             addRequirements(swerveDrive);
         }
@@ -132,13 +147,19 @@ public class SwerveCommands {
             }
             lastError = error;
             lastTime = currentTime;
-            swerveDrive.drive(localVector[0], localVector[1], rotation, boost);
+            if (noRotation) {
+                swerveDrive.drive(localVector[0], localVector[1], 0, boost);
+
+            } else {
+                swerveDrive.drive(localVector[0], localVector[1], rotation / 2.5, boost);
+            }
+
         }
 
         @Override
         public boolean isFinished() {
             return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (swerveDrive.getDistance() <= wantedDistance))
-                    && (Math.abs(wantedAngle + 180 - swerveDrive.getAdjustedHeading(0)) < 3));
+                    && ((Math.abs(wantedAngle + 180 - swerveDrive.getAdjustedHeading(0)) < 3) || noRotation));
         }
 
         @Override

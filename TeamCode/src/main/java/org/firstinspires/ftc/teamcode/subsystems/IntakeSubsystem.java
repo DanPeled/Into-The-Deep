@@ -9,6 +9,8 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
 
+import lombok.Setter;
+
 public class IntakeSubsystem extends SubsystemBase {
     private final DcMotor rMotor;
     private final DcMotor lMotor;
@@ -18,13 +20,14 @@ public class IntakeSubsystem extends SubsystemBase {
     private final CRServo spinServo; // claw up & down
     MultipleTelemetry telemetry;
 
+    int positionCorrection = 0;
     private double targetPos = -1;
     private final int maxArmLength = 3000;
     public int minSlidesPos = 10;
 
-    public final int manualTicksPerSecond = 900;
+    public final int manualTicksPerSecond = 1100;
     public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.4;
+    public final double slidesLowSpeed = 0.5;
 
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -66,7 +69,7 @@ public class IntakeSubsystem extends SubsystemBase {
         lMotor.setTargetPosition((int)targetPos);
     }
     public double getAveragePosition(){
-        return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition())/2;
+        return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition()) / 2 + positionCorrection;
     }
 
     public void setRotationServoPosition(double position) {
@@ -94,7 +97,11 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public int getMotorPosition() {
-        return rMotor.getCurrentPosition();
+        return rMotor.getCurrentPosition() + positionCorrection;
+    }
+
+    public void setPositionCorrection(int pos) {
+        positionCorrection = pos;
     }
 
     public double getXServoPosition() {

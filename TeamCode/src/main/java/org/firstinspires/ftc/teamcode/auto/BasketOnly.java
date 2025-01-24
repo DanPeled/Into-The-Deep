@@ -4,17 +4,21 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandOpMode;
+import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
+import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
+import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
+import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 import org.opencv.core.Point;
 
-@Disabled
 @Autonomous
 public class BasketOnly extends CommandOpMode {
     FtcDashboard dashboard = FtcDashboard.getInstance();
@@ -22,20 +26,27 @@ public class BasketOnly extends CommandOpMode {
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
     SwerveDrive swerveDrive;
     DischargeSubsystem dischargeSubsystem;
+    IntakeSubsystem intakeSubsystem;
 
     @Override
     public void initialize() {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
-
+        intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this, true, new Point(0.82, 0.2));
         register(swerveDrive, dischargeSubsystem);
-        swerveDrive.setHeading(180);
+        swerveDrive.setHeading(0);
         swerveDrive.bl.setHeading(0, false);
         swerveDrive.br.setHeading(0, false);
         swerveDrive.fl.setHeading(0, false);
         swerveDrive.fr.setHeading(0, false);
-        schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
+        schedule(new SequentialCommandGroup(
+                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
+                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
+                new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
+                //new IntakeCommands.Wait(intakeSubsystem, 1),
+                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
+                new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true)));
         while (opModeInInit()) {
             super.run();
             swerveDrive.bl.update();
@@ -45,12 +56,12 @@ public class BasketOnly extends CommandOpMode {
         }
 
         schedule(
-                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.82, 0.8, 0, 0.03, 0.2),
-                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 0, 0.03, 0.2),
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.82, 0.8, 180, 0.03, 0.2),
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 180, 0.03, 0.2),
                 new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
-                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.55, 0, 0.03, 0.2),
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.55, 180, 0.03, 0.2),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 0, 0.03, 0.2),
+                new SwerveCommands.GotoCmd(telemetry, swerveDrive, 0.0, 0.8, 180, 0.03, 0.2),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem)
         );
     }
