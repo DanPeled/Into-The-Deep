@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.controller.wpilibcontroller.ProfiledPIDController;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -129,7 +130,8 @@ public class MecanumCommands {
             double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
             double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
-            length += Math.signum(length) * minPower;
+//            length += Math.signum(length) * minPower;
+
             localVector[0] = Math.sin(MovementAngle) * length;
             localVector[1] = Math.cos(MovementAngle) * length;
             double currentTime = (double) System.currentTimeMillis() / 1000;
@@ -145,6 +147,7 @@ public class MecanumCommands {
                 rotation = proportional + Integral * ki + derivative * kd + Math.signum(proportional + Integral * ki + derivative * kd) * 0.04;
                 rotation = rotation * 0.65 / (boost * 0.7 + 0.3);
             }
+
             lastError = error;
             lastTime = currentTime;
             if (noRotation) {
@@ -153,12 +156,15 @@ public class MecanumCommands {
             } else {
                 mecanumDrive.drive(localVector[0], localVector[1], rotation / 2.5, boost);
             }
+            telemetry.addData("goto", true);
+            telemetry.addData("x", localVector[0]);
+            telemetry.addData("y", localVector[1]);
 
         }
 
         @Override
         public boolean isFinished() {
-            return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (mecanumDrive.getDistance() <= wantedDistance))
+            return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
                     && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 3) || noRotation));
         }
 

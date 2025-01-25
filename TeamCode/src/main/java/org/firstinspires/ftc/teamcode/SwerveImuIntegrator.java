@@ -4,12 +4,9 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.canvas.Canvas;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
-import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
@@ -19,7 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 
-public class ImuIntegrator implements BNO055IMU.AccelerationIntegrator {
+public class SwerveImuIntegrator implements BNO055IMU.AccelerationIntegrator {
 
     final double tile = 0.6;
 
@@ -48,15 +45,22 @@ public class ImuIntegrator implements BNO055IMU.AccelerationIntegrator {
     public Velocity getVelocity() {
         return this.velocity;
     }
+
     public Acceleration getAcceleration() {
         return this.acceleration;
     }
 
 
-    public  double getX() { return position.x; }
-    public  double getY() { return position.y; }
+    public double getX() {
+        return position.x;
+    }
 
-    public ImuIntegrator(BNO055IMU imu, SwerveDrive swerveDrive, boolean useDahsboard, Point origin, double angularOffset) {
+    public double getY() {
+        return position.y;
+    }
+
+    public SwerveImuIntegrator(BNO055IMU imu, SwerveDrive swerveDrive, boolean useDahsboard, Point origin,
+                               double angularOffset) {
         //, Point direction add to parameters later
         this.imu = imu;
         // Constructor

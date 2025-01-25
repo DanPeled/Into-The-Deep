@@ -17,8 +17,7 @@ import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
-import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
-import org.firstinspires.ftc.teamcode.ImuIntegrator;
+import org.firstinspires.ftc.teamcode.SwerveImuIntegrator;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.opencv.core.Point;
 
@@ -109,7 +108,7 @@ public class SwerveDrive extends SubsystemBase {
         imu = hardwareMap.get(BNO055IMU.class, "imu");
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.accelerationIntegrationAlgorithm = new ImuIntegrator(imu, this, false, new Point(0, 0), 0);
+        parameters.accelerationIntegrationAlgorithm = new SwerveImuIntegrator(imu, this, false, new Point(0, 0), 0);
         ElapsedTime timer = new ElapsedTime();
         timer.reset();
         while (!imu.isGyroCalibrated() && !opMode.isStopRequested() && timer.seconds() < 5) {
