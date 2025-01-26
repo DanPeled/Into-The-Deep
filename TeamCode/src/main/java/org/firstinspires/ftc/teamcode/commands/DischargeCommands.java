@@ -45,7 +45,7 @@ public class DischargeCommands {
         }
 
         @Override
-        public void initialize(){
+        public void initialize() {
             elapsedTime.reset();
         }
 
@@ -55,7 +55,7 @@ public class DischargeCommands {
             double deltaTime = timeMilli - lastTimeMilli;
             if (Math.abs(power.get()) > 0.25) {
                 dischargeSubsystem.runToPosition();
-                dischargeSubsystem.changeTargetPos(-power.get() * deltaTime * (dischargeSubsystem.manualTicksPerSecond/1000.0));
+                dischargeSubsystem.changeTargetPos(-power.get() * deltaTime * (dischargeSubsystem.manualTicksPerSecond / 1000.0));
                 dischargeSubsystem.goToTarget();
             }
             lastTimeMilli = timeMilli;
@@ -223,7 +223,7 @@ public class DischargeCommands {
         Telemetry telemetry;
         Supplier<Double> ClawPos;
 
-        public DischargeClawTestCmd(Supplier<Double> ClawPos ,DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
+        public DischargeClawTestCmd(Supplier<Double> ClawPos, DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             this.dischargeSubsystem = dischargeSubsystem;
             this.telemetry = telemetry;
             this.ClawPos = ClawPos;
@@ -276,10 +276,11 @@ public class DischargeCommands {
             return true;
         }
     }
-    public static class ChamberDischargeCmd extends SequentialCommandGroup{
-        public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry){
+
+    public static class ChamberDischargeCmd extends SequentialCommandGroup {
+        public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new DischargeGotoCmd(dischargeSubsystem,dischargeSubsystem.highChamberHeight-250,telemetry),
+                    new DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 250, telemetry),
                     new WaitCommand(300),
                     new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(100),
                     new DischargeCommands.GoHomeCmd(dischargeSubsystem));

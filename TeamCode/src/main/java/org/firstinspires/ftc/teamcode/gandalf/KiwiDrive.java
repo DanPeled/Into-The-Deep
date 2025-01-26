@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.gandalf;
+
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotor;
 
@@ -28,8 +29,8 @@ public class KiwiDrive {
         yv = cords[1];
 
         wheel1Power = moveSpeedModifier * xv - 0.3 * av;
-        wheel2Power = moveSpeedModifier * (-yv * -Math.sqrt(3)/2 + xv * -1/2) - 0.3 * av;
-        wheel3Power = moveSpeedModifier * (-yv * Math.sqrt(3)/2 + xv * -1/2) - 0.3 * av;
+        wheel2Power = moveSpeedModifier * (-yv * -Math.sqrt(3) / 2 + xv * -1 / 2) - 0.3 * av;
+        wheel3Power = moveSpeedModifier * (-yv * Math.sqrt(3) / 2 + xv * -1 / 2) - 0.3 * av;
 
         normalizeWheelSpeeds(wheel1Power, wheel2Power, wheel3Power);
 
@@ -87,9 +88,10 @@ public class KiwiDrive {
             setMoveSpeedModifier(0.35);
         }
     }
-    private void normalizeWheelSpeeds(double wheel1Speed, double wheel2Speed, double wheel3Speed){
-        double highestSpeed =Math.abs(Math.max(wheel1Speed, Math.max(wheel2Speed, wheel3Speed)));
-        if (highestSpeed > 1){
+
+    private void normalizeWheelSpeeds(double wheel1Speed, double wheel2Speed, double wheel3Speed) {
+        double highestSpeed = Math.abs(Math.max(wheel1Speed, Math.max(wheel2Speed, wheel3Speed)));
+        if (highestSpeed > 1) {
             wheel1Power /= highestSpeed;
             wheel2Power /= highestSpeed;
             wheel3Power /= highestSpeed;

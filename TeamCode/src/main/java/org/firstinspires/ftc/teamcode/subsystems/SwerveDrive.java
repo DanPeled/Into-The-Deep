@@ -343,7 +343,6 @@ public class SwerveDrive extends SubsystemBase {
         }
 
 
-
         averageError = (Math.abs(fl.getAngleError()) + Math.abs(fr.getAngleError()) +
                 Math.abs(br.getAngleError()) + Math.abs(bl.getAngleError())) / 4;
 

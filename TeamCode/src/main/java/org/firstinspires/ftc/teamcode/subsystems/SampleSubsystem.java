@@ -8,14 +8,14 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class SampleSubsystem extends SubsystemBase {
     private final DcMotorEx motor;
-//    private final Servo gearBoxServo, clawServo;
+    //    private final Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
     double clawServoHoldPos = 0.1, clawServoReleasePos = 0;
     MultipleTelemetry telemetry;
     int gearBoxRatio = 1;
 
     public SampleSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
-        motor = hardwareMap.get(DcMotorEx.class,"dischargeMotor");
+        motor = hardwareMap.get(DcMotorEx.class, "dischargeMotor");
 //        motor2 = hardwareMap.get(DcMotorEx.class,"dischargeMotor2");
 //        gearBoxServo = hardwareMap.servo.get("gearBoxServo");
 //        clawServo = hardwareMap.servo.get("dischargeServo");
@@ -24,7 +24,7 @@ public class SampleSubsystem extends SubsystemBase {
         resetEncoders();
     }
 
-//    public void setPower(double power) {
+    //    public void setPower(double power) {
 //        telemetry.addData("tiiick", motor2.getCurrentPosition());
 //        telemetry.addData("gearboxRatio",gearBoxRatio);
 //        telemetry.addData("servoPos",gearBoxServo.getPosition());
@@ -41,19 +41,22 @@ public class SampleSubsystem extends SubsystemBase {
 //            motor2.setPower(power);
 //        }
 //    }
-    public void setPosition(int position){
+    public void setPosition(int position) {
         motor.setTargetPosition(position);
         motor.setPower(0.5);
         motor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 //        motor2.setTargetPosition(position);
     }
-    public void setPower(double power){
+
+    public void setPower(double power) {
         motor.setPower(power);
 //        motor2.setPower(power);
     }
-    public int getPosition(){
+
+    public int getPosition() {
         return motor.getCurrentPosition();
     }
+
     public void climbMode() {
 //        gearBoxServo.setPosition(servoClimbPos);
         gearBoxRatio = 9;
@@ -63,7 +66,8 @@ public class SampleSubsystem extends SubsystemBase {
 //        gearBoxServo.setPosition(servoDischargePos);
         gearBoxRatio = 1;
     }
-    public int getGearBoxRatio(){
+
+    public int getGearBoxRatio() {
         return gearBoxRatio;
     }
 

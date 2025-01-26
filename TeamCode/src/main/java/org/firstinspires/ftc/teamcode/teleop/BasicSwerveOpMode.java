@@ -113,8 +113,8 @@ public class BasicSwerveOpMode extends CommandOpMode {
         //    lastTargetChangeTime = currentTime;
         //}
         //swerveDrive.fl.servo.setTargetAngle(targetAngle);
-        for (int m = 0; m < 4; m++){
-            modules[m].servo.setTargetAngle(Math.atan2(gamepad1.left_stick_x, gamepad1.left_stick_y)*(180/Math.PI));
+        for (int m = 0; m < 4; m++) {
+            modules[m].servo.setTargetAngle(Math.atan2(gamepad1.left_stick_x, gamepad1.left_stick_y) * (180 / Math.PI));
             modules[m].setPower(gamepad1.right_stick_y);
             modules[m].update();
             packet.put("Error " + m, (modules[m].servo.error));
@@ -122,7 +122,6 @@ public class BasicSwerveOpMode extends CommandOpMode {
             packet.put("angle " + m, (modules[m].servo.getCurrentAngle()));
             packet.put("power " + m, (modules[m].servo.power));
         }
-
 
 
         if (gamepad1.dpad_up) {

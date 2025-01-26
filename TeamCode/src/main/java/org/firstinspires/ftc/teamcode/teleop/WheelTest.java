@@ -21,12 +21,13 @@ public class WheelTest extends LinearOpMode {
     // fr: servo = 3, analog = 3, motor = 2
     //0:350.64 1: 173 2:315 3: 54.83
     //br:53,bl:133.21,
-    SwerveModule bl,br, fl, fr,cr;
+    SwerveModule bl, br, fl, fr, cr;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
+
     @Override
-    public void runOpMode(){
+    public void runOpMode() {
         bl = new SwerveModule(hardwareMap.get(DcMotor.class, "bl_motor"),
                 hardwareMap.get(CRServo.class, "bl_servo"),
                 hardwareMap.analogInput.get("bl_encoder"), 314.64);
@@ -43,27 +44,27 @@ public class WheelTest extends LinearOpMode {
         // FLONG
         waitForStart();
 
-        while (opModeIsActive()){
+        while (opModeIsActive()) {
 
-            if(gamepad1.b){
+            if (gamepad1.b) {
                 cr.setServoPower(0);
                 cr.setPower(0);
                 cr = fl;
-            } else if(gamepad1.a) {
+            } else if (gamepad1.a) {
                 cr.setServoPower(0);
                 cr.setPower(0);
                 cr = bl;
-            } else if(gamepad1.y) {
+            } else if (gamepad1.y) {
                 cr.setServoPower(0);
                 cr.setPower(0);
                 cr = fr;
-            } else if(gamepad1.x) {
+            } else if (gamepad1.x) {
                 cr.setServoPower(0);
                 cr.setPower(0);
                 cr = br;
             }
             double power = -gamepad1.left_stick_y;
-            double wantedAngle = Math.toDegrees(Math.atan2(gamepad1.right_stick_x ,-gamepad1.right_stick_y));
+            double wantedAngle = Math.toDegrees(Math.atan2(gamepad1.right_stick_x, -gamepad1.right_stick_y));
 
             power = Utils.signRoot(power);
 
@@ -71,36 +72,34 @@ public class WheelTest extends LinearOpMode {
             cr.setPower(power);
 //            cr.update();
 
-            if(gamepad1.dpad_right){
-                    cr.setServoPower(0.07);
-                } else if(gamepad1.dpad_left){
-                    cr.setServoPower(-0.07);
-                }
-            else if(gamepad1.right_stick_button){
-                    cr.servo.setPower(0);
-                    cr.setHeadingWithAngle(0);
-                    cr.update();
-                }
-            else if (Math.pow(gamepad1.right_stick_y,2) + Math.pow(gamepad1.right_stick_x,2) <= 0.99){
-                   cr.servo.setPower(0);
-                }else {
-                    cr.servo.setPower(0);
-                    cr.update();
-                }
-            if(gamepad1.back){
-                    cr.zeroHeading();
-                }
+            if (gamepad1.dpad_right) {
+                cr.setServoPower(0.07);
+            } else if (gamepad1.dpad_left) {
+                cr.setServoPower(-0.07);
+            } else if (gamepad1.right_stick_button) {
+                cr.servo.setPower(0);
+                cr.setHeadingWithAngle(0);
+                cr.update();
+            } else if (Math.pow(gamepad1.right_stick_y, 2) + Math.pow(gamepad1.right_stick_x, 2) <= 0.99) {
+                cr.servo.setPower(0);
+            } else {
+                cr.servo.setPower(0);
+                cr.update();
+            }
+            if (gamepad1.back) {
+                cr.zeroHeading();
+            }
             multipleTelemetry.addData("wanted angle: ", wantedAngle);
             multipleTelemetry.addData("X", gamepad1.right_stick_x);
             multipleTelemetry.addData("y", -gamepad1.right_stick_y);
             multipleTelemetry.addData("current angle: ", cr.getCurrentHeading());
-            multipleTelemetry.addData("motor position: ",cr.getPosition());
-            multipleTelemetry.addData("angle diff:",(wantedAngle - cr.getCurrentHeading()) % 180);
+            multipleTelemetry.addData("motor position: ", cr.getPosition());
+            multipleTelemetry.addData("angle diff:", (wantedAngle - cr.getCurrentHeading()) % 180);
             multipleTelemetry.addData("offset", cr.servo.getAngleOffset());
-            multipleTelemetry.addData("bl position",bl.getPosition());
-            multipleTelemetry.addData("br position",br.getPosition());
-            multipleTelemetry.addData("fl position",fl.getPosition());
-            multipleTelemetry.addData("fr position",fr.getPosition());
+            multipleTelemetry.addData("bl position", bl.getPosition());
+            multipleTelemetry.addData("br position", br.getPosition());
+            multipleTelemetry.addData("fl position", fl.getPosition());
+            multipleTelemetry.addData("fr position", fr.getPosition());
             multipleTelemetry.update();
 
         }

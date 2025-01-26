@@ -58,7 +58,7 @@ public class GandalfsBeard extends LinearOpMode {
             } else {
                 conveyorMotor.setPower(0);
             }
-            if (timeOnPress + 1 >= runtime.seconds()){
+            if (timeOnPress + 1 >= runtime.seconds()) {
                 conveyorMotor.setPower(-1);
             }
 

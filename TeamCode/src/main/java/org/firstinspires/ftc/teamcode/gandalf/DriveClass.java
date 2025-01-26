@@ -15,7 +15,7 @@ public class DriveClass {
     }
 
     public void drive(double speed, double turn, boolean leftBumper, boolean rightBumper) {
-        setBoost(leftBumper,rightBumper);
+        setBoost(leftBumper, rightBumper);
         leftWheel.setPower(speed * speedModifier - turn * angularSpeedModifier);
         rightWheel.setPower(speed * speedModifier + turn * angularSpeedModifier);
 
@@ -33,13 +33,13 @@ public class DriveClass {
             angularSpeedModifier = 0.25;
         }
     }
-    public void swapDrivingDirection(){
+
+    public void swapDrivingDirection() {
         isDrivingForward = !isDrivingForward;
-        if (isDrivingForward){
+        if (isDrivingForward) {
             rightWheel.setDirection(DcMotorSimple.Direction.REVERSE);
             leftWheel.setDirection(DcMotorSimple.Direction.FORWARD);
-        }
-        else {
+        } else {
             rightWheel.setDirection(DcMotorSimple.Direction.FORWARD);
             leftWheel.setDirection(DcMotorSimple.Direction.REVERSE);
         }

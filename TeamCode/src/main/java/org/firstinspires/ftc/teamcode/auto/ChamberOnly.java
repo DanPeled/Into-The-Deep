@@ -41,14 +41,7 @@ public class ChamberOnly extends CommandOpMode {
         register(mecanumDrive, dischargeSubsystem);
         //schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem),
         //        new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
-        schedule(new SequentialCommandGroup(
-                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
-                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
-//                new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
-                //new IntakeCommands.Wait(intakeSubsystem, 1),
-//                new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
-//                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
-                new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
+        AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);
         while (opModeInInit()) {
             super.run();
         }
@@ -77,24 +70,26 @@ public class ChamberOnly extends CommandOpMode {
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 1.5, 0, 0.02, 0.8),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 0.4, 0, 0.05, 0.8, true),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 0.65, 0, 0.01, 0.5, true),
-                //take the specimen
+                new IntakeCommands.StartIntakeCmd(intakeSubsystem),
+                new IntakeCommands.SampleIntakeCmd(intakeSubsystem),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                //transfer,
+                                new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
                                 new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)),
                         new SequentialCommandGroup(
                                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.6, 0, 0.03, 0.8),
-                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.78, 1.02, 0, 0.06, 0.7)
+                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.78, 1.02, 0, 0.03, 0.7)
                         )
                 ),
-                new ParallelRaceGroup(new InstantCommand(() -> mecanumDrive.drive(0, 0.4, 0, 0.2)),
-                        new WaitCommand(350)),
+
                 new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.8, 0.2, 0, 0.06, 0.7)
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.8, 0.25, 0, 0.05, 0.5)
         ));
 //        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.8, 1.5, 0, 0.05, 1, true),
 //                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.4, 1.5, 0, 0.02, 0.8, true),
 //                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.4, 0.25, 0, 0.02, 0.7, true)
+//        new ParallelRaceGroup(new InstantCommand(() -> mecanumDrive.drive(0, 0.4, 0, 0.2)),
+//                new WaitCommand(350)),
     }
 
     @Override

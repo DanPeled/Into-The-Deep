@@ -10,6 +10,7 @@ public class ElevatorTestThingy extends LinearOpMode {
     DcMotorEx motor1;
     DcMotorEx motor2;
     double position = 0;
+
     //0.39 close 0.74 open
     @Override
     public void runOpMode() throws InterruptedException {
@@ -20,7 +21,7 @@ public class ElevatorTestThingy extends LinearOpMode {
         while (opModeIsActive() && !isStopRequested()) {
             motor1.setPower(-0.8);
 //            motor2.setPower(-0.8);
-            telemetry.addData("pos",motor1.getCurrentPosition());
+            telemetry.addData("pos", motor1.getCurrentPosition());
 //            telemetry.addData("pos",motor1.getCurrentPosition());
             telemetry.update();
         }

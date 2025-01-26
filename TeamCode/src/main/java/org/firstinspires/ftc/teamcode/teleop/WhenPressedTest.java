@@ -30,9 +30,9 @@ public class WhenPressedTest extends CommandOpMode {
         register(sampleSubsystem);
 //        schedule(new SetPowerCommand(sampleSubsystem,0.5),
 //                new DischargeGotoCmd(sampleSubsystem,400,10,telemetry));
-        Button a = new GamepadButton(systemGamepad,GamepadKeys.Button.A);
+        Button a = new GamepadButton(systemGamepad, GamepadKeys.Button.A);
         a.whenPressed(new SetPowerCommand(sampleSubsystem, 0.5));
-        Button b = new GamepadButton(systemGamepad,GamepadKeys.Button.B);
+        Button b = new GamepadButton(systemGamepad, GamepadKeys.Button.B);
         b.whenPressed(new SetPowerCommand(sampleSubsystem, -0.5));
         Button x = new GamepadButton(systemGamepad, GamepadKeys.Button.X);
         x.whenPressed(new SetPowerCommand(sampleSubsystem, 0));

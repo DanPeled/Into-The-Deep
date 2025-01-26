@@ -83,7 +83,7 @@ public class SwerveModule {
         motor.setPower(motorPower * isMotorFlipped + motorsCounterServoPower);
     }
 
-//* Math.cos(Math.toRadians(getAngleError()))
+    //* Math.cos(Math.toRadians(getAngleError()))
     public double getPower() {
         return motor.getPower();
     }
@@ -99,7 +99,7 @@ public class SwerveModule {
         return angleDiff;
     }
 
-    private void calcMotorsCounterServoPower(double servoPower){
+    private void calcMotorsCounterServoPower(double servoPower) {
         motorsCounterServoPower = servoPower * motorsCounterModifier;
     }
 

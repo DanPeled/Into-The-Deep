@@ -1,4 +1,5 @@
 package org.firstinspires.ftc.teamcode.teleop;
+
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -8,10 +9,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.hardware.bosch.BNO055IMU;
+
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+
 import static java.lang.Math.*;
 
 
@@ -34,7 +37,7 @@ public class Swerve_Drive extends LinearOpMode {
     static final int FIELD_Y_SIZE = 1000;
     static final int motorTicksPerRevolution = 28;
     static final int motorMaxRPM = 6000;
-    static final int motorMaxTickPerSecond = motorTicksPerRevolution * motorMaxRPM/60;
+    static final int motorMaxTickPerSecond = motorTicksPerRevolution * motorMaxRPM / 60;
     static final double wheelCircumference = 19.8;  //cm
     static final double motorGearRatio = 7;  // gear ratio from motor to wheel
 
@@ -57,7 +60,7 @@ public class Swerve_Drive extends LinearOpMode {
     }
 
     public void drive() {
-        if (gamepad1.y){
+        if (gamepad1.y) {
             robot.minSpeedTest();
             return;
         }
@@ -72,7 +75,7 @@ public class Swerve_Drive extends LinearOpMode {
         double ly = gamepad1.left_stick_y * speedMultiplier;
 
         Vector2d direction = new Vector2d(lx, -ly);
-        print("direction="+ direction);
+        print("direction=" + direction);
 
         double directionSpeed = direction.magnitude();  //??? what units?
         double rotation = gamepad1.right_stick_x * speedMultiplier;
@@ -82,7 +85,7 @@ public class Swerve_Drive extends LinearOpMode {
         double chassisAngle = robot.getGyroOrientation();
         print2("yaw", chassisAngle);
         print2("calc yaw", robot.getCalcOrientation());
-        print("location="+ robot.getCenterLocation());
+        print("location=" + robot.getCenterLocation());
 
 
         for (int i = 0; i < 4; i++) {
@@ -99,9 +102,9 @@ public class Swerve_Drive extends LinearOpMode {
 
             Vector2d combVec = rotVec.add(dirVec);
 
-            print("wheel "+ i);
-            print("   location "+ robot.wheels[i].location);
-            print("   steering "+ robot.wheels[i].steering);
+            print("wheel " + i);
+            print("   location " + robot.wheels[i].location);
+            print("   steering " + robot.wheels[i].steering);
             print2("   odometer", robot.wheels[i].odometer);
 
             robot.wheels[i].setSteering(combVec);
@@ -114,7 +117,7 @@ public class Swerve_Drive extends LinearOpMode {
         private AnalogInput absEncoder;  // To read the position feedback
         private static final double errorThreshold1 = 1;  // Threshold degrees for stopping servo
         private double targetAngle;
-        private double kp,ki,kd;
+        private double kp, ki, kd;
         public double zeroAngle;   // calibration of wheel steering
         private int polarity1;   // 1 or -1 , two avoid steering above 90 degress
         private double minSpeed = 0.02;
@@ -128,23 +131,41 @@ public class Swerve_Drive extends LinearOpMode {
             setPidConstants(0.00334, 0, 0);
             Runnable controller = new Runnable() {
                 @Override
-                public void run() { moveToTargetAngle(); }
+                public void run() {
+                    moveToTargetAngle();
+                }
             };
             Thread controllerThread = new Thread(controller);
             controllerThread.start();
-        };
+        }
 
-        public void setPidConstants(double p, double i, double d) { kp = p; ki = i; kd = d; }
+        ;
 
-        public void flipPolarity() { polarity1 *= -1; }
-        public int polarity() { return polarity1; }
+        public void setPidConstants(double p, double i, double d) {
+            kp = p;
+            ki = i;
+            kd = d;
+        }
 
-        void setTargetAngle(double a) { targetAngle = a; }
+        public void flipPolarity() {
+            polarity1 *= -1;
+        }
+
+        public int polarity() {
+            return polarity1;
+        }
+
+        void setTargetAngle(double a) {
+            targetAngle = a;
+        }
 
         void setSpeed(double speed) {    // speed range -1:1
-            if (speed > 0){speed+=minSpeed;}
-            else if (speed < 0){speed-=minSpeed;}
-            double v =  0.5 + speed/2;
+            if (speed > 0) {
+                speed += minSpeed;
+            } else if (speed < 0) {
+                speed -= minSpeed;
+            }
+            double v = 0.5 + speed / 2;
             servo.setPosition(v); // this is speed in Continues Rotation mode, range 0:1
         }
 
@@ -152,11 +173,11 @@ public class Swerve_Drive extends LinearOpMode {
             double a = 0;
             int sides = 7;
             double score = 0;
-            for (int j=0; j<sides; j++) {
+            for (int j = 0; j < sides; j++) {
                 if (!opModeIsActive()) break;
                 setTargetAngle(a);
                 sleep(2000);
-                a = angle180(a+360/sides);
+                a = angle180(a + 360 / sides);
             }
             return score;
         }
@@ -165,7 +186,7 @@ public class Swerve_Drive extends LinearOpMode {
             setSpeed(0);
             double a1 = 999;
 
-            for (int samePos=0; samePos < 20;) {
+            for (int samePos = 0; samePos < 20; ) {
                 double a0 = getCurrentAngle();
                 if (a0 == a1) samePos++;
                 a1 = a0;
@@ -176,7 +197,7 @@ public class Swerve_Drive extends LinearOpMode {
         // how far a target is from current servo position
         public double targetDistance(double targetAngle) {
             double currentAngle = getCurrentAngle();
-            if ( polarity() == -1) currentAngle = angle180(currentAngle + 180);
+            if (polarity() == -1) currentAngle = angle180(currentAngle + 180);
             double target1 = targetAngle + zeroAngle;
             double error = angle180(target1 - currentAngle);
             return error;
@@ -243,7 +264,11 @@ public class Swerve_Drive extends LinearOpMode {
 
     void sleep(int ms) {
         //telemetry.sleep(ms);
-        try { Thread.sleep(ms); } catch (InterruptedException e) {e.printStackTrace();}
+        try {
+            Thread.sleep(ms);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
     // change any angle aggrees to range -180:180
@@ -255,35 +280,42 @@ public class Swerve_Drive extends LinearOpMode {
     }
 
     double random2(double low, double high) {
-        if (high<low) {
+        if (high < low) {
             double t = high;
             high = low;
             low = t;
         }
-        return low + (Math.random()*(high-low));
+        return low + (Math.random() * (high - low));
     }
 
-    String d2(double d) {return String.format("%.2f", d); }
+    String d2(double d) {
+        return String.format("%.2f", d);
+    }
 
-    void print(String s) { telemetry.addLine(s); }
-    void print2(String s, double d) { print(s+" "+d2(d)); }
+    void print(String s) {
+        telemetry.addLine(s);
+    }
+
+    void print2(String s, double d) {
+        print(s + " " + d2(d));
+    }
 
 
     void optimizePID(AxonServo servo) {
-        double kp=0;
-        double ki=0;
-        double kd=0;
+        double kp = 0;
+        double ki = 0;
+        double kd = 0;
         double best_kp = 0.003;
         double best_ki = 0;
         double best_kd = 0;
         double bestScore = 0;
 
-        double a=0;
-        while(opModeIsActive()) {
-            kp = best_kp * random2(0.7, 1.3) + random2(-0.0001,0.0001);
-            ki = best_ki ; //* random2(0.8, 1.2) + random2(0,0.001);
-            kd = best_kd * random2(0.7, 1.3) + random2(-0.0001,0.0001);
-            servo.setPidConstants(kp,ki,kd);
+        double a = 0;
+        while (opModeIsActive()) {
+            kp = best_kp * random2(0.7, 1.3) + random2(-0.0001, 0.0001);
+            ki = best_ki; //* random2(0.8, 1.2) + random2(0,0.001);
+            kd = best_kd * random2(0.7, 1.3) + random2(-0.0001, 0.0001);
+            servo.setPidConstants(kp, ki, kd);
             double score = servo.testServo();
 
             if (score > bestScore) {
@@ -341,10 +373,10 @@ public class Swerve_Drive extends LinearOpMode {
             wheels[2].init("bl");
             wheels[3].init("br");
 
-            wheels[0].chassisPos.set(-cx/2, cy/2);  // front left
-            wheels[1].chassisPos.set(cx/2, cy/2);   // front right
-            wheels[2].chassisPos.set(-cx/2, -cy/2); // back left
-            wheels[3].chassisPos.set(cx/2, -cy/2);  // back right
+            wheels[0].chassisPos.set(-cx / 2, cy / 2);  // front left
+            wheels[1].chassisPos.set(cx / 2, cy / 2);   // front right
+            wheels[2].chassisPos.set(-cx / 2, -cy / 2); // back left
+            wheels[3].chassisPos.set(cx / 2, -cy / 2);  // back right
             calcWheelsFieldPos();
 
             wheels[0].servo.zeroAngle = 171; //-20;
@@ -372,8 +404,8 @@ public class Swerve_Drive extends LinearOpMode {
         double getCalcOrientation() {
             Vector2d v02 = wheels[0].location.subtract(wheels[2].location);  // angle from 2(BL) to 0(FL)
             Vector2d v01 = wheels[0].location.subtract(wheels[1].location);  // angle from 1(FR) to 0(FL) wheels which should be Perpendicular to v02
-            print2 ("v02", v02.angle());
-            print2 ("v01", v01.angle());
+            print2("v02", v02.angle());
+            print2("v01", v01.angle());
             v01.rotate(90);
             double a = ((v01.add(v02)).divide(2)).angle(); // the average of two vectors (angles)
             return a;
@@ -418,8 +450,7 @@ public class Swerve_Drive extends LinearOpMode {
                     wheels[s].motor.setPower(0.5);
                     sleep(1000);
                     wheels[s].motor.setPower(0);
-                }
-                else {
+                } else {
                     long timeNow = System.currentTimeMillis();
                     if (timeNow - lastServoCalibrationTime > 50) {
                         lastServoCalibrationTime = timeNow;
@@ -452,7 +483,7 @@ public class Swerve_Drive extends LinearOpMode {
             motor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             motor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
-            servo =  new AxonServo();
+            servo = new AxonServo();
             servo.init(name + "_servo", name + "_encoder", 168);
             steering.set(0, 1);
             chassisPos.set(0, 0);
@@ -461,26 +492,32 @@ public class Swerve_Drive extends LinearOpMode {
             odometer = 0;
         }
 
-        void setChassis(Chassis c) { chassis = c; }
+        void setChassis(Chassis c) {
+            chassis = c;
+        }
 
-        void setId(int n) { id = n;  }
+        void setId(int n) {
+            id = n;
+        }
 
 
         void setSteering(Vector2d v) {
             steering = v;
             double speed = v.magnitude();
-            if (speed>0) {
+            if (speed > 0) {
                 double target = v.angle();
                 double error = servo.targetDistance(target);
-                if (abs(error)>90) servo.flipPolarity();
+                if (abs(error) > 90) servo.flipPolarity();
                 servo.setTargetAngle(target);
             }
         }
 
-        double speed() { return steering.magnitude(); } // current moving speed m/s
+        double speed() {
+            return steering.magnitude();
+        } // current moving speed m/s
 
         double ticks2cm(double ticks) {
-            return ticks/(motorTicksPerRevolution * motorGearRatio) * wheelCircumference;
+            return ticks / (motorTicksPerRevolution * motorGearRatio) * wheelCircumference;
         }
 
 
@@ -504,17 +541,31 @@ public class Swerve_Drive extends LinearOpMode {
         double x;
         double y;
 
-        Vector2d() { x = 0;  y = 0;  }
+        Vector2d() {
+            x = 0;
+            y = 0;
+        }
 
-        Vector2d(double x_, double y_) { x = x_;  y = y_; }
+        Vector2d(double x_, double y_) {
+            x = x_;
+            y = y_;
+        }
 
         // Copy constructor
-        Vector2d(Vector2d v) { x = v.x;  y = v.y; }
+        Vector2d(Vector2d v) {
+            x = v.x;
+            y = v.y;
+        }
 
-        void set(double x_, double y_) { x = x_;  y = y_; }
+        void set(double x_, double y_) {
+            x = x_;
+            y = y_;
+        }
 
         // Vector addition
-        Vector2d add(Vector2d other) { return new Vector2d(x + other.x, y + other.y); }
+        Vector2d add(Vector2d other) {
+            return new Vector2d(x + other.x, y + other.y);
+        }
 
         void add2(Vector2d other) {
             x += other.x;
@@ -522,10 +573,14 @@ public class Swerve_Drive extends LinearOpMode {
         }
 
         // Vector subtraction
-        Vector2d subtract(Vector2d other) { return new Vector2d(x - other.x, y - other.y); }
+        Vector2d subtract(Vector2d other) {
+            return new Vector2d(x - other.x, y - other.y);
+        }
 
         // Scalar multiplication
-        Vector2d multiply(double scalar) { return new Vector2d(x * scalar, y * scalar); }
+        Vector2d multiply(double scalar) {
+            return new Vector2d(x * scalar, y * scalar);
+        }
 
         // Scalar division
         Vector2d divide(double scalar) {
@@ -540,19 +595,23 @@ public class Swerve_Drive extends LinearOpMode {
 
         Vector2d unit() {
             double mag = magnitude();
-            return (mag > 0) ? divide(mag) : new Vector2d(0,1);
+            return (mag > 0) ? divide(mag) : new Vector2d(0, 1);
         }
 
         // Dot product
-        double dot(Vector2d other) { return x * other.x + y * other.y; }
+        double dot(Vector2d other) {
+            return x * other.x + y * other.y;
+        }
 
         // Magnitude (length)
-        double magnitude() { return sqrt(x * x + y * y); }
+        double magnitude() {
+            return sqrt(x * x + y * y);
+        }
 
         double angle() {
             //print("x1="+x1);
             //print("y1="+y1);
-            return atan2(x, y) * 180 / PI ;
+            return atan2(x, y) * 180 / PI;
         }
 
         void setAngle(double a, double len) {

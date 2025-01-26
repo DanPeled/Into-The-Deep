@@ -8,6 +8,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.robotcore.util.Range;
+
 import java.util.Random;
 
 @TeleOp(name = "Swerve PID Test")
@@ -55,7 +56,7 @@ public class SwervePIDTuner extends LinearOpMode {
 
             double currentAngle = 0;
             double deltaTime = 0;
-            if(lastTime != 0) {
+            if (lastTime != 0) {
                 currentAngle = getServoAngle();
                 error = calcDeltaAngle(targetAngle, currentAngle);
                 deltaTime = currentTime - lastTime;
@@ -77,7 +78,7 @@ public class SwervePIDTuner extends LinearOpMode {
 //
 //            // Move target angle by 90 degrees every few seconds
             if (System.currentTimeMillis() - lastTargetChangeTime > TARGET_INTERVAL) {
-                targetAngle += random.nextInt(280)-140;
+                targetAngle += random.nextInt(280) - 140;
                 targetAngle %= 360; // Keep within 0-360
                 lastTargetChangeTime = System.currentTimeMillis();
             }

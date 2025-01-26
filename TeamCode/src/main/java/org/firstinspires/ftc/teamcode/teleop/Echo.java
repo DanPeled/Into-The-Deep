@@ -15,12 +15,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
+import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.commands.SetStateCommands;
 import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
 import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
 import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
 import org.firstinspires.ftc.teamcode.subsystems.SteeringServo;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
@@ -31,12 +33,12 @@ import java.util.function.Supplier;
 @TeleOp
 public class Echo extends CommandOpMode {
 
-    SwerveDrive swerveDrive;
+    MecanumDrive mecanumDrive;
     DischargeSubsystem dischargeSubsystem;
     IntakeSubsystem intakeSubsystem;
     //LimeLightSubsystem limeLightSubsystem;
 
-    Supplier<Double> swerveX, swerveY, swerveR;
+    Supplier<Double> mecanumX, mecanumY, mecanumR;
     double lowSwerveSpeed = 0.3;
 
     static RobotState robotState;
@@ -62,7 +64,6 @@ public class Echo extends CommandOpMode {
     Button driverStart;
     Button systemBack;
 
-    SwerveModule[] modules = new SwerveModule[4];
 
     @Override
     public void initialize() {
@@ -70,15 +71,11 @@ public class Echo extends CommandOpMode {
         driverGamepad = new GamepadEx(gamepad1);
         systemGamepad = new GamepadEx(gamepad2);
 
-        swerveDrive = new SwerveDrive(hardwareMap, multipleTelemetry, this, true);
-        modules[0] = swerveDrive.fl;
-        modules[1] = swerveDrive.fr;
-        modules[2] = swerveDrive.bl;
-        modules[3] = swerveDrive.br;
+        mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, this);
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         //limeLightSubsystem = new LimeLightSubsystem(hardwareMap, multipleTelemetry);
-        register(swerveDrive, dischargeSubsystem, intakeSubsystem);
+        register(mecanumDrive, dischargeSubsystem, intakeSubsystem);
         initButtons();
         robotState = RobotState.NONE;
         controllersState = null;
@@ -99,9 +96,9 @@ public class Echo extends CommandOpMode {
             super.run();
         }
 
-        swerveR = () -> driverGamepad.getRightX();
-        swerveX = () -> driverGamepad.getLeftX();
-        swerveY = () -> driverGamepad.getLeftY();
+        mecanumX = () -> driverGamepad.getLeftX();
+        mecanumY = () -> driverGamepad.getLeftY();
+        mecanumR = () -> driverGamepad.getRightX();
 
         //swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
         //        driverGamepad::getLeftX, driverGamepad::getLeftY, driverGamepad::getRightX,
@@ -116,10 +113,10 @@ public class Echo extends CommandOpMode {
             CommandScheduler.getInstance().clearButtons();
 
 //            IntakeCommands.IntakeManualGoToCmd.endCommand();
-            CommandScheduler.getInstance().cancel(swerveDrive.getDefaultCommand());
+            CommandScheduler.getInstance().cancel(mecanumDrive.getDefaultCommand());
             CommandScheduler.getInstance().cancel(dischargeSubsystem.getDefaultCommand());
             CommandScheduler.getInstance().cancel(intakeSubsystem.getDefaultCommand());
-            CommandScheduler.getInstance().setDefaultCommand(swerveDrive, new SwerveCommands.NoOpCommand(swerveDrive));
+            CommandScheduler.getInstance().setDefaultCommand(mecanumDrive, new MecanumCommands.NoOpCommand(mecanumDrive));
             CommandScheduler.getInstance().setDefaultCommand(intakeSubsystem, new IntakeCommands.NoOpCommand(intakeSubsystem));
             CommandScheduler.getInstance().setDefaultCommand(dischargeSubsystem, new DischargeCommands.NoOpCommand(dischargeSubsystem));
 //            driverA.whenHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0))
@@ -133,27 +130,27 @@ public class Echo extends CommandOpMode {
             switch (robotState) {
                 case NONE:
 
-                    driverDPadDown.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.0, () -> -0.2, () -> 0.0,
+                    driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadUp.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.0, () -> 0.2, () -> 0.0,
+                    driverDPadUp.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> 0.2, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadLeft.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> -0.2, () -> 0.0, () -> 0.0,
+                    driverDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.2, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadRight.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.2, () -> 0.0, () -> 0.0,
+                    driverDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.2, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
 
-                    telemetry.addData("x", swerveX);
-                    telemetry.addData("y", swerveY);
+                    telemetry.addData("x", mecanumX);
+                    telemetry.addData("y", mecanumY);
                     telemetry.update();
-                    swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            swerveX, swerveY, swerveR,
-                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
+                    mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
+                            mecanumX, mecanumY, mecanumR, ()
+                            -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.5, true));
 
                     intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, systemGamepad::getLeftY));
 
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
-                    driverA.whenHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0));
+                    driverA.whenHeld(new MecanumCommands.SetRotationCmd(mecanumDrive, 0));
 
                     systemA.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.WaitForTransferEnd(),
@@ -186,14 +183,14 @@ public class Echo extends CommandOpMode {
                     break;
                 case INTAKE:
 
-                    systemDPadLeft.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> -0.1, () -> 0.0, () -> 0.0,
+                    systemDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.1, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
-                    systemDPadRight.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.1, () -> 0.0, () -> 0.0,
+                    systemDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.1, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
 
-                    swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
+                    mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
                             systemGamepad::getRightX, () -> 0.0, () -> 0.0,
-                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), false));
+                            () -> systemGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.2, false));
 
                     intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
                             systemGamepad::getLeftY));
@@ -222,18 +219,18 @@ public class Echo extends CommandOpMode {
                     break;
                 case BASKET:
 
-                    driverDPadDown.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.0, () -> -0.2, () -> 0.0,
+                    driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadUp.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.0, () -> 0.2, () -> 0.0,
+                    driverDPadUp.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> 0.2, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadLeft.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> -0.2, () -> 0.0, () -> 0.0,
+                    driverDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.2, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadRight.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.2, () -> 0.0, () -> 0.0,
+                    driverDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.2, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
 
-                    swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            swerveX, swerveY, swerveR,
-                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
+                    mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
+                            mecanumX, mecanumY, mecanumR,
+                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.5, true));
 
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
@@ -262,19 +259,19 @@ public class Echo extends CommandOpMode {
                     break;
                 case CHAMBER:
 
-                    driverDPadDown.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.0, () -> -0.2, () -> 0.0,
+                    driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadUp.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.0, () -> 0.2, () -> 0.0,
+                    driverDPadUp.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> 0.2, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadLeft.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> -0.2, () -> 0.0, () -> 0.0,
+                    driverDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.2, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
-                    driverDPadRight.whileHeld(new SwerveCommands.PowerCmd(telemetry, swerveDrive, () -> 0.2, () -> 0.0, () -> 0.0,
+                    driverDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.2, () -> 0.0, () -> 0.0,
                             () -> 0.3, true));
 
 
-                    swerveDrive.setDefaultCommand(new SwerveCommands.PowerCmd(telemetry, swerveDrive,
-                            swerveX, swerveY, swerveR,
-                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
+                    mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
+                            mecanumX, mecanumY, mecanumR,
+                            () -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.5, true));
 
                     dischargeSubsystem.setDefaultCommand(new DischargeCommands.DischargeManualGotoCmd(
                             systemGamepad::getRightY, dischargeSubsystem, telemetry));
@@ -304,7 +301,7 @@ public class Echo extends CommandOpMode {
             }
         }
         if (driverX.get() && driverStart.get()) {
-            swerveDrive.resetHeading();
+            mecanumDrive.resetHeading();
         }
 
         //if (systemA.get() && controllersState == RobotState.INTAKE)
@@ -324,25 +321,10 @@ public class Echo extends CommandOpMode {
 //        multipleTelemetry.addData("fr pos", swerveDrive.fr.getPosition());
 //        multipleTelemetry.update();
 //        multipleTelemetry.addData("x",swerveDrive.getPosition().x);
-        for (int m = 0; m < 4; m++) {
-            multipleTelemetry.addData("Error " + m, (modules[m].servo.error));
-            multipleTelemetry.addData("target " + m, (modules[m].servo.getTargetAngle()));
-            multipleTelemetry.addData("angle " + m, (modules[m].servo.getCurrentAngle()));
-            multipleTelemetry.addData("power " + m, (modules[m].servo.power));
-            multipleTelemetry.addData("P " + m, (modules[m].servo.error * SteeringServo.kp));
-            multipleTelemetry.addData("I " + m, (modules[m].servo.integral * SteeringServo.ki));
-            multipleTelemetry.addData("D " + m, (modules[m].servo.derivative * SteeringServo.kd));
-        }
 //        telemetry.addData("distance", swerveDrive.getDistance());
 //        multipleTelemetry.addData("top", 50);
 //        multipleTelemetry.addData("bottom", -50);
-        multipleTelemetry.addData("is enabled", IntakeCommands.IntakeManualGoToCmd.isEnabled());
-        multipleTelemetry.addData("transfering", IntakeCommands.Transfer.transferring);
-        multipleTelemetry.addData("state", robotState);
-        multipleTelemetry.addData("distance", swerveDrive.getDistance());
-        multipleTelemetry.addData("angle", swerveDrive.getHeading());
-        telemetry.addData("upper motor", dischargeSubsystem.getPosition());
-        telemetry.addData("lower motor", dischargeSubsystem.getPosition2());
+        multipleTelemetry.addData("pos", intakeSubsystem.getAveragePosition());
         multipleTelemetry.update();
 
 //        multipleTelemetry.addData("posX", gamepad1.left_stick_x);

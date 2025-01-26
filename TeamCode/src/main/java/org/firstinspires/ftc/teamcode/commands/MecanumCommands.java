@@ -173,4 +173,49 @@ public class MecanumCommands {
             mecanumDrive.drive(0, 0, 0, 0);
         }
     }
+
+    public static class SetRotationCmd extends CommandBase {
+        double wantedHeading;
+        double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;
+        public static double kp = 0.025, ki = 0.0005, kd = -0.006;
+        MecanumDrive mecanumDrive;
+
+        public SetRotationCmd(MecanumDrive mecanumDrive, double wantedHeading) {
+            this.mecanumDrive = mecanumDrive;
+            this.wantedHeading = wantedHeading;
+            addRequirements(mecanumDrive);
+        }
+
+        @Override
+        public void execute() {
+            double currentTime = (double) System.currentTimeMillis() / 1000;
+            double deltaTime = currentTime - lastTime;
+            if (lastTime != 0) {
+                error = Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading());
+                proportional = Range.clip(error, -100, 100) * kp;
+                Integral += Range.clip(error, -30, 30) * deltaTime;
+                if (Math.signum(Integral) != Math.signum(error)) {
+                    Integral = 0;
+                }
+                derivative = (lastError - error) / deltaTime;
+                mecanumDrive.drive(0, 0,
+                        (proportional + Integral * ki + derivative * kd +
+                                Math.signum(proportional + Integral * ki + derivative * kd) * 0.04) / 2,
+                        0.5);
+            }
+            lastError = error;
+            lastTime = currentTime;
+        }
+
+        @Override
+        public boolean isFinished() {
+            return false;
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            Integral = 0;
+            derivative = 0;
+        }
+    }
 }

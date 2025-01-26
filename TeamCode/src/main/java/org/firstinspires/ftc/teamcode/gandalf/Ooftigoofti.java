@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
 //import org.firstinspires.ftc.teamcode.power_play.util.Toggle;
 @TeleOp(name = "Oofti goofti", group = "Linear Opmode")
 public class Ooftigoofti extends LinearOpMode {
@@ -15,11 +16,12 @@ public class Ooftigoofti extends LinearOpMode {
     double leftPower;
     double rightPower;
     double fixLeft, fixRight;
-//    Toggle fixLeftToggle, fixLeftReduceToggle, fixRightToggle, fixRightReduceToggle, revMode, joyStickModeToggle;
+    //    Toggle fixLeftToggle, fixLeftReduceToggle, fixRightToggle, fixRightReduceToggle, revMode, joyStickModeToggle;
     double maxFix = 0.1;
     double turnFactor = 0.35;
     boolean revModeActive;
     boolean joystickMode;
+
     @Override
     public void runOpMode() {
 //        fixLeftToggle = new Toggle();
@@ -83,6 +85,7 @@ public class Ooftigoofti extends LinearOpMode {
             telemetry.update();
         }
     }
+
     void setPower(double drive, double turn) {
         // Apply reasonable limits to fixLeft and fixRight
         fixLeft = Range.clip(fixLeft, -maxFix, maxFix);

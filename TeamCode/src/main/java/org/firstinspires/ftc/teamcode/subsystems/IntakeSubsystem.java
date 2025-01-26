@@ -22,12 +22,12 @@ public class IntakeSubsystem extends SubsystemBase {
 
     int positionCorrection = 0;
     private double targetPos = -1;
-    private final int maxArmLength = 3000;
+    private final int maxArmLength = 1500;
     public int minSlidesPos = 10;
 
-    public final int manualTicksPerSecond = 1100;
-    public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.5;
+    public final int manualTicksPerSecond = 785;
+    public final double slidesSpeed = 0.6;
+    public final double slidesLowSpeed = 0.4;
 
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -55,20 +55,22 @@ public class IntakeSubsystem extends SubsystemBase {
             lMotor.setPower(power);
         }
     }
-    public void setRawPower(double power){
+
+    public void setRawPower(double power) {
         rMotor.setPower(power);
         lMotor.setPower(power);
     }
 
-    public double getTargetPos(){
+    public double getTargetPos() {
         return targetPos;
     }
 
     public void armGoToTarget() {
-        rMotor.setTargetPosition((int)targetPos);
-        lMotor.setTargetPosition((int)targetPos);
+        rMotor.setTargetPosition((int) targetPos);
+        lMotor.setTargetPosition((int) targetPos);
     }
-    public double getAveragePosition(){
+
+    public double getAveragePosition() {
         return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition()) / 2 + positionCorrection;
     }
 
@@ -113,6 +115,7 @@ public class IntakeSubsystem extends SubsystemBase {
         lMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         runWithoutEncoders();
     }
+
     public void runWithoutEncoders() {
         rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
@@ -129,7 +132,7 @@ public class IntakeSubsystem extends SubsystemBase {
         this.targetPos = targetPos;
     }
 
-    public void changeTargetPos(double change){
+    public void changeTargetPos(double change) {
         targetPos += change;
         if (targetPos < minSlidesPos)
             targetPos = minSlidesPos;

@@ -30,7 +30,7 @@ public class SteeringServo {
     public static double ks = 0;
     public double speed = 0;
     public static double minPower = 0.015;
-//    public static double kp = 0.45;
+    //    public static double kp = 0.45;
 //    public static double ki = 0.3;
 //    public static double kd = 0.02;
 //    public static double ks = 0;
@@ -116,7 +116,7 @@ public class SteeringServo {
         return delta;
     }
 
-    public void setSpeed(double S){
+    public void setSpeed(double S) {
         this.speed = S;
     }
 
@@ -131,11 +131,10 @@ public class SteeringServo {
         if (lastTime != 0) {
             //double errCurved =
 
-            if (Math.abs(error) < tolerance){
+            if (Math.abs(error) < tolerance) {
                 power = 0;
                 integral = 0;
-            }
-            else {
+            } else {
 
                 deltaTime = currentTime - lastTime;
                 integral += (errNorm * deltaTime);

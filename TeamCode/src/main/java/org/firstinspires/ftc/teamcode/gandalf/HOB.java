@@ -22,13 +22,13 @@ public class HOB extends LinearOpMode {
         waitForStart();
 
         while (opModeIsActive() && !isStopRequested()) {
-            if (gamepad2.a){
+            if (gamepad2.a) {
                 allowed = false;
             }
-            if (gamepad2.b){
+            if (gamepad2.b) {
                 allowed = true;
             }
-            if(allowed) {
+            if (allowed) {
                 armClass.move(gamepad2.left_trigger, gamepad2.right_trigger);
 
                 if (gamepad2.x) {
@@ -43,7 +43,6 @@ public class HOB extends LinearOpMode {
                 driveClass.drive(gamepad1.left_stick_y, gamepad1.right_stick_x,
                         gamepad1.left_bumper, gamepad1.right_bumper);
             }
-
 
 
         }

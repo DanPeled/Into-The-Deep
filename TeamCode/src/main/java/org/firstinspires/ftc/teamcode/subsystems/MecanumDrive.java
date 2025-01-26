@@ -192,6 +192,10 @@ public class MecanumDrive extends SubsystemBase {
         br.setPower(backRight);
 //        telemetry.addData("x",x);
 //        telemetry.addData("y",y);
+        telemetry.addData("fl", fl.getCurrentPosition());
+        telemetry.addData("fr", fr.getCurrentPosition());
+        telemetry.addData("bl", bl.getCurrentPosition());
+        telemetry.addData("br", br.getCurrentPosition());
         telemetry.addData("posx", imu.getPosition().x);
         telemetry.addData("posy", imu.getPosition().y);
 

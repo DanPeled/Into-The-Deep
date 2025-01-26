@@ -4,6 +4,7 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
+import com.arcrobotics.ftclib.command.ParallelRaceGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.geometry.Rotation2d;
@@ -38,15 +39,8 @@ public class BasketOnly extends CommandOpMode {
         mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(0.82, 0.2), 180, this);
         register(mecanumDrive, dischargeSubsystem);
         mecanumDrive.setHeading(0);
-        schedule(new SequentialCommandGroup(
-                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
-                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
-//                new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
-                //new IntakeCommands.Wait(intakeSubsystem, 1),
-//                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
-                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
-//                new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true)
-        ));
+        AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);
+
         while (opModeInInit()) {
             super.run();
 
@@ -56,11 +50,22 @@ public class BasketOnly extends CommandOpMode {
                 new ParallelCommandGroup(
                         new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.8, 180, 0.05, 0.5)),
-
+                new ParallelCommandGroup(
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.35, 180, 0.03, 0.5),
+                        new IntakeCommands.StartIntakeCmd(intakeSubsystem)),
+                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.3, 0.8, 180, 0.005, 0.65),
+                new ParallelRaceGroup(
+                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                        new IntakeCommands.SampleIntakeCmd(intakeSubsystem)
+                ),
+                new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
+                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.35, 180, 0.03, 0.5),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.8, 180, 0.05, 0.65),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.3, 0.8, 180, 0.005, 0.65),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+
         ));
     }
 }

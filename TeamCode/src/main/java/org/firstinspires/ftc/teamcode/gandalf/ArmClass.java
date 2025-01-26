@@ -23,9 +23,9 @@ public class ArmClass {
         robot.telemetry.addData("current arm pos", armMotor.getCurrentPosition());
 
         if (Math.abs(rightTrigger - leftTrigger) <= 0.05) {
-            if (isReturnRequested){
+            if (isReturnRequested) {
                 armMotor.setPower(-armMotor.getCurrentPosition() / 500.0);
-            }else {
+            } else {
                 angleCorrection();
             }
         } else {

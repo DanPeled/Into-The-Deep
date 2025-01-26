@@ -42,6 +42,7 @@ public class SwerveImuIntegrator implements BNO055IMU.AccelerationIntegrator {
     public Position getPosition() {
         return this.position;
     }
+
     public Velocity getVelocity() {
         return this.velocity;
     }
@@ -76,6 +77,7 @@ public class SwerveImuIntegrator implements BNO055IMU.AccelerationIntegrator {
         }
         this.angularOffset = angularOffset;
     }
+
     public void resetPosition() {
         position.x = 0;
         position.y = 0;
@@ -98,9 +100,8 @@ public class SwerveImuIntegrator implements BNO055IMU.AccelerationIntegrator {
         double x = Math.signum(direction.x) * (pos.x + origin.x) * meters_to_inches;
         double y = Math.signum(direction.y) * (pos.y + origin.y) * meters_to_inches;
 //		double z = (pos.z + origin_offset.z) * meters_to_inches;
-        return new Point(x,y);
+        return new Point(x, y);
     }
-
 
 
     @Override
@@ -114,7 +115,6 @@ public class SwerveImuIntegrator implements BNO055IMU.AccelerationIntegrator {
 
 
         double[] delta = swerveDrive.calcDeltaPos();
-
 
 
         this.position.x += delta[0];

@@ -21,7 +21,6 @@ public class LimeLightSubsystem extends SubsystemBase {
         limelight.pipelineSwitch(pipeline);
 
 
-
     }
 
     public double getXDistance() {
@@ -32,7 +31,8 @@ public class LimeLightSubsystem extends SubsystemBase {
     public void setPipeline(Pipelines pipeline) {
         limelight.pipelineSwitch(pipeline.PIPELINE);
     }
-    public double getYDistance(){
+
+    public double getYDistance() {
         distance = (limelightH - sampleH) * Math.tan(Math.toRadians(result.getTy() + limelightAngle));
         return distance;
     }

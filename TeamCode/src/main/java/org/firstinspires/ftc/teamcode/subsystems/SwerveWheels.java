@@ -2,13 +2,14 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 public enum SwerveWheels {
     //372 wide 344 other wide
-    FL(Math.atan(326.0/296.0)),
-    FR(Math.PI - Math.atan(326.0/296.0)),
-    BR(Math.PI + Math.atan(326.0/296.0)),
-    BL(- Math.atan(326.0/296.0));
+    FL(Math.atan(326.0 / 296.0)),
+    FR(Math.PI - Math.atan(326.0 / 296.0)),
+    BR(Math.PI + Math.atan(326.0 / 296.0)),
+    BL(-Math.atan(326.0 / 296.0));
 
     public final double ANGLE;
-    private SwerveWheels(double angle){
+
+    private SwerveWheels(double angle) {
         this.ANGLE = angle;
     }
 }

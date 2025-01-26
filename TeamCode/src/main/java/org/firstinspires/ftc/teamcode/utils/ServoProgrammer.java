@@ -9,6 +9,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class ServoProgrammer extends LinearOpMode {
     Servo servo;
     double position = 0;
+
     //0.2 close 0.37 open
     @Override
     public void runOpMode() throws InterruptedException {
@@ -21,7 +22,7 @@ public class ServoProgrammer extends LinearOpMode {
                 position -= 0.001;
             }
             servo.setPosition(position);
-            telemetry.addData("pos",position);
+            telemetry.addData("pos", position);
             telemetry.update();
         }
     }
