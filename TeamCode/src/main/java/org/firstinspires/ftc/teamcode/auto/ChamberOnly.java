@@ -57,33 +57,50 @@ public class ChamberOnly extends CommandOpMode {
 
         schedule(new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 1.02, 0, 0.06, 0.7, true),
-                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 1.02, 0, 0.05, 0.9, true)),
+//                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)),
                 new WaitCommand(200),
                 new ParallelCommandGroup(
-                        new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
-                        new InstantCommand(() -> mecanumDrive.drive(0, 0.1, 0, 0.2))),
+//                        new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
+                ),
                 new WaitCommand(200),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.7, 0, 0.14, 1),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.7, 0.8, 0, 0.02, 0.7),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.7, 1.5, 0, 0.04, 0.7),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 1.5, 0, 0.02, 0.8),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 0.4, 0, 0.05, 0.8, true),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 0.65, 0, 0.01, 0.5, true),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.8, 0, 0.14, 1),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.76, 0.8, 0, 0.1, 0.8),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.7, 1.5, 0, 0.04, 0.8),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.93, 1.5, 0, 0.05, 0.9),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.93, 0.4, 0, 0.05, 0.9, true),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.98, 0.65, 0, 0.008, 1),
+                new WaitCommand(1500),
                 new IntakeCommands.StartIntakeCmd(intakeSubsystem),
+                new WaitCommand(300),
                 new IntakeCommands.SampleIntakeCmd(intakeSubsystem),
+                new WaitCommand(300),
+
                 new ParallelCommandGroup(
-                        new SequentialCommandGroup(
-                                new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
-                                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry)),
-                        new SequentialCommandGroup(
-                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.6, 0, 0.03, 0.8),
-                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.78, 1.02, 0, 0.03, 0.7)
-                        )
+                        new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.6, 0, 0.06, 1)
                 ),
 
-                new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.8, 0.25, 0, 0.05, 0.5)
+//                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry),
+                new WaitCommand(1000),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.78, 1.02, 0, 0.05, 0.9),
+                new ParallelCommandGroup(
+                        new IntakeCommands.StartIntakeCmd(intakeSubsystem)
+//                new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
+                ),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.005, 0.655, 0, 0.008, 0.7),
+                new WaitCommand(1000),
+                new IntakeCommands.SampleIntakeCmd(intakeSubsystem),
+                new WaitCommand(200),
+                new ParallelCommandGroup(
+                        new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.6, 0, 0.06, 1)
+                ),
+
+//                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry),
+                new WaitCommand(1000),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.78, 1.02, 0, 0.05, 0.9)
+                // DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry)
         ));
 //        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.8, 1.5, 0, 0.05, 1, true),
 //                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.4, 1.5, 0, 0.02, 0.8, true),

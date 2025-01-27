@@ -42,7 +42,7 @@ public class MecanumDrive extends SubsystemBase {
 
     MultipleTelemetry telemetry;
     Point startingPosition;
-    double forwardTicksPerMeter = 1781, strafeTicksPerMeter = 2032;
+    double forwardTicksPerMeter = 1817, strafeTicksPerMeter = 2048;
     double tickPerMeter = 1783;
     LinearOpMode opMode;
     double startAngle = 0;
@@ -192,12 +192,12 @@ public class MecanumDrive extends SubsystemBase {
         br.setPower(backRight);
 //        telemetry.addData("x",x);
 //        telemetry.addData("y",y);
-        telemetry.addData("fl", fl.getCurrentPosition());
-        telemetry.addData("fr", fr.getCurrentPosition());
-        telemetry.addData("bl", bl.getCurrentPosition());
-        telemetry.addData("br", br.getCurrentPosition());
-        telemetry.addData("posx", imu.getPosition().x);
-        telemetry.addData("posy", imu.getPosition().y);
+//        telemetry.addData("fl", fl.getCurrentPosition());
+//        telemetry.addData("fr", fr.getCurrentPosition());
+//        telemetry.addData("bl", bl.getCurrentPosition());
+//        telemetry.addData("br", br.getCurrentPosition());
+//        telemetry.addData("posx", imu.getPosition().x);
+//        telemetry.addData("posy", imu.getPosition().y);
 
         telemetry.update();
     }

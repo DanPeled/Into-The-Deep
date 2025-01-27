@@ -28,7 +28,7 @@ public class DischargeSubsystem extends SubsystemBase {
     public double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
-    public final int highChamberHeight = 880;
+    public final int highChamberHeight = 825;//880
     public final int lowChamberHeight = 350;
     public final int chamberReleaseDeltaSlides = 100;
 
@@ -38,7 +38,8 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 1200;
     public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.65;
+    public final double slideHalfSpeed = 0.8;
+    public final double slidesLowSpeed = 0.6;
 
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -58,12 +59,12 @@ public class DischargeSubsystem extends SubsystemBase {
 
     //fix: use gearbox ticks, not 1600
     public void setPower(double power) {
-        setRawPower(calcPowerValue(power));
+        //setRawPower(calcPowerValue(power));
     }
 
     public void setRawPower(double power) {
-        lowerMotor.setPower(power);
-        upperMotor.setPower(power);
+        //lowerMotor.setPower(power);
+        //upperMotor.setPower(power);
     }
 
     public double calcPowerValue(double power) {
@@ -102,8 +103,8 @@ public class DischargeSubsystem extends SubsystemBase {
     }
 
     public void goToTarget() {
-        lowerMotor.setTargetPosition((int) targetPosInTicks);
-        upperMotor.setTargetPosition((int) targetPosInTicks);
+        //lowerMotor.setTargetPosition((int) targetPosInTicks);
+        //upperMotor.setTargetPosition((int) targetPosInTicks);
     }
 
     public int getPosition() {
@@ -136,10 +137,10 @@ public class DischargeSubsystem extends SubsystemBase {
     }
 
     public void runToPosition() {
-        lowerMotor.setPower(slidesSpeed);
-        upperMotor.setPower(slidesSpeed);
-        lowerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        upperMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //lowerMotor.setPower(slidesSpeed);
+        //upperMotor.setPower(slidesSpeed);
+        //lowerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        //upperMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public double getLiftPosInCM() {

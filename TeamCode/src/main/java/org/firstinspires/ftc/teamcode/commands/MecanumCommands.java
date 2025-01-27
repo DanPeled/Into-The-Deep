@@ -174,6 +174,94 @@ public class MecanumCommands {
         }
     }
 
+    public static class SplineGotoCmd extends CommandBase {
+        double x, y, wantedAngle = 0;
+        double error, lastError, lastTime;
+        double proportional, Integral, derivative;
+        double kp = 0.025, ki = 0.0005, kd = -0.006;
+        Point currentPos;
+        double boost;
+        double sensitivity;
+        double rotation = 0;
+        final double minPower = 0.04;
+        MecanumDrive mecanumDrive;
+        Point[] points = {new Point(0, 0), new Point(0, 0), new Point(0, 0)};
+
+        public SplineGotoCmd(MecanumDrive mecanumDrive, Point p0, Point p1, Point p2, double boost, double sensitivity) {
+            this.mecanumDrive = mecanumDrive;
+            this.boost = boost;
+            this.sensitivity = sensitivity;
+            points[0] = p0;
+            points[1] = p1;
+            points[2] = p2;
+            addRequirements(mecanumDrive);
+        }
+
+        @Override
+        public void execute() {
+            double t = Range.clip(findClosestT(mecanumDrive.getPosition(), points[0], points[1], points[2]) + 0.15, 0, 1);
+            Point wantedPosition = new Point(Math.pow(1 - t, 2) * points[0].x + 2 * t * (1 - t) *
+                    points[1].x + Math.pow(t, 2) * points[2].x,
+                    Math.pow(1 - t, 2) * points[0].y + 2 * t * (1 - t) *
+                            points[1].y + Math.pow(t, 2) * points[2].y);
+            currentPos = mecanumDrive.getPosition();
+            double[] localVector = {wantedPosition.x - currentPos.x, wantedPosition.y - currentPos.y};
+            double MovementAngle = Math.atan2(localVector[0], localVector[1]);
+            double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
+            length += Math.signum(length) * minPower;
+            localVector[0] = Math.sin(MovementAngle) * length;
+            localVector[1] = Math.cos(MovementAngle) * length;
+            double currentTime = (double) System.currentTimeMillis() / 1000;
+            double deltaTime = currentTime - lastTime;
+            if (lastTime != 0) {
+                error = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading());
+                proportional = Range.clip(error, -100, 100) * kp;
+                Integral += Range.clip(error, -30, 30) * deltaTime;
+                if (Math.signum(Integral) != Math.signum(error)) {
+                    Integral = 0;
+                }
+                derivative = (lastError - error) / deltaTime;
+                rotation = proportional + Integral * ki + derivative * kd + Math.signum(proportional + Integral * ki + derivative * kd) * 0.04;
+                rotation = rotation * 0.65 / (boost * 0.7 + 0.3);
+            }
+            lastError = error;
+            lastTime = currentTime;
+            mecanumDrive.drive(localVector[0], localVector[1], rotation / 4, boost);
+
+        }
+
+        @Override
+        public boolean isFinished() {
+            return ((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) &&
+                    (Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 3));
+        }
+
+        public double findClosestT(Point current, Point P0, Point P1, Point P2) {
+            double lower = 0.0, upper = 1.0, tolerance = 0.01; // Precision of the search
+            while (upper - lower > tolerance) {
+                double mid = (lower + upper) / 2.0;
+                double left = bezierDistance(mid - tolerance, current.x, current.y, P0, P1, P2);
+                double right = bezierDistance(mid + tolerance, current.y, current.y, P0, P1, P2);
+                if (left < right) {
+                    upper = mid;
+                } else {
+                    lower = mid;
+                }
+            }
+            return (lower + upper) / 2.0;
+        }
+
+        private double bezierDistance(double t, double a, double b, Point P0, Point P1, Point P2) {
+            // Calculate Bézier curve point at t
+            double x_t = Math.pow(1 - t, 2) * P0.x + 2 * t * (1 - t) * P1.x + Math.pow(t, 2) * P2.x;
+            double y_t = Math.pow(1 - t, 2) * P0.y + 2 * t * (1 - t) * P1.y + Math.pow(t, 2) * P2.y;
+
+            // Calculate Euclidean distance to the point (a, b)
+            return Math.sqrt(Math.pow(x_t - a, 2) + Math.pow(y_t - b, 2));
+        }
+
+    }
+
     public static class SetRotationCmd extends CommandBase {
         double wantedHeading;
         double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;

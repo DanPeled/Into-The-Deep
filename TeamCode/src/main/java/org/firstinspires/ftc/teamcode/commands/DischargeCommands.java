@@ -77,12 +77,12 @@ public class DischargeCommands {
 
         }
 
-//        @Override
-//        public void execute() {
-//            dischargeSubsystem.setPower(kp * (pos - dischargeSubsystem.getPosition2()));
-//            telemetry.addData("power", kp * (pos - dischargeSubsystem.getPosition2()));
-//            telemetry.update();
-//        }
+        @Override
+        public void execute() {
+
+            telemetry.addData("pos", dischargeSubsystem.getPosition());
+            telemetry.update();
+        }
 
 
         @Override
@@ -131,7 +131,7 @@ public class DischargeCommands {
         @Override
         public void execute() {
             if (dischargeSubsystem.getPosition() < 60) {
-                dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
+                dischargeSubsystem.setRawPower(-dischargeSubsystem.slideHalfSpeed);
             } else if (dischargeSubsystem.getPosition() > 450)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
             else

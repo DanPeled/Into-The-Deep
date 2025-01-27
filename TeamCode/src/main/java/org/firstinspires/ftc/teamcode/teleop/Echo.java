@@ -81,20 +81,19 @@ public class Echo extends CommandOpMode {
         controllersState = null;
 
         //init commands
-        schedule(new SequentialCommandGroup(
-                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
-                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
-                new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
-                //new IntakeCommands.Wait(intakeSubsystem, 1),
-                new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
-                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
-                new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
-        IntakeCommands.IntakeManualGoToCmd.setEnabled(true);
+        //schedule(new SequentialCommandGroup(
+        //        new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
+        //        new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
+        //        new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
+        //        //new IntakeCommands.Wait(intakeSubsystem, 1),
+        //        new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
+        //        new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
+        //        new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
+        //IntakeCommands.IntakeManualGoToCmd.setEnabled(true);
 
 
-        while (opModeInInit()) {
-            super.run();
-        }
+        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
+
 
         mecanumX = () -> driverGamepad.getLeftX();
         mecanumY = () -> driverGamepad.getLeftY();
@@ -189,7 +188,7 @@ public class Echo extends CommandOpMode {
                             () -> 0.3, true));
 
                     mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
-                            systemGamepad::getRightX, () -> 0.0, () -> 0.0,
+                            systemGamepad::getLeftX, driverGamepad::getLeftY, () -> 0.0,
                             () -> systemGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.2, false));
 
                     intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
@@ -324,7 +323,9 @@ public class Echo extends CommandOpMode {
 //        telemetry.addData("distance", swerveDrive.getDistance());
 //        multipleTelemetry.addData("top", 50);
 //        multipleTelemetry.addData("bottom", -50);
-        multipleTelemetry.addData("pos", intakeSubsystem.getAveragePosition());
+        multipleTelemetry.addData("posavg", intakeSubsystem.getAveragePosition());
+        multipleTelemetry.addData("posm1", intakeSubsystem.getMotorPosition());
+        multipleTelemetry.addData("posm2", intakeSubsystem.getMotor2Position());
         multipleTelemetry.update();
 
 //        multipleTelemetry.addData("posX", gamepad1.left_stick_x);

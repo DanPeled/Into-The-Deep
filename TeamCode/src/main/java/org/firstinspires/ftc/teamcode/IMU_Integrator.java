@@ -176,8 +176,8 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
 
         double a = -getHeading() / 180.0 * Math.PI;
 
-        this.position.y += delta.s * Math.cos(a) - delta.f * Math.sin(a);
-        this.position.x += delta.f * Math.cos(a) + delta.s * Math.sin(a);
+        this.position.x += delta.f * Math.cos(a) - delta.s * Math.sin(a);
+        this.position.y += delta.s * Math.cos(a) + delta.f * Math.sin(a);
 
         // 100000000000 ps = 100 ms = 0.1 s
         if (this.useDashBoard && linearAcceleration.acquisitionTime - this.lastTimestamp >= 5000000L) {

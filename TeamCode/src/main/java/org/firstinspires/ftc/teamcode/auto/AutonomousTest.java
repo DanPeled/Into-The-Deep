@@ -5,6 +5,7 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.arcrobotics.ftclib.command.button.Button;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
@@ -14,8 +15,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
+import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 import org.firstinspires.ftc.teamcode.commands.SwerveCommands.GotoCmd;
@@ -28,22 +32,31 @@ public class AutonomousTest extends CommandOpMode {
     FtcDashboard dashboard;
     Telemetry dashboardTelemetry;
     MultipleTelemetry multipleTelemetry;
+    DischargeSubsystem dischargeSubsystem;
+    IntakeSubsystem intakeSubsystem;
 
     @Override
     public void initialize() {
+        dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
+        intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         GamepadEx gamepad = new GamepadEx(gamepad1);
         dashboard = FtcDashboard.getInstance();
         dashboardTelemetry = dashboard.getTelemetry();
         multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
         mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(1.8, 0.2), 0, this);
 
-        register(mecanumDrive);
+        register(mecanumDrive, dischargeSubsystem, intakeSubsystem);
 
 //        schedule(new SequentialCommandGroup(
 //                new GotoCmd(telemetry, swerveDrive, -0.66,0.0,0.0, 0.01,0.2),
 //                new GotoCmd(telemetry, swerveDrive, 0,0.0,0.0, 0.01,0.2)));
 //        schedule(new GotoCmd(telemetry, swerveDrive, 0.67, 0.21, 0, 0.03, 0.2));
-        schedule(new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.2, 90, 0.14, 1));
+        schedule(
+                new MecanumCommands.SplineGotoCmd(mecanumDrive,
+                        new Point(1.8, 0.2), new Point(0.3, 0.2), new Point(0.3, 1.5),
+                        0.5, 0.03)
+        );
+
     }
 
 

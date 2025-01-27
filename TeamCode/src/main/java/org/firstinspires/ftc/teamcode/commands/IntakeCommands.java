@@ -92,7 +92,7 @@ public class IntakeCommands {
         public void execute() {
             if (initTime) {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
-            } else if (intakeSubsystem.getMotorPosition() > 140) {
+            } else if (intakeSubsystem.getMotorPosition() > 60) {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesSpeed);
             } else {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
@@ -108,10 +108,11 @@ public class IntakeCommands {
 
             double deltaTime = elapsedTime.seconds() - lastTime;
             if (deltaTime > 0.2) {
-                double deltaTick = intakeSubsystem.getAveragePosition() - lastTick;
-                lastTick = intakeSubsystem.getAveragePosition();
+                double avg = intakeSubsystem.getAveragePosition();
+                double deltaTick = avg - lastTick;
+                lastTick = avg;
                 lastTime = elapsedTime.seconds();
-                return (Math.abs(deltaTick) <= 12 && (intakeSubsystem.getAveragePosition() < 200 || initTime));
+                return (Math.abs(deltaTick) <= 6 && (avg < 200 || initTime));
 
             }
             return false;
@@ -120,7 +121,7 @@ public class IntakeCommands {
         @Override
         public void end(boolean interrupted) {
             intakeSubsystem.setArmPower(0);
-
+            intakeSubsystem.end = true;
             if (!interrupted) {
                 intakeSubsystem.resetEncoders();
                 intakeSubsystem.setTargetPos(intakeSubsystem.getMotorPosition() + minPosOffset);
@@ -249,7 +250,7 @@ public class IntakeCommands {
         @Override
         public void execute() {
             if (isEnabled) {
-                intakeSubsystem.setArmPower(power.get());
+                intakeSubsystem.setArmPower(power.get() * 0.7);
             }
 //            if (isEnabled) {
 //                double timeMilli = elapsedTime.milliseconds();
@@ -305,7 +306,7 @@ public class IntakeCommands {
 
         @Override
         public boolean isFinished() {
-            return duration <= 0 || (runtime.seconds() - startTime) > duration;
+            return (duration <= 0) || ((runtime.seconds() - startTime) > duration);
         }
 
         @Override
@@ -495,7 +496,7 @@ public class IntakeCommands {
                     //new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
                     new SetRotationCmd(intakeSubsystem, 0.5),
                     new Wait(intakeSubsystem, 0.1),
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
+//                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
                     new Wait(intakeSubsystem, 0.175),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
                     new Wait(intakeSubsystem, 0.2),
@@ -529,26 +530,19 @@ public class IntakeCommands {
 
         public Transfer(IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem) {
             addCommands(
-                    new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+//                    new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                     new ParallelCommandGroup(
-                            new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+//                            new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                             new ReturnArmForTransferCmd(intakeSubsystem, false)),
                     new SetPowerCmd(intakeSubsystem, -0.18),
                     new Wait(intakeSubsystem, 0.1), //for safety
-                    // new ParallelCommandGroup(
-                    //new SpinCmd(intakeSubsystem,-0.1, -1),
-                    //new DischargeCommands.GoHomeCmd(dischargeSubsystem), //for safety
-                    //     new DischargeGrabCmd(dischargeSubsystem),
-                    //     new Wait(intakeSubsystem, 0.8)), //for safety
-                    new DischargeGrabCmd(dischargeSubsystem),
-                    //new Wait(intakeSubsystem, 0.25),
+//                    new DischargeGrabCmd(dischargeSubsystem),
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
                     new SetPowerCmd(intakeSubsystem, 0),
                     new SpinCmd(intakeSubsystem, -0.1, -1),
                     new Wait(intakeSubsystem, 0.15),
                     new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 1 / Math.PI),
                     new SpinCmd(intakeSubsystem, 0, -1));
-            //new Wait(intakeSubsystem,0.35));
             addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
         }
 

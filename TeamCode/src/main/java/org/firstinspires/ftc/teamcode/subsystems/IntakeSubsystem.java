@@ -26,8 +26,9 @@ public class IntakeSubsystem extends SubsystemBase {
     public int minSlidesPos = 10;
 
     public final int manualTicksPerSecond = 785;
-    public final double slidesSpeed = 0.6;
-    public final double slidesLowSpeed = 0.4;
+    public final double slidesSpeed = 1;
+    public final double slidesLowSpeed = 0.3;
+    public boolean end = false;
 
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -100,6 +101,10 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public int getMotorPosition() {
         return rMotor.getCurrentPosition() + positionCorrection;
+    }
+
+    public int getMotor2Position() {
+        return lMotor.getCurrentPosition() + positionCorrection;
     }
 
     public void setPositionCorrection(int pos) {

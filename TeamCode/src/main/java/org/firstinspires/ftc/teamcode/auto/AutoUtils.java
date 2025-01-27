@@ -39,7 +39,7 @@ public class AutoUtils {
         return new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry);
     }
     public static CommandBase chamberGoto(MecanumDrive mecanumDrive, Telemetry telemetry){
-        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 1.02, 0, 0.06, 0.7, true);
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 1, 0, 0.05, 0.9, true);
     }
     public static CommandBase inFrontOfChamberGoto(MecanumDrive mecanumDrive, Telemetry telemetry, double y){
         return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, y, 0, 0.03, 0.8);
