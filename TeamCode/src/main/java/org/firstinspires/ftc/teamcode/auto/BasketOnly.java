@@ -37,7 +37,7 @@ public class BasketOnly extends CommandOpMode {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(0.82, 0.2), 180, this);
-        register(mecanumDrive, dischargeSubsystem);
+        register(mecanumDrive, dischargeSubsystem, intakeSubsystem);
         mecanumDrive.setHeading(0);
         AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);
 

@@ -38,7 +38,7 @@ public class ChamberOnly extends CommandOpMode {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(1.8, 0.2), 0, this);
-        register(mecanumDrive, dischargeSubsystem);
+        register(mecanumDrive, dischargeSubsystem, intakeSubsystem);
         //schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem),
         //        new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
         AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);

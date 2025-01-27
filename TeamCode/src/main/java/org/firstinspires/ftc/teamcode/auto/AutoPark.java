@@ -38,20 +38,15 @@ public class AutoPark extends CommandOpMode {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(2.4, 0.2), 0, this);
-        register(mecanumDrive, dischargeSubsystem);
-//        schedule(new SequentialCommandGroup(
-//                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
-//                new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
-//                new IntakeCommands.Wait(intakeSubsystem, 1),
-//                new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
-//                new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-//                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER)));
+        register(mecanumDrive, dischargeSubsystem, intakeSubsystem);
+        AutoUtils.initCommands(this,dischargeSubsystem,intakeSubsystem);
+
 
 
         while (opModeInInit()) {
             CommandScheduler.getInstance().run();
         }
-        ;
+
 
         schedule(new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.4, 0.2, 0, 0.05, 0.5, true));//
     }

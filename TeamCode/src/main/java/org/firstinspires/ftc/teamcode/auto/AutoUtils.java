@@ -27,7 +27,40 @@ public class AutoUtils {
     }
 
     public static CommandBase inwardsPark(MecanumDrive mecanumDrive, Telemetry telemetry) {
-        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.4, 0.2, 0, 0.05, 0.5, true);
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.4, 0.2, 0, 0.04, 0.5, true);
     }
+    public static CommandBase outwardsPark(MecanumDrive mecanumDrive, Telemetry telemetry) {
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 2.8, 0.2, 0, 0.04, 0.5, true);
+    }
+    public static CommandBase dischargeGotoChamber(DischargeSubsystem dischargeSubsystem, Telemetry telemetry){
+        return new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry);
+    }
+    public static CommandBase dischargeGotoBasket(DischargeSubsystem dischargeSubsystem, Telemetry telemetry){
+        return new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry);
+    }
+    public static CommandBase chamberGoto(MecanumDrive mecanumDrive, Telemetry telemetry){
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 1.02, 0, 0.06, 0.7, true);
+    }
+    public static CommandBase inFrontOfChamberGoto(MecanumDrive mecanumDrive, Telemetry telemetry, double y){
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, y, 0, 0.03, 0.8);
+    }
+    public static CommandBase chamberDischarge(DischargeSubsystem dischargeSubsystem, Telemetry telemetry){
+        return new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry);
+    }
+    public static CommandBase nextToBasketGoto(MecanumDrive mecanumDrive, Telemetry telemetry){
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.8, 180, 0.05, 0.5);
+    }
+    public static CommandBase basketDischargePositionGoto(MecanumDrive mecanumDrive, Telemetry telemetry){
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.35, 180, 0.03, 0.5);
+    }
+    public static CommandBase basketDischarge(DischargeSubsystem dischargeSubsystem){
+        return new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem);
+    }
+    public static CommandBase dischargeGoHome(DischargeSubsystem dischargeSubsystem){
+        return new DischargeCommands.GoHomeCmd(dischargeSubsystem);
+    }
+
+
+
 
 }
