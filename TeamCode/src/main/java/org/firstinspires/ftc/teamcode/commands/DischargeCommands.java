@@ -51,14 +51,20 @@ public class DischargeCommands {
 
         @Override
         public void execute() {
-            double timeMilli = elapsedTime.milliseconds();
-            double deltaTime = timeMilli - lastTimeMilli;
-            if (Math.abs(power.get()) > 0.25) {
-                dischargeSubsystem.runToPosition();
-                dischargeSubsystem.changeTargetPos(-power.get() * deltaTime * (dischargeSubsystem.manualTicksPerSecond / 1000.0));
-                dischargeSubsystem.goToTarget();
+            if (dischargeSubsystem.getGearBoxRatio() == dischargeSubsystem.dischargeRatio) {
+                double timeMilli = elapsedTime.milliseconds();
+                double deltaTime = timeMilli - lastTimeMilli;
+                if (Math.abs(power.get()) > 0.25) {
+                    dischargeSubsystem.runToPosition();
+                    dischargeSubsystem.changeTargetPos(-power.get() * deltaTime * (dischargeSubsystem.manualTicksPerSecond / 1000.0));
+                    dischargeSubsystem.goToTarget();
+
+                }
+                lastTimeMilli = timeMilli;
+            } else {
+                dischargeSubsystem.runWithoutEncoders();
+                dischargeSubsystem.setPower(power.get());
             }
-            lastTimeMilli = timeMilli;
         }
     }
 
@@ -104,9 +110,10 @@ public class DischargeCommands {
         DischargeSubsystem dischargeSubsystem;
         int lastTick;
         //        double lastTime = 0;
-        final double maxDuration;
+        double maxDuration;
         final int minTargetOffset = 50;
         ElapsedTime elapsedTime = new ElapsedTime();
+        boolean switched = false;
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
@@ -130,12 +137,19 @@ public class DischargeCommands {
 
         @Override
         public void execute() {
-            if (dischargeSubsystem.getPosition() < 60) {
+            double curPos = dischargeSubsystem.getPosition();
+            if (curPos < 60) {
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slideHalfSpeed);
-            } else if (dischargeSubsystem.getPosition() > 450)
+            } else if (curPos > 300)
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
             else
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
+            if (dischargeSubsystem.getPosition() < 200 && !switched) {
+                maxDuration = 2;
+                elapsedTime.reset();
+                switched = true;
+            }
+
 
         }
 
@@ -288,24 +302,5 @@ public class DischargeCommands {
         }
     }
 
-    //public static class ChamberDischarge extends SequentialCommandGroup {
-    //    public SampleIntakeCmd(IntakeSubsystem intakeSubsystem) {
-    //        final double
-    //                spinPower = 1,
-    //                middleTime = 0.75,
-    //                grabbingTime = 0.5,
-    //                holdingPower = 0.05;
-//
-//
-    //        addCommands(
-    //                new ParallelCommandGroup(
-    //                        new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE),
-    //                        new IntakeCommands.SpinCmd(intakeSubsystem, -spinPower, middleTime)),
-    //                new ParallelCommandGroup(
-    //                        new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
-    //                        new IntakeCommands.SpinCmd(intakeSubsystem, spinPower, grabbingTime)),
-    //                new IntakeCommands.SpinCmd(intakeSubsystem, holdingPower, -1));
-    //    }
-    //}
 
 }

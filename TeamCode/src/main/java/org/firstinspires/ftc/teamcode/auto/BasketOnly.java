@@ -39,7 +39,7 @@ public class BasketOnly extends CommandOpMode {
         mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(0.8, 0.2), 180, this);
         register(mecanumDrive, dischargeSubsystem, intakeSubsystem);
         mecanumDrive.setHeading(0);
-//        AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);
+        AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);
 
         while (opModeInInit()) {
             super.run();
@@ -48,40 +48,66 @@ public class BasketOnly extends CommandOpMode {
 
         schedule(new SequentialCommandGroup(
                 new ParallelCommandGroup(
-//                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
+                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.8, 180, 0.05, 0.5)),
                 new ParallelCommandGroup(
-                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.35, 180, 0.03, 0.5),
-                        new IntakeCommands.StartIntakeCmd(intakeSubsystem)),
-//                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.3, 0.8, 180, 0.01, 0.75),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.38, 180, 0.03, 0.5),
+                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1380)),
+                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.755, 180, 0.02, 0.75),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.28, 0.755, 180, 0.007, 0.75),
                 new ParallelCommandGroup(
-//                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                         new IntakeCommands.SampleIntakeCmd(intakeSubsystem)),
                 new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
-//                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
+                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
                 new WaitCommand(1000),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.35, 180, 0.03, 0.5),
-//                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.38, 180, 0.03, 0.5),
+                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new ParallelCommandGroup(
-                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.6, 0.835, 180, 0.01, 0.75),
-                        new IntakeCommands.StartIntakeCmd(intakeSubsystem)),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.755, 180, 0.02, 0.75),
+                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1440)),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.56, 0.755, 180, 0.007, 0.75),
                 new ParallelCommandGroup(
-//                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                         new IntakeCommands.SampleIntakeCmd(intakeSubsystem)
                 ),
                 new ParallelCommandGroup(
                         new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.7, 180, 0.05, 0.5)
                 ),
-//                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
-                new WaitCommand(1200),
+                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
+                new WaitCommand(1500),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.35, 180, 0.03, 0.5),
-//                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.8, 180, 0.05, 0.5)/*,*/
-//                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
-
+                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.85, 180, 0.05, 0.5),
+                new ParallelCommandGroup(
+                        new DischargeCommands.GoHomeCmd(dischargeSubsystem),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.4, 0.8, 180, 0.05, 1)),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.4, 1.5, 180, 0.05, 0.75),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 1.5, 180, 0.05, 0.75),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.2, 180, 0.05, 0.75)
         ));
+//        schedule(new SequentialCommandGroup(
+//                new ParallelCommandGroup(
+//                        AutoUtils.dischargeGotoBasket(dischargeSubsystem, telemetry),
+//                        AutoUtils.nextToBasketGoto(mecanumDrive, telemetry)
+//                ),
+//                new ParallelCommandGroup(
+//                        AutoUtils.basketDischargePositionGoto(mecanumDrive, telemetry),
+//                        AutoUtils.startIntakeForSecondYellow(intakeSubsystem)
+//                ),
+//                AutoUtils.basketDischarge(dischargeSubsystem),
+//                AutoUtils.nextToBasketGoto(mecanumDrive, telemetry),
+//                AutoUtils.secondYellowGoto(mecanumDrive, telemetry),
+//                new ParallelCommandGroup(
+//                        AutoUtils.dischargeGoHome(dischargeSubsystem),
+//                        AutoUtils.sampleIntake(intakeSubsystem)
+//                ),
+//                AutoUtils.transfer(dischargeSubsystem, intakeSubsystem)
+//
+//
+//        ));
     }
 
     @Override

@@ -6,6 +6,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDCoefficients;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
@@ -17,8 +19,11 @@ public class DischargeSubsystem extends SubsystemBase {
     final double clawServoHoldPos = 0.2, clawServoReleasePos = 0.37;
     private final TouchSensor touchSensor;
     MultipleTelemetry telemetry;
-    double gearBoxRatio = 1;
     public double timeUp = 0;
+
+    public final double climbRatio = 9;
+    public final double dischargeRatio = 15 / 11.0;
+    double gearBoxRatio = dischargeRatio;
 
     private double liftPosInCM;
     private double lastMotorTicks;
@@ -38,8 +43,9 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 1200;
     public final double slidesSpeed = 1;
-    public final double slideHalfSpeed = 0.8;
-    public final double slidesLowSpeed = 0.6;
+    public final double slideHalfSpeed = 1;
+    public final double slidesLowSpeed = 0.7;
+//    PIDCoefficients pid = new PIDCoefficients()
 
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -59,12 +65,12 @@ public class DischargeSubsystem extends SubsystemBase {
 
     //fix: use gearbox ticks, not 1600
     public void setPower(double power) {
-        //setRawPower(calcPowerValue(power));
+        setRawPower(calcPowerValue(power));
     }
 
     public void setRawPower(double power) {
-        //lowerMotor.setPower(power);
-        //upperMotor.setPower(power);
+        lowerMotor.setPower(power);
+        upperMotor.setPower(power);
     }
 
     public double calcPowerValue(double power) {
@@ -80,13 +86,13 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public void climbMode() {
         gearBoxServo.setPosition(servoClimbPos);
-        gearBoxRatio = 9;
+        gearBoxRatio = climbRatio;
         getLiftPosInCM();
     }
 
     public void dischargeMode() {
         gearBoxServo.setPosition(servoDischargePos);
-        gearBoxRatio = 1;
+        gearBoxRatio = dischargeRatio;
         getLiftPosInCM();
     }
 
@@ -103,8 +109,8 @@ public class DischargeSubsystem extends SubsystemBase {
     }
 
     public void goToTarget() {
-        //lowerMotor.setTargetPosition((int) targetPosInTicks);
-        //upperMotor.setTargetPosition((int) targetPosInTicks);
+        lowerMotor.setTargetPosition((int) targetPosInTicks);
+        upperMotor.setTargetPosition((int) targetPosInTicks);
     }
 
     public int getPosition() {
@@ -137,10 +143,10 @@ public class DischargeSubsystem extends SubsystemBase {
     }
 
     public void runToPosition() {
-        //lowerMotor.setPower(slidesSpeed);
-        //upperMotor.setPower(slidesSpeed);
-        //lowerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-        //upperMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        lowerMotor.setPower(slidesSpeed);
+        upperMotor.setPower(slidesSpeed);
+        lowerMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        upperMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
     public double getLiftPosInCM() {
@@ -170,5 +176,9 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public boolean isHome() {
         return touchSensor.isPressed();
+    }
+
+    public PIDFCoefficients getPIDFCoefficients() {
+        return lowerMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
     }
 }
