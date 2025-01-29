@@ -301,6 +301,18 @@ public class DischargeCommands {
             addRequirements(dischargeSubsystem);
         }
     }
+    public static class ResetDischarge extends CommandBase{
+        DischargeSubsystem dischargeSubsystem;
+        public ResetDischarge(DischargeSubsystem dischargeSubsystem){
+            this.dischargeSubsystem = dischargeSubsystem;
+        }
+
+        @Override
+        public void initialize() {
+            dischargeSubsystem.resetEncoders();
+//            dischargeSubsystem.runToPosition();
+        }
+    }
 
 
 }

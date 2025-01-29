@@ -60,9 +60,9 @@ public class Echo extends CommandOpMode {
     Button systemDPadLeft, driverDPadLeft;
     Button systemRightBumper, driverRightBumper;
     Button systemLeftBumper, driverLeftBumper;
-    Button systemLeftStickButton, systemRightStickButton;
     Button driverStart;
     Button systemBack;
+    Button systemLeftStick, systemRightStick;
 
 
     @Override
@@ -122,13 +122,16 @@ public class Echo extends CommandOpMode {
 //            driverA.whenHeld(new SwerveCommands.SetRotationCmd(swerveDrive, 0))
 //                    .and(new Trigger(() -> !driverStart.get()));
 
-            systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
-            systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
+//            systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+//            systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
 
             controllersState = robotState;
             switch (robotState) {
                 case NONE:
+                    systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
+                    systemRightStick.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+
 
                     driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
                             () -> 0.3, true));
@@ -171,11 +174,12 @@ public class Echo extends CommandOpMode {
 
                     systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
 
-                    systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+//                    systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
 
-                    systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
+//                    systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
-//                    systemBack.whenPressed(new IntakeCommands.DontKillYourselfCmd(intakeSubsystem, ));
+                    systemBack.whenPressed(new SequentialCommandGroup(new  IntakeCommands.DontKillYourselfCmd(intakeSubsystem, 800),
+                            new SetStateCommands.IntakeStateCmd()));
 
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.NoneStateCmd(),
@@ -200,9 +204,9 @@ public class Echo extends CommandOpMode {
 
                     systemB.whenPressed(new IntakeCommands.RestartIntakeCmd(intakeSubsystem));
 
-                    systemY.whenPressed(new SequentialCommandGroup(
-                            new IntakeCommands.ReturnArmForHMCmd(intakeSubsystem),
-                            new SetStateCommands.NoneStateCmd()));
+//                    systemY.whenPressed(new SequentialCommandGroup(
+//                            new IntakeCommands.ReturnArmForHMCmd(intakeSubsystem),
+//                            new SetStateCommands.NoneStateCmd()));
 
                     systemX.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.NoneStateCmd(),
@@ -258,6 +262,8 @@ public class Echo extends CommandOpMode {
 
                     break;
                 case CHAMBER:
+                    systemRightStick.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+
 
                     driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
                             () -> 0.3, true));
@@ -378,8 +384,6 @@ public class Echo extends CommandOpMode {
         systemDPadLeft = new GamepadButton(systemGamepad, GamepadKeys.Button.DPAD_LEFT);
         systemRightBumper = new GamepadButton(systemGamepad, GamepadKeys.Button.RIGHT_BUMPER);
         systemLeftBumper = new GamepadButton(systemGamepad, GamepadKeys.Button.LEFT_BUMPER);
-        systemLeftStickButton = new GamepadButton(systemGamepad, GamepadKeys.Button.LEFT_STICK_BUTTON);
-        systemRightStickButton = new GamepadButton(systemGamepad, GamepadKeys.Button.RIGHT_STICK_BUTTON);
         systemBack = new GamepadButton(systemGamepad, GamepadKeys.Button.BACK);
         driverA = new GamepadButton(driverGamepad, GamepadKeys.Button.A);
         driverB = new GamepadButton(driverGamepad, GamepadKeys.Button.B);
@@ -392,5 +396,7 @@ public class Echo extends CommandOpMode {
         driverRightBumper = new GamepadButton(driverGamepad, GamepadKeys.Button.RIGHT_BUMPER);
         driverLeftBumper = new GamepadButton(driverGamepad, GamepadKeys.Button.LEFT_BUMPER);
         driverStart = new GamepadButton(driverGamepad, GamepadKeys.Button.START);
+        systemLeftStick = new GamepadButton(systemGamepad, GamepadKeys.Button.LEFT_STICK_BUTTON);
+        systemRightStick = new GamepadButton(systemGamepad, GamepadKeys.Button.RIGHT_STICK_BUTTON);
     }
 }

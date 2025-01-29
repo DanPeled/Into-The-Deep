@@ -530,11 +530,11 @@ public class IntakeCommands {
 
     }
 
-    public static class ReturnArmForHMCmd extends ParallelRaceGroup {
+    public static class ReturnArmForHMCmd extends SequentialCommandGroup {
 
         public ReturnArmForHMCmd(IntakeSubsystem intakeSubsystem) {
 
-            addCommands(new SequentialCommandGroup(
+            addCommands(
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
                     new SetRotationCmd(intakeSubsystem, 0.5),
                     //new Wait(intakeSubsystem, 0.0),
@@ -542,7 +542,7 @@ public class IntakeCommands {
                     new Wait(intakeSubsystem, 1),
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),//for safety
-                    new SlideUntilCmd(intakeSubsystem, 300, 1)), new WaitCommand(5000));
+                    new SlideUntilCmd(intakeSubsystem, 300, 1));
             addRequirements(intakeSubsystem);
         }
 
@@ -563,7 +563,7 @@ public class IntakeCommands {
                     new DischargeGrabCmd(dischargeSubsystem),
                     new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
                     new SetPowerCmd(intakeSubsystem, 0),
-                    new SpinCmd(intakeSubsystem, -0.1, -1),
+                    new SpinCmd(intakeSubsystem, -0.13, -1),
                     new Wait(intakeSubsystem, 0.15),
                     new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 1 / Math.PI),
                     new SpinCmd(intakeSubsystem, 0, -1));

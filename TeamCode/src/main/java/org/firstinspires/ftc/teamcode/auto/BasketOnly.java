@@ -36,7 +36,7 @@ public class BasketOnly extends CommandOpMode {
     public void initialize() {
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
-        mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(0.8, 0.2), 180, this);
+        mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(0.8, 0.22), 180, this);
         register(mecanumDrive, dischargeSubsystem, intakeSubsystem);
         mecanumDrive.setHeading(0);
         AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);
@@ -51,7 +51,7 @@ public class BasketOnly extends CommandOpMode {
                         new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.8, 180, 0.05, 0.5)),
                 new ParallelCommandGroup(
-                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.38, 180, 0.03, 0.5),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.18, 0.37, 180, 0.03, 0.5),
                         new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1380)),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.755, 180, 0.02, 0.75),
@@ -62,7 +62,7 @@ public class BasketOnly extends CommandOpMode {
                 new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
                 new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
                 new WaitCommand(1000),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.38, 180, 0.03, 0.5),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.18, 0.37, 180, 0.03, 0.5),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new ParallelCommandGroup(
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.755, 180, 0.02, 0.75),
@@ -78,7 +78,7 @@ public class BasketOnly extends CommandOpMode {
                 ),
                 new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
                 new WaitCommand(1500),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.35, 180, 0.03, 0.5),
+                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.19, 0.34, 180, 0.03, 0.5),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.85, 180, 0.05, 0.5),
                 new ParallelCommandGroup(

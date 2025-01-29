@@ -4,7 +4,7 @@ public class ArmsStages {
     public static final double TOP = 0.55;
     public static final double MIDDLE = 0.43;
     public static final double TRANSFER = 0.44;
-    public static final double BOTTOM = 0.358;
+    public static final double BOTTOM = 0.364;
     public static final double SHRINK = 0.335;
 
 }
