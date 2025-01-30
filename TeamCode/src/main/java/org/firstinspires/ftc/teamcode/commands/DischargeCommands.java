@@ -83,13 +83,6 @@ public class DischargeCommands {
 
         }
 
-        @Override
-        public void execute() {
-
-            telemetry.addData("pos", dischargeSubsystem.getPosition());
-            telemetry.update();
-        }
-
 
         @Override
         public void initialize() {

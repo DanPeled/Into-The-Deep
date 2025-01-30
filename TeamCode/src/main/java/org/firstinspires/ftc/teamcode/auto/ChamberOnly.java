@@ -91,7 +91,7 @@ public class ChamberOnly extends CommandOpMode {
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.9, 0.6, 0, 0.06, 1)
                 ),
 
-                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry),
+                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight + 50, telemetry),
                 new WaitCommand(900),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.92, 1.05, 0, 0.05, 0.9),
                 new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry)));

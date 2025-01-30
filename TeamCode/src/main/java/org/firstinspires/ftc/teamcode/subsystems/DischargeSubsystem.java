@@ -45,7 +45,7 @@ public class DischargeSubsystem extends SubsystemBase {
     public final double slidesSpeed = 1;
     public final double slideHalfSpeed = 1;
     public final double slidesLowSpeed = 0.7;
-//    PIDCoefficients pid = new PIDCoefficients()
+    PIDFCoefficients pidf = new PIDFCoefficients(15, 0.05, 0, 0);
 
 
     public DischargeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -180,5 +180,10 @@ public class DischargeSubsystem extends SubsystemBase {
 
     public PIDFCoefficients getPIDFCoefficients() {
         return lowerMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
+    }
+
+    public void setPIDFCoefficients(PIDFCoefficients pidfCoefficients) {
+        lowerMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
+        upperMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
     }
 }

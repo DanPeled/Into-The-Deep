@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.controller.wpilibcontroller.ProfiledPIDController;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -306,4 +307,31 @@ public class MecanumCommands {
             derivative = 0;
         }
     }
+
+    public static class MoveSideToSideCmd extends CommandBase {
+        MecanumDrive mecanumDrive;
+        ElapsedTime time = new ElapsedTime();
+
+        public MoveSideToSideCmd(MecanumDrive mecanumDrive) {
+            this.mecanumDrive = mecanumDrive;
+        }
+
+        @Override
+        public void initialize() {
+            time.reset();
+        }
+
+        @Override
+        public void execute() {
+
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.extraX = 0;
+            mecanumDrive.extraY = 0;
+            mecanumDrive.extraR = 0;
+        }
+    }
+
 }

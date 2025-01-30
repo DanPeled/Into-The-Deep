@@ -46,6 +46,7 @@ public class MecanumDrive extends SubsystemBase {
     double tickPerMeter = 1783;
     LinearOpMode opMode;
     double startAngle = 0;
+    public double extraX = 0, extraY = 0, extraR = 0;
 
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, LinearOpMode opMode) {
         this.telemetry = telemetry;
@@ -164,6 +165,9 @@ public class MecanumDrive extends SubsystemBase {
 
 
     public void drive(double x, double y, double rotation, double boost) {
+        x += extraX;
+        y += extraY;
+        rotation += extraR;
         x *= boost * 3;
         y *= boost * 3;
         rotation *= boost * 2;

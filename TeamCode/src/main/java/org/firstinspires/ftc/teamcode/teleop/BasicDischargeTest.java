@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
+import com.acmerobotics.dashboard.config.Config;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
@@ -9,6 +10,9 @@ import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
@@ -18,6 +22,7 @@ import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGotoCm
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeReleaseCmd;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGrabCmd;
 
+@Config
 @TeleOp
 public class BasicDischargeTest extends CommandOpMode {
     GamepadEx systemGamepad;
@@ -26,9 +31,12 @@ public class BasicDischargeTest extends CommandOpMode {
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
     DischargeManualGotoCmd dischargePowerCmd;
+    public static boolean gotoo = false, home = false;
+    boolean wasGoto = false, washome = false;
 
     @Override
     public void initialize() {
+
         systemGamepad = new GamepadEx(gamepad2);
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         register(dischargeSubsystem);
@@ -47,7 +55,7 @@ public class BasicDischargeTest extends CommandOpMode {
 
         dPadUp.whenPressed(new DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry));
         dPadDown.whenPressed(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
-        dPadLeft.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
+        dPadLeft.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry));
         leftBumper.whenPressed(new DischargeReleaseCmd(dischargeSubsystem));
         rightBumper.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
         X.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
@@ -63,6 +71,27 @@ public class BasicDischargeTest extends CommandOpMode {
 
     @Override
     public void run() {
+        if (gotoo && !wasGoto) {
+            schedule(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry));
+            wasGoto = true;
+            washome = false;
+            home = false;
+        }
+        if (home && !washome) {
+            schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
+            wasGoto = false;
+            washome = true;
+            gotoo = false;
+        }
+
+//        if(lp != p|| li != i || ld != d || lf != f){
+//            PIDFCoefficients pidf = new PIDFCoefficients(p,i,d,f);
+//        }
+//
+//        lp = p;
+//        li = i;
+//        ld = d;
+//        lf = f;
         super.run();
         //telemetry.addData("yPower", systemGamepad.getLeftY() * 0.75);
         //telemetry.addData("posInCM", dischargeSubsystem.getLiftPosInCM());
@@ -70,15 +99,19 @@ public class BasicDischargeTest extends CommandOpMode {
         //telemetry.addData("pos2", dischargeSubsystem.getPosition2());
         //telemetry.addData("gearRatio", dischargeSubsystem.getGearBoxRatio());
         //telemetry.addData("timeUp", dischargeSubsystem.timeUp);
-
-        telemetry.addData("position", dischargeSubsystem.getPosition());
-        telemetry.addData("Target Pos", dischargeSubsystem.getTargetPosInTicks());
-        telemetry.addData("touch", dischargeSubsystem.isHome());
+//
+//        telemetry.addData("position", dischargeSubsystem.getPosition());
+//        telemetry.addData("Target Pos", dischargeSubsystem.getTargetPosInTicks());
+//        telemetry.addData("touch", dischargeSubsystem.isHome());
         //telemetry.addData("mode", dischargeSubsystem.getMode());
         //String commandName = dischargeSubsystem.getCurrentCommand().getName();
         //telemetry.addData("command", commandName==null ? "null" : commandName);
 
-
-        telemetry.update();
+        multipleTelemetry.addData("p", dischargeSubsystem.getPIDFCoefficients().p);
+        multipleTelemetry.addData("i", dischargeSubsystem.getPIDFCoefficients().i);
+        multipleTelemetry.addData("d", dischargeSubsystem.getPIDFCoefficients().d);
+        multipleTelemetry.addData("f", dischargeSubsystem.getPIDFCoefficients().f);
+        multipleTelemetry.update();
+//        telemetry.update();
     }
 }

@@ -551,8 +551,10 @@ public class IntakeCommands {
     public static class Transfer extends SequentialCommandGroup {
         final int slidesBackAfterTransfer = 10;
         public static boolean transferring = false;
+        IntakeSubsystem intakeSubsystem;
 
         public Transfer(IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem) {
+            this.intakeSubsystem = intakeSubsystem;
             addCommands(
                     new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                     new ParallelCommandGroup(
@@ -579,6 +581,7 @@ public class IntakeCommands {
         @Override
         public void end(boolean interrupted) {
             transferring = false;
+            intakeSubsystem.setArmPower(0);
         }
     }
 
