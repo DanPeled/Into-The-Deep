@@ -117,6 +117,49 @@ public class IntakeCommands {
             }
             return false;
         }
+    }public static class SlideHomeTouchCmd extends CommandBase {
+        IntakeSubsystem intakeSubsystem;
+        double lastTick;
+        double lastTime = 0;
+        final double maxDuration = 3;
+        final boolean initTime;
+        final int minPosOffset = 40;
+        ElapsedTime elapsedTime = new ElapsedTime();
+
+        public SlideHomeTouchCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
+            this.intakeSubsystem = intakeSubsystem;
+            this.initTime = initTime;
+            //addRequirements(intakeSubsystem);
+
+        }
+
+        @Override
+        public void initialize() {
+            lastTick = intakeSubsystem.getAveragePosition();
+            elapsedTime.reset();
+            intakeSubsystem.setArmPower(0);
+            intakeSubsystem.runWithoutEncoders();
+            addRequirements(intakeSubsystem);
+        }
+
+        @Override
+        public void execute() {
+            if (initTime) {
+                intakeSubsystem.setRawPower(-0.2);
+            }
+            else {
+                intakeSubsystem.setRawPower(-1);
+            }
+
+        }
+
+        @Override
+        public boolean isFinished() {
+
+
+            return intakeSubsystem.isHome() ||(!initTime && elapsedTime.seconds() > maxDuration);
+
+        }
 
         @Override
         public void end(boolean interrupted) {

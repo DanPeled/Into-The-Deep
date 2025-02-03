@@ -6,7 +6,6 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
@@ -19,70 +18,41 @@ import java.util.ArrayList;
 import java.util.Arrays;
 
 public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
-    MultipleTelemetry telemetry;
-
     final double tile = 0.6;
+    final double meters_to_inches = 39.37008;
+    private final int ticksPerMeter = 2000;//todo: change later to real number
+    private final double ticksPerDegree = 5.4;//todo: change later to real number
+    MultipleTelemetry telemetry;
+    boolean mecanum = true;
+    BNO055IMU.Parameters parameters = null;
+    Position position = new Position();
+    Velocity velocity = new Velocity();
+    Acceleration acceleration = null;
     volatile private DcMotorEx fl = null;
     volatile private DcMotorEx fr = null;
     volatile private DcMotorEx bl = null;
     volatile private DcMotorEx br = null;
-
+    volatile private DcMotorEx vl = null;
+    volatile private DcMotorEx vr = null;
+    volatile private DcMotorEx b = null;
     private int fl_startPos = 0;
     private int fr_startPos = 0;
     private int bl_startPos = 0;
     private int br_startPos = 0;
-
+    private int vl_startPos = 0;
+    private int vr_startPos = 0;
+    private int b_startPos = 0;
+    private double lastHeading;
     private double forwardTicksPerMeter;
     private double strafeTicksPerMeter;
-
     private boolean useDashBoard;
-    final double meters_to_inches = 39.37008;
     private ArrayList<Double> pathx;
     private ArrayList<Double> pathy;
     private long lastTimestamp = 0;
-
     private Point origin; // origin point of action
     private Point direction; // x,y direction for dashboard
-
     private double angularOffset = 0;
-
-
     private BNO055IMU imu = null;
-    BNO055IMU.Parameters parameters = null;
-
-    Position position = new Position();
-    Velocity velocity = new Velocity();
-    Acceleration acceleration = null;
-
-    public Position getPosition() {
-        return this.position;
-    }
-
-    public Velocity getVelocity() {
-        return this.velocity;
-    }
-
-    public Acceleration getAcceleration() {
-        return this.acceleration;
-    }
-
-    private class FS {
-        public double f = 0;
-        public double s = 0;
-
-        FS(double f, double s) {
-            this.f = f;
-            this.s = s;
-        }
-    }
-
-    public double getX() {
-        return position.x;
-    }
-
-    public double getY() {
-        return position.y;
-    }
 
     public IMU_Integrator(BNO055IMU imu, double forwardTicksPerMeter, double strafeTicksPerMeter,
                           Point origin, double angularOffset,
@@ -107,6 +77,48 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
         this.angularOffset = angularOffset;
     }
 
+    public IMU_Integrator(BNO055IMU imu, Point origin, double angularOffset, MultipleTelemetry telemetry,
+                          DcMotorEx vl, DcMotorEx vr, DcMotorEx b) {
+        this.vl = vl;
+        this.vr = vr;
+        this.b = b;
+        this.telemetry = telemetry;
+        this.imu = imu;
+        // Constructor
+        this.origin = origin;
+        this.direction = direction;
+        this.useDashBoard = false;
+        this.mecanum = false;
+
+
+//        if (this.useDashBoard) {
+//            this.pathx = new ArrayList<>();
+//            this.pathy = new ArrayList<>();
+//        }
+        this.angularOffset = angularOffset;
+        lastHeading = angularOffset;
+    }
+
+    public Position getPosition() {
+        return this.position;
+    }
+
+    public Velocity getVelocity() {
+        return this.velocity;
+    }
+
+    public Acceleration getAcceleration() {
+        return this.acceleration;
+    }
+
+    public double getX() {
+        return position.x;
+    }
+
+    public double getY() {
+        return position.y;
+    }
+
     public FS getDeltaDistance() {
         int fl_tick = fl.getCurrentPosition();
         int fr_tick = fr.getCurrentPosition();
@@ -128,6 +140,25 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
         br_startPos = br_tick;
 
         return new FS(f, s);
+    }
+
+    public FS getDeltaOdometerDistance() {
+        int vl_tick = vl.getCurrentPosition();
+        int vr_tick = vr.getCurrentPosition();
+        int b_tick = b.getCurrentPosition();
+        double heading = getHeading();
+        double headingDiff = heading - lastHeading;
+        double vl_dist = vl_tick - vl_startPos;
+        double vr_dist = vr_tick - vr_startPos;
+        double b_dist = b_tick - b_startPos;
+        double f = (vl_dist + vr_dist) / 2 / ticksPerMeter;
+        double s = (b_dist -  headingDiff * ticksPerDegree)/ticksPerMeter;
+        lastHeading = heading;
+        vl_startPos = vl_tick;
+        vr_startPos = vr_tick;
+        b_startPos = b_tick;
+        return new FS(f,s);
+
     }
 
     public void resetPosition() {
@@ -170,10 +201,12 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
             t.addData("[-2]", Arrays.toString(new double[]{pathx.get(pathx.size() - 2), pathy.get(pathy.size() - 2)}));
             t.addData("[-1]", Arrays.toString(new double[]{pathx.get(pathx.size() - 1), pathy.get(pathy.size() - 1)}));
         }
-
-
-        FS delta = getDeltaDistance();
-
+        FS delta;
+        if (mecanum) {
+            delta = getDeltaDistance();
+        } else {
+            delta = getDeltaOdometerDistance();
+        }
         double a = -getHeading() / 180.0 * Math.PI;
 
         this.position.x += delta.f * Math.cos(a) - delta.s * Math.sin(a);
@@ -238,6 +271,16 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
         }
 
         return a;
+    }
+
+    private class FS {
+        public double f = 0;
+        public double s = 0;
+
+        FS(double f, double s) {
+            this.f = f;
+            this.s = s;
+        }
     }
 
 }

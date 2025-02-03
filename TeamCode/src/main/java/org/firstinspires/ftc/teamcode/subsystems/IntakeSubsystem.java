@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
 import lombok.Setter;
@@ -29,6 +30,7 @@ public class IntakeSubsystem extends SubsystemBase {
     public final double slidesSpeed = 1;
     public final double slidesLowSpeed = 0.3;
     public boolean end = false;
+    TouchSensor leftTouch, rightTouch;
 
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
@@ -39,6 +41,9 @@ public class IntakeSubsystem extends SubsystemBase {
         rServo = hardwareMap.servo.get("rotationServo");
         armsServo = hardwareMap.servo.get("armsServo");
         spinServo = hardwareMap.crservo.get("spinServo");
+        leftTouch = hardwareMap.touchSensor.get("leftTouch");
+        rightTouch = hardwareMap.touchSensor.get("rightTouch");
+
         //resetEncoders();
         this.telemetry = telemetry;
 
@@ -64,6 +69,9 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public double getTargetPos() {
         return targetPos;
+    }
+    public boolean isHome(){
+        return leftTouch.isPressed() || rightTouch.isPressed();
     }
 
     public void armGoToTarget() {

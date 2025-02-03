@@ -7,11 +7,8 @@ import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
-import org.firstinspires.ftc.teamcode.subsystems.LLResult;
-import org.firstinspires.ftc.teamcode.subsystems.Limelight3A;
-
-import java.util.List;
+import org.firstinspires.ftc.teamcode.limelight.LLResult;
+import org.firstinspires.ftc.teamcode.limelight.Limelight3A;
 
 @Config
 @TeleOp(group = "limelight")

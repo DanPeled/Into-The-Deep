@@ -173,6 +173,112 @@ public class MecanumCommands {
         public void end(boolean interrupted) {
             mecanumDrive.drive(0, 0, 0, 0);
         }
+    }public static class ConstantVelocityGotoCmd extends CommandBase {
+        double x, y, wantedAngle, wantedDistance;
+        double error, lastError, lastTime;
+        double proportional, Integral, derivative;
+        double kp = 0.025, ki = 0.0005, kd = -0.006;
+        Point currentPos;
+        double boost = 1;
+        double sensitivity;
+        double rotation = 0;
+        final double minPower = 0.04;
+        MecanumDrive mecanumDrive;
+        Telemetry telemetry;
+        boolean noRotation = false;
+        final double speed;
+
+        public ConstantVelocityGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
+                       double wantedAngle, double sensitivity, double wantedDistance, double speed) {
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.speed = speed;
+            this.sensitivity = sensitivity;
+            this.mecanumDrive = mecanumDrive;
+            this.telemetry = telemetry;
+            this.wantedDistance = wantedDistance;
+
+            addRequirements(mecanumDrive);
+        }
+
+        public ConstantVelocityGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
+                       double wantedAngle, double sensitivity, double speed) {
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.speed = speed;
+            this.sensitivity = sensitivity;
+            this.mecanumDrive = mecanumDrive;
+            this.telemetry = telemetry;
+            this.wantedDistance = -1;
+
+            addRequirements(mecanumDrive);
+        }
+
+        public ConstantVelocityGotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
+                       double wantedAngle, double sensitivity, double speed, boolean noRotation) {
+            this.x = x;
+            this.y = y;
+            this.wantedAngle = wantedAngle;
+            this.speed = speed;
+            this.sensitivity = sensitivity;
+            this.mecanumDrive = mecanumDrive;
+            this.telemetry = telemetry;
+            this.wantedDistance = -1;
+            this.noRotation = noRotation;
+
+            addRequirements(mecanumDrive);
+        }
+
+        @Override
+        public void execute() {
+            currentPos = mecanumDrive.getPosition();
+            double[] localVector = {x - currentPos.x, y - currentPos.y};
+            double MovementAngle = Math.atan2(localVector[0], localVector[1]);
+            double length = Range.clip(speed, -1, 1);
+//            length += Math.signum(length) * minPower;
+
+            localVector[0] = Math.sin(MovementAngle) * length;
+            localVector[1] = Math.cos(MovementAngle) * length;
+            double currentTime = (double) System.currentTimeMillis() / 1000;
+            double deltaTime = currentTime - lastTime;
+            if (lastTime != 0) {
+                error = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading());
+                proportional = Range.clip(error, -100, 100) * kp;
+                Integral += Range.clip(error, -30, 30) * deltaTime;
+                if (Math.signum(Integral) != Math.signum(error)) {
+                    Integral = 0;
+                }
+                derivative = (lastError - error) / deltaTime;
+                rotation = proportional + Integral * ki + derivative * kd + Math.signum(proportional + Integral * ki + derivative * kd) * 0.04;
+                rotation = rotation * 0.65 / (boost * 0.7 + 0.3);
+            }
+
+            lastError = error;
+            lastTime = currentTime;
+            if (noRotation) {
+                mecanumDrive.drive(localVector[0], localVector[1], 0, boost);
+
+            } else {
+                mecanumDrive.drive(localVector[0], localVector[1], rotation / 2.5, boost);
+            }
+            telemetry.addData("goto", true);
+            telemetry.addData("x", localVector[0]);
+            telemetry.addData("y", localVector[1]);
+
+        }
+
+        @Override
+        public boolean isFinished() {
+            return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
+                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 3) || noRotation));
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.drive(0, 0, 0, 0);
+        }
     }
 
     public static class SplineGotoCmd extends CommandBase {
