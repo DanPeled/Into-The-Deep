@@ -37,12 +37,16 @@ public class IntakeSubsystem extends SubsystemBase {
         rMotor = hardwareMap.dcMotor.get("leftIntakeMotor");
         lMotor = hardwareMap.dcMotor.get("rightIntakeMotor");
         lMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hServo = hardwareMap.servo.get("heightServo");
         rServo = hardwareMap.servo.get("rotationServo");
         armsServo = hardwareMap.servo.get("armsServo");
         spinServo = hardwareMap.crservo.get("spinServo");
-        leftTouch = hardwareMap.touchSensor.get("leftTouch");
-        rightTouch = hardwareMap.touchSensor.get("rightTouch");
+//        leftTouch = hardwareMap.touchSensor.get("leftTouch");
+//        rightTouch = hardwareMap.touchSensor.get("rightTouch");
 
         //resetEncoders();
         this.telemetry = telemetry;

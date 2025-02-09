@@ -129,8 +129,8 @@ public class Echo extends CommandOpMode {
             controllersState = robotState;
             switch (robotState) {
                 case NONE:
-                    systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
-                    systemRightStick.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+//                    systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
+//                    systemRightStick.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
 
 
                     driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
@@ -174,11 +174,10 @@ public class Echo extends CommandOpMode {
 
                     systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
 
-//                    systemLeftStickButton.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+                    systemLeftStick.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+                    systemRightStick.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
-//                    systemRightStickButton.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
-
-                    systemBack.whenPressed(new SequentialCommandGroup(new  IntakeCommands.DontKillYourselfCmd(intakeSubsystem, 800),
+                    systemBack.whenPressed(new SequentialCommandGroup(new IntakeCommands.DontKillYourselfCmd(intakeSubsystem, 800),
                             new SetStateCommands.IntakeStateCmd()));
 
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(

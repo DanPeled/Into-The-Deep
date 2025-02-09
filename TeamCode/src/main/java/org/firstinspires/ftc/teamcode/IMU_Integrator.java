@@ -20,8 +20,8 @@ import java.util.Arrays;
 public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
     final double tile = 0.6;
     final double meters_to_inches = 39.37008;
-    private final int ticksPerMeter = 2000;//todo: change later to real number
-    private final double ticksPerDegree = 5.4;//todo: change later to real number
+    private final int ticksPerMeter = 13362;//todo: change later to real number
+    private final double ticksPerDegree = 41.028;//todo: change later to real number
     MultipleTelemetry telemetry;
     boolean mecanum = true;
     BNO055IMU.Parameters parameters = null;
@@ -148,16 +148,19 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
         int b_tick = b.getCurrentPosition();
         double heading = getHeading();
         double headingDiff = heading - lastHeading;
+        if (Math.abs(headingDiff) > 180) {
+            headingDiff -= Math.signum(headingDiff) * 360;
+        }
         double vl_dist = vl_tick - vl_startPos;
         double vr_dist = vr_tick - vr_startPos;
         double b_dist = b_tick - b_startPos;
         double f = (vl_dist + vr_dist) / 2 / ticksPerMeter;
-        double s = (b_dist -  headingDiff * ticksPerDegree)/ticksPerMeter;
+        double s = (b_dist + headingDiff * ticksPerDegree) / ticksPerMeter;
         lastHeading = heading;
         vl_startPos = vl_tick;
         vr_startPos = vr_tick;
         b_startPos = b_tick;
-        return new FS(f,s);
+        return new FS(f, s);
 
     }
 
@@ -201,17 +204,12 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
             t.addData("[-2]", Arrays.toString(new double[]{pathx.get(pathx.size() - 2), pathy.get(pathy.size() - 2)}));
             t.addData("[-1]", Arrays.toString(new double[]{pathx.get(pathx.size() - 1), pathy.get(pathy.size() - 1)}));
         }
-        FS delta;
-        if (mecanum) {
-            delta = getDeltaDistance();
-        } else {
-            delta = getDeltaOdometerDistance();
-        }
+        FS delta = getDeltaOdometerDistance();
+
         double a = -getHeading() / 180.0 * Math.PI;
 
         this.position.x += delta.f * Math.cos(a) - delta.s * Math.sin(a);
         this.position.y += delta.s * Math.cos(a) + delta.f * Math.sin(a);
-
         // 100000000000 ps = 100 ms = 0.1 s
         if (this.useDashBoard && linearAcceleration.acquisitionTime - this.lastTimestamp >= 5000000L) {
             Point p = transformDashboard(this.position); // transform

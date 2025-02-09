@@ -110,7 +110,7 @@ public class DischargeCommands {
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
-            maxDuration = 5;
+            maxDuration = 3;
             addRequirements(dischargeSubsystem);
         }
 
@@ -137,11 +137,11 @@ public class DischargeCommands {
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesSpeed);
             else
                 dischargeSubsystem.setRawPower(-dischargeSubsystem.slidesLowSpeed);
-            if (dischargeSubsystem.getPosition() < 200 && !switched) {
-                maxDuration = 2;
-                elapsedTime.reset();
-                switched = true;
-            }
+//            if (dischargeSubsystem.getPosition() < 200 && !switched) {
+//                maxDuration = 2;
+//                elapsedTime.reset();
+//                switched = true;
+//            }
 
 
         }

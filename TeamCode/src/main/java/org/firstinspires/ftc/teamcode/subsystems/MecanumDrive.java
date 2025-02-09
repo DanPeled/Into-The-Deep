@@ -27,14 +27,13 @@ import org.firstinspires.ftc.teamcode.IMU_Integrator;
 import org.opencv.core.Point;
 
 public class MecanumDrive extends SubsystemBase {
-    DcMotorEx fl, fr, bl, br;
+    public DcMotorEx fl, fr, bl, br;
     DistanceSensor distanceSensor;
-    MecanumDriveKinematics kinematics, odometryKinematics;
+    MecanumDriveKinematics kinematics;
     BNO055IMU imu;
     MecanumDriveWheelSpeeds wheelSpeeds;
     private final BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-    MecanumDriveOdometry odometry;
-
+    //bl = intakeOdometer, br = nonParallel, fr = dischargeOdometer
     ElapsedTime time = new ElapsedTime();
     Pose2d pos;
     double correctedHeading;
@@ -60,17 +59,17 @@ public class MecanumDrive extends SubsystemBase {
         bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         br.setDirection(DcMotorSimple.Direction.REVERSE);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
-        fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
         this.opMode = opMode;
         imu = hm.get(BNO055IMU.class, "imu");
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         startingPosition = new Point(0, 0);
-        parameters.accelerationIntegrationAlgorithm = new IMU_Integrator(imu, forwardTicksPerMeter, strafeTicksPerMeter, startingPosition, startAngle, fl, fr, bl, br, telemetry);
+        parameters.accelerationIntegrationAlgorithm = new IMU_Integrator(imu, startingPosition, startAngle, telemetry, bl, fr, fl);
         imu.initialize(parameters);
 
         Translation2d flLocation = new Translation2d(100, 164);//164
@@ -88,6 +87,7 @@ public class MecanumDrive extends SubsystemBase {
 //        odometry = new MecanumDriveOdometry(odometryKinematics, Rotation2d.fromDegrees(getHeading()), new Pose2d(startingPosition.x,startingPosition.y,Rotation2d.fromDegrees(0)));
         time.reset();
         imu.startAccelerationIntegration(new Position(DistanceUnit.METER, this.startingPosition.x, this.startingPosition.y, 0, 0), new Velocity(), 2);
+
     }
 
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, Point start, double startAngle, LinearOpMode opMode) {
@@ -103,10 +103,10 @@ public class MecanumDrive extends SubsystemBase {
         bl.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         br.setDirection(DcMotorSimple.Direction.REVERSE);
         bl.setDirection(DcMotorSimple.Direction.REVERSE);
-        fl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        fr.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        br.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        bl.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        fl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        fr.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        br.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        bl.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         startingPosition = start;
         distanceSensor = hm.get(DistanceSensor.class, "distanceSensor");
         this.startAngle = startAngle;
@@ -128,6 +128,7 @@ public class MecanumDrive extends SubsystemBase {
 
 //        odometry = new MecanumDriveOdometry(odometryKinematics, Rotation2d.fromDegrees(getHeading()), new Pose2d(start.x, start.y, startAngle));
         time.reset();
+
     }
 
 
@@ -137,7 +138,7 @@ public class MecanumDrive extends SubsystemBase {
         parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
         parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
         RobotLog.d("imu params init start");
-        parameters.accelerationIntegrationAlgorithm = new IMU_Integrator(imu, forwardTicksPerMeter, strafeTicksPerMeter, startingPosition, startAngle, fl, fr, bl, br, telemetry);
+        parameters.accelerationIntegrationAlgorithm = new IMU_Integrator(imu, startingPosition, startAngle, telemetry, bl, fr, fl);
         RobotLog.d("imu init");
         imu.initialize(parameters);
         RobotLog.d("imu init finished");
