@@ -1,13 +1,11 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
-import com.arcrobotics.ftclib.controller.wpilibcontroller.ProfiledPIDController;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
-import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
 import org.firstinspires.ftc.teamcode.utils.Utils;
 import org.opencv.core.Point;
 
@@ -440,4 +438,23 @@ public class MecanumCommands {
         }
     }
 
+    public static class MoverServoCmd extends CommandBase {
+        MecanumDrive mecanumDrive;
+        double pos;
+
+        public MoverServoCmd(MecanumDrive mecanumDrive, double pos) {
+            this.mecanumDrive = mecanumDrive;
+            this.pos = pos;
+        }
+
+        @Override
+        public void initialize() {
+            mecanumDrive.setMoverServo(pos);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
 }

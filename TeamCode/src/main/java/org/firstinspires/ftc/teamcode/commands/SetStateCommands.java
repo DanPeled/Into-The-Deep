@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
 
+import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
+import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
 import org.firstinspires.ftc.teamcode.teleop.Echo;
 
@@ -10,6 +12,18 @@ public class SetStateCommands {
         @Override
         public void initialize() {
             Echo.setRobotState(RobotState.NONE);
+        }
+
+        @Override
+        public boolean isFinished() {
+            return true;
+        }
+    }
+
+    public static class TransferStateCmd extends CommandBase {
+        @Override
+        public void initialize() {
+            Echo.setRobotState(RobotState.TRANSFER);
         }
 
         @Override

@@ -15,7 +15,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
-import org.firstinspires.ftc.teamcode.subsystems.ThreeDeadWheelLocalizer;
 
 @TeleOp
 public class MecanumOpMode extends CommandOpMode {

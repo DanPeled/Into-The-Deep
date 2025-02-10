@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.RobotLog;
 
@@ -28,6 +29,7 @@ import org.opencv.core.Point;
 
 public class MecanumDrive extends SubsystemBase {
     public DcMotorEx fl, fr, bl, br;
+    public Servo moverServo;
     DistanceSensor distanceSensor;
     MecanumDriveKinematics kinematics;
     BNO055IMU imu;
@@ -46,6 +48,7 @@ public class MecanumDrive extends SubsystemBase {
     LinearOpMode opMode;
     double startAngle = 0;
     public double extraX = 0, extraY = 0, extraR = 0;
+
 
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, LinearOpMode opMode) {
         this.telemetry = telemetry;
@@ -244,6 +247,10 @@ public class MecanumDrive extends SubsystemBase {
             }
         }
         return speeds;
+    }
+
+    public void setMoverServo(double pos) {
+        moverServo.setPosition(pos);
     }
 
 

@@ -11,6 +11,38 @@ import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import java.util.function.Supplier;
 
 public class DischargeCommands {
+    public static class SlideUntilCmd extends CommandBase {
+        DischargeSubsystem subsystem;
+        final int position;
+        final int maxPosition = 3000;
+        double power;
+
+        public SlideUntilCmd(DischargeSubsystem subsystem, int position, double power) {
+            this.power = power;
+            this.subsystem = subsystem;
+            this.position = position;
+            addRequirements(subsystem);
+        }
+
+        @Override
+        public void initialize() {
+            subsystem.runWithEncoders();
+            if (subsystem.getPosition() < position * subsystem.dischargeRatio) {
+                subsystem.setRawPower(power);
+            }
+
+        }
+
+        @Override
+        public boolean isFinished() {
+            return subsystem.getPosition() > position * subsystem.dischargeRatio;
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            subsystem.setPower(0);
+        }
+    }
 
     public static class NoOpCommand extends CommandBase {
         public NoOpCommand(DischargeSubsystem dischargeSubsystem) {
@@ -97,6 +129,7 @@ public class DischargeCommands {
         public boolean isFinished() {
             return true;
         }
+
     }
 
     public static class GoHomeCmd extends CommandBase {
@@ -110,7 +143,7 @@ public class DischargeCommands {
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
-            maxDuration = 3;
+            maxDuration = 5;
             addRequirements(dischargeSubsystem);
         }
 

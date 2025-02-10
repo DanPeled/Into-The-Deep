@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.subsystems;
+package org.firstinspires.ftc.teamcode.swerve;
 
 public enum SwerveWheels {
     //372 wide 344 other wide

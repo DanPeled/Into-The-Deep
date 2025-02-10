@@ -12,9 +12,9 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
-import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
+import org.firstinspires.ftc.teamcode.swerve.SwerveCommands;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
-import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
+import org.firstinspires.ftc.teamcode.swerve.SwerveDrive;
 
 public class DriveDischargeOpMode extends CommandOpMode {
     GamepadEx systemGamepad;

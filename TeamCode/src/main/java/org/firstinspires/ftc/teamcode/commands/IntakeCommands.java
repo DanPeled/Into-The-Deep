@@ -95,6 +95,7 @@ public class IntakeCommands {
             } else if (intakeSubsystem.getMotorPosition() > 60) {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesSpeed);
             } else {
+//                intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
             }
 
@@ -106,18 +107,20 @@ public class IntakeCommands {
                 return true;
             }
 
-            double deltaTime = elapsedTime.seconds() - lastTime;
-            if (deltaTime > 0.2) {
-                double avg = intakeSubsystem.getAveragePosition();
-                double deltaTick = avg - lastTick;
-                lastTick = avg;
-                lastTime = elapsedTime.seconds();
-                return (Math.abs(deltaTick) <= 8 && (avg < 200 || initTime));
+//            double deltaTime = elapsedTime.seconds() - lastTime;
+//            if (deltaTime > 0.2) {
+//                double avg = intakeSubsystem.getAveragePosition();
+//                double deltaTick = avg - lastTick;
+//                lastTick = avg;
+//                lastTime = elapsedTime.seconds();
+//                return (Math.abs(deltaTick) <= 8 && (avg < 200 || initTime));
 
-            }
-            return false;
+//            }
+            return intakeSubsystem.isHome();
         }
-    }public static class SlideHomeTouchCmd extends CommandBase {
+    }
+
+    public static class SlideHomeTouchCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         double lastTick;
         double lastTime = 0;
@@ -600,6 +603,7 @@ public class IntakeCommands {
             this.intakeSubsystem = intakeSubsystem;
             addCommands(
                     new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+                    new IntakeCommands.SpinCmd(intakeSubsystem, 0.06, -1),
                     new ParallelCommandGroup(
                             new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                             new ReturnArmForTransferCmd(intakeSubsystem, false)),

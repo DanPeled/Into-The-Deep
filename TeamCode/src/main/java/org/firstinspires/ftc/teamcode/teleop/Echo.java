@@ -17,16 +17,11 @@ import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.commands.SetStateCommands;
-import org.firstinspires.ftc.teamcode.commands.SwerveCommands;
-import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
-import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
-import org.firstinspires.ftc.teamcode.subsystems.SteeringServo;
-import org.firstinspires.ftc.teamcode.subsystems.SwerveDrive;
-import org.firstinspires.ftc.teamcode.subsystems.SwerveModule;
+import org.firstinspires.ftc.teamcode.swerve.SwerveDrive;
 
 import java.util.function.Supplier;
 
@@ -91,9 +86,13 @@ public class Echo extends CommandOpMode {
 //                new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
 //        IntakeCommands.IntakeManualGoToCmd.setEnabled(true);
 
+        schedule(new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
 
-        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
-                new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+        while (opModeInInit()) {
+            super.run();
+        }
+
+        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
 
 
         mecanumX = () -> driverGamepad.getLeftX();
@@ -129,9 +128,9 @@ public class Echo extends CommandOpMode {
             controllersState = robotState;
             switch (robotState) {
                 case NONE:
-//                    systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
+                    systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
 //                    systemRightStick.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
-
+                    systemRightBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
 
                     driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
                             () -> 0.3, true));
@@ -166,7 +165,8 @@ public class Echo extends CommandOpMode {
                     systemY.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.WaitForTransferEnd(),
                             new SetStateCommands.BasketStateCmd(), //change to chamber state
-                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry))); //go to high basket
+                            new DischargeCommands.SlideUntilCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, 1),
+                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry))); //ToDo: make it not go up randomly
 
                     systemB.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.StartIntakeCmd(intakeSubsystem),
@@ -174,8 +174,8 @@ public class Echo extends CommandOpMode {
 
                     systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
 
-                    systemLeftStick.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
-                    systemRightStick.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
+//                    systemLeftStick.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
+//                    systemRightStick.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
                     systemBack.whenPressed(new SequentialCommandGroup(new IntakeCommands.DontKillYourselfCmd(intakeSubsystem, 800),
                             new SetStateCommands.IntakeStateCmd()));
@@ -208,8 +208,11 @@ public class Echo extends CommandOpMode {
 //                            new SetStateCommands.NoneStateCmd()));
 
                     systemX.whenPressed(new SequentialCommandGroup(
-                            new SetStateCommands.NoneStateCmd(),
-                            new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)));
+                            new SetStateCommands.TransferStateCmd(),
+                            new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
+
+                            new DischargeCommands.SlideUntilCmd(dischargeSubsystem, dischargeSubsystem.lowChamberHeight, 1),
+                            new SetStateCommands.NoneStateCmd()));
 
                     systemDPadUp.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.5));
                     systemDPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0));
@@ -220,6 +223,30 @@ public class Echo extends CommandOpMode {
                             new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
 
                     break;
+                case TRANSFER:
+
+
+                    driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
+                            () -> 0.3, true));
+                    driverDPadUp.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> 0.2, () -> 0.0,
+                            () -> 0.3, true));
+                    driverDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.2, () -> 0.0, () -> 0.0,
+                            () -> 0.3, true));
+                    driverDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.2, () -> 0.0, () -> 0.0,
+                            () -> 0.3, true));
+
+                    telemetry.addData("x", mecanumX);
+                    telemetry.addData("y", mecanumY);
+                    telemetry.update();
+                    mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
+                            mecanumX, mecanumY, mecanumR, ()
+                            -> driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER) * 0.5 + 0.5, true));
+
+                    driverA.whenHeld(new MecanumCommands.SetRotationCmd(mecanumDrive, 0));
+
+                    systemBack.whenPressed(new SequentialCommandGroup(new IntakeCommands.DontKillYourselfCmd(intakeSubsystem, 800),
+                            new SetStateCommands.IntakeStateCmd()));
+
                 case BASKET:
 
                     driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
@@ -336,10 +363,7 @@ public class Echo extends CommandOpMode {
         multipleTelemetry.addData("posavg", intakeSubsystem.getAveragePosition());
         multipleTelemetry.addData("tick1", dischargeSubsystem.getPosition());
         multipleTelemetry.addData("tick2", dischargeSubsystem.getPosition2());
-        multipleTelemetry.addData("p", dischargeSubsystem.getPIDFCoefficients().p);
-        multipleTelemetry.addData("i", dischargeSubsystem.getPIDFCoefficients().i);
-        multipleTelemetry.addData("d", dischargeSubsystem.getPIDFCoefficients().d);
-        multipleTelemetry.addData("f", dischargeSubsystem.getPIDFCoefficients().f);
+        multipleTelemetry.addData("sfgjio", intakeSubsystem.isHome());
         multipleTelemetry.update();
 
 //        multipleTelemetry.addData("posX", gamepad1.left_stick_x);

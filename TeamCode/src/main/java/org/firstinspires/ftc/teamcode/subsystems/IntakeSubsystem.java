@@ -45,7 +45,7 @@ public class IntakeSubsystem extends SubsystemBase {
         rServo = hardwareMap.servo.get("rotationServo");
         armsServo = hardwareMap.servo.get("armsServo");
         spinServo = hardwareMap.crservo.get("spinServo");
-//        leftTouch = hardwareMap.touchSensor.get("leftTouch");
+        leftTouch = hardwareMap.touchSensor.get("leftTouch");
 //        rightTouch = hardwareMap.touchSensor.get("rightTouch");
 
         //resetEncoders();
@@ -74,9 +74,10 @@ public class IntakeSubsystem extends SubsystemBase {
     public double getTargetPos() {
         return targetPos;
     }
-    public boolean isHome(){
-        return leftTouch.isPressed() || rightTouch.isPressed();
-    }
+
+    public boolean isHome() {
+        return leftTouch.isPressed();
+    }//|| rightTouch.isPressed()
 
     public void armGoToTarget() {
         rMotor.setTargetPosition((int) targetPos);
@@ -161,4 +162,5 @@ public class IntakeSubsystem extends SubsystemBase {
     // make second button that while pressing it it goes to half of height and pushes things
     // away and then lowers one more stage and picks up the sample
     // button 3: checks angle and returns to base position
+
 }

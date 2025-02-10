@@ -142,6 +142,12 @@ public class DischargeSubsystem extends SubsystemBase {
         upperMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+    public void runWithEncoders() {
+        lowerMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        upperMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    }
+
+
     public void runToPosition() {
         lowerMotor.setPower(slidesSpeed);
         upperMotor.setPower(slidesSpeed);
