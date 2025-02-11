@@ -20,17 +20,6 @@ public class SetStateCommands {
         }
     }
 
-    public static class TransferStateCmd extends CommandBase {
-        @Override
-        public void initialize() {
-            Echo.setRobotState(RobotState.TRANSFER);
-        }
-
-        @Override
-        public boolean isFinished() {
-            return true;
-        }
-    }
 
     public static class BasketStateCmd extends CommandBase {
         @Override

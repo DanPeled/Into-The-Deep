@@ -48,7 +48,7 @@ public class MecanumDrive extends SubsystemBase {
     LinearOpMode opMode;
     double startAngle = 0;
     public double extraX = 0, extraY = 0, extraR = 0;
-
+    double correctionX = 0, correctionY = 0;
 
     public MecanumDrive(MultipleTelemetry telemetry, HardwareMap hm, LinearOpMode opMode) {
         this.telemetry = telemetry;
@@ -228,7 +228,7 @@ public class MecanumDrive extends SubsystemBase {
     }
 
     public Point getPosition() {
-        return new Point(imu.getPosition().x, imu.getPosition().y);
+        return new Point(imu.getPosition().x + correctionX, imu.getPosition().y + correctionY);
     }
 
     public void setFieldOriented(boolean fieldOriented) {
@@ -251,6 +251,11 @@ public class MecanumDrive extends SubsystemBase {
 
     public void setMoverServo(double pos) {
         moverServo.setPosition(pos);
+    }
+
+    public void resetPos(Point pos) {
+        correctionX = pos.x - imu.getPosition().x;
+        correctionY = pos.y - imu.getPosition().y;
     }
 
 

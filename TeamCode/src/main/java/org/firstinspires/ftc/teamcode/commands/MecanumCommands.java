@@ -68,17 +68,15 @@ public class MecanumCommands {
 
     public static class GotoCmd extends CommandBase {
         double x, y, wantedAngle, wantedDistance;
-        double error, lastError, lastTime;
-        double proportional, Integral, derivative;
-        double kp = 0.025, ki = 0.0005, kd = -0.006;
+        double kp = 0.01;
         Point currentPos;
         double boost;
         double sensitivity;
         double rotation = 0;
-        final double minPower = 0.04;
         MecanumDrive mecanumDrive;
         Telemetry telemetry;
         boolean noRotation = false;
+        double minPower = 0.2;
 
         public GotoCmd(Telemetry telemetry, MecanumDrive mecanumDrive, double x, double y,
                        double wantedAngle, double sensitivity, double wantedDistance, double boost) {
@@ -129,58 +127,42 @@ public class MecanumCommands {
             double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
             double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
-//            length += Math.signum(length) * minPower;
-
+            if (Math.abs(length) < minPower) {
+                length = Math.signum(length) * minPower;
+            }
             localVector[0] = Math.sin(MovementAngle) * length;
             localVector[1] = Math.cos(MovementAngle) * length;
-            double currentTime = (double) System.currentTimeMillis() / 1000;
-            double deltaTime = currentTime - lastTime;
-            if (lastTime != 0) {
-                error = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading());
-                proportional = Range.clip(error, -100, 100) * kp;
-                Integral += Range.clip(error, -30, 30) * deltaTime;
-                if (Math.signum(Integral) != Math.signum(error)) {
-                    Integral = 0;
-                }
-                derivative = (lastError - error) / deltaTime;
-                rotation = proportional + Integral * ki + derivative * kd + Math.signum(proportional + Integral * ki + derivative * kd) * 0.04;
-                rotation = rotation * 0.65 / (boost * 0.7 + 0.3);
-            }
+            rotation = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading()) * kp;
 
-            lastError = error;
-            lastTime = currentTime;
             if (noRotation) {
                 mecanumDrive.drive(localVector[0], localVector[1], 0, boost);
 
             } else {
-                mecanumDrive.drive(localVector[0], localVector[1], rotation / 2.5, boost);
+                mecanumDrive.drive(localVector[0], localVector[1], rotation / boost * 0.5, boost);
             }
-            telemetry.addData("goto", true);
-            telemetry.addData("x", localVector[0]);
-            telemetry.addData("y", localVector[1]);
 
         }
 
         @Override
         public boolean isFinished() {
             return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
-                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 3) || noRotation));
+                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 10) || noRotation));
         }
 
         @Override
         public void end(boolean interrupted) {
             mecanumDrive.drive(0, 0, 0, 0);
         }
-    }public static class ConstantVelocityGotoCmd extends CommandBase {
+    }
+
+    public static class ConstantVelocityGotoCmd extends CommandBase {
         double x, y, wantedAngle, wantedDistance;
-        double error, lastError, lastTime;
-        double proportional, Integral, derivative;
-        double kp = 0.025, ki = 0.0005, kd = -0.006;
+        double kp = 0.025;
         Point currentPos;
-        double boost = 1;
+        double boost = 0.5;
         double sensitivity;
         double rotation = 0;
-        final double minPower = 0.04;
+        double minPower = 0.04;
         MecanumDrive mecanumDrive;
         Telemetry telemetry;
         boolean noRotation = false;
@@ -235,42 +217,25 @@ public class MecanumCommands {
             double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
             double length = Range.clip(speed, -1, 1);
-//            length += Math.signum(length) * minPower;
-
+            length += Math.signum(length) * minPower;
             localVector[0] = Math.sin(MovementAngle) * length;
             localVector[1] = Math.cos(MovementAngle) * length;
-            double currentTime = (double) System.currentTimeMillis() / 1000;
-            double deltaTime = currentTime - lastTime;
-            if (lastTime != 0) {
-                error = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading());
-                proportional = Range.clip(error, -100, 100) * kp;
-                Integral += Range.clip(error, -30, 30) * deltaTime;
-                if (Math.signum(Integral) != Math.signum(error)) {
-                    Integral = 0;
-                }
-                derivative = (lastError - error) / deltaTime;
-                rotation = proportional + Integral * ki + derivative * kd + Math.signum(proportional + Integral * ki + derivative * kd) * 0.04;
-                rotation = rotation * 0.65 / (boost * 0.7 + 0.3);
-            }
+            rotation = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading()) * kp;
 
-            lastError = error;
-            lastTime = currentTime;
+
             if (noRotation) {
                 mecanumDrive.drive(localVector[0], localVector[1], 0, boost);
 
             } else {
-                mecanumDrive.drive(localVector[0], localVector[1], rotation / 2.5, boost);
+                mecanumDrive.drive(localVector[0], localVector[1], (rotation / boost) * 0.5, boost);
             }
-            telemetry.addData("goto", true);
-            telemetry.addData("x", localVector[0]);
-            telemetry.addData("y", localVector[1]);
 
         }
 
         @Override
         public boolean isFinished() {
             return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
-                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 3) || noRotation));
+                    && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 10) || noRotation));
         }
 
         @Override
@@ -370,7 +335,7 @@ public class MecanumCommands {
     public static class SetRotationCmd extends CommandBase {
         double wantedHeading;
         double error = 0, lastError = 0, proportional, lastTime = 0, Integral, derivative;
-        public static double kp = 0.025, ki = 0.0005, kd = -0.006;
+        public static double kp = 0.01, ki = 0.0005, kd = -0.006;//0.025
         MecanumDrive mecanumDrive;
 
         public SetRotationCmd(MecanumDrive mecanumDrive, double wantedHeading) {
@@ -381,23 +346,24 @@ public class MecanumCommands {
 
         @Override
         public void execute() {
-            double currentTime = (double) System.currentTimeMillis() / 1000;
-            double deltaTime = currentTime - lastTime;
-            if (lastTime != 0) {
-                error = Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading());
-                proportional = Range.clip(error, -100, 100) * kp;
-                Integral += Range.clip(error, -30, 30) * deltaTime;
-                if (Math.signum(Integral) != Math.signum(error)) {
-                    Integral = 0;
-                }
-                derivative = (lastError - error) / deltaTime;
-                mecanumDrive.drive(0, 0,
-                        (proportional + Integral * ki + derivative * kd +
-                                Math.signum(proportional + Integral * ki + derivative * kd) * 0.04) / 2,
-                        0.5);
-            }
-            lastError = error;
-            lastTime = currentTime;
+//            double currentTime = (double) System.currentTimeMillis() / 1000;
+//            double deltaTime = currentTime - lastTime;
+//            if (lastTime != 0) {
+//                error = Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading());
+//                proportional = Range.clip(error, -100, 100) * kp;
+//                Integral += Range.clip(error, -30, 30) * deltaTime;
+//                if (Math.signum(Integral) != Math.signum(error)) {
+//                    Integral = 0;
+//                }
+//                derivative = (lastError - error) / deltaTime;
+//                mecanumDrive.drive(0, 0,
+//                        (proportional + Integral * ki + derivative * kd +
+//                                Math.signum(proportional + Integral * ki + derivative * kd) * 0.04) / 2,
+//                        0.5);
+//            }
+//            lastError = error;
+//            lastTime = currentTime;
+            mecanumDrive.drive(0, 0, Utils.calcDeltaAngle(wantedHeading + 180, mecanumDrive.getAdjustedHeading()) * kp, 0.5);
         }
 
         @Override

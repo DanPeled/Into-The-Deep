@@ -4,6 +4,5 @@ public enum RobotState {
     NONE(),
     INTAKE(),
     CHAMBER(),
-    BASKET(),
-    TRANSFER()
+    BASKET()
 }

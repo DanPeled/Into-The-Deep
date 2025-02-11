@@ -54,28 +54,6 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
     private double angularOffset = 0;
     private BNO055IMU imu = null;
 
-    public IMU_Integrator(BNO055IMU imu, double forwardTicksPerMeter, double strafeTicksPerMeter,
-                          Point origin, double angularOffset,
-                          DcMotorEx fl, DcMotorEx fr, DcMotorEx bl, DcMotorEx br, MultipleTelemetry telemetry) {
-        this.telemetry = telemetry;
-        this.imu = imu;
-        // Constructor
-        this.fl = fl;
-        this.fr = fr;
-        this.bl = bl;
-        this.br = br;
-        this.origin = origin;
-        this.direction = direction;
-        this.forwardTicksPerMeter = forwardTicksPerMeter;
-        this.strafeTicksPerMeter = strafeTicksPerMeter;
-        this.useDashBoard = false;
-
-//        if (this.useDashBoard) {
-//            this.pathx = new ArrayList<>();
-//            this.pathy = new ArrayList<>();
-//        }
-        this.angularOffset = angularOffset;
-    }
 
     public IMU_Integrator(BNO055IMU imu, Point origin, double angularOffset, MultipleTelemetry telemetry,
                           DcMotorEx vl, DcMotorEx vr, DcMotorEx b) {
@@ -208,8 +186,8 @@ public class IMU_Integrator implements BNO055IMU.AccelerationIntegrator {
 
         double a = -getHeading() / 180.0 * Math.PI;
 
-        this.position.x += delta.f * Math.cos(a) - delta.s * Math.sin(a);
-        this.position.y += delta.s * Math.cos(a) + delta.f * Math.sin(a);
+        this.position.x -= delta.f * Math.cos(a) - delta.s * Math.sin(a);
+        this.position.y -= delta.s * Math.cos(a) + delta.f * Math.sin(a);
         // 100000000000 ps = 100 ms = 0.1 s
         if (this.useDashBoard && linearAcceleration.acquisitionTime - this.lastTimestamp >= 5000000L) {
             Point p = transformDashboard(this.position); // transform
