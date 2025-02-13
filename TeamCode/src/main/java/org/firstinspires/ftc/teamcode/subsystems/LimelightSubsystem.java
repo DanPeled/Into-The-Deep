@@ -10,24 +10,26 @@ public class LimelightSubsystem extends SubsystemBase {
     MultipleTelemetry telemetry;
     int pipeline = 0;
     LLResult result;
-    final double limelightH = 0, sampleH = 3.8, limelightAngle = 30.5;
+    final double limelightH = 41.5, sampleH = 3.8, limelightAngle = 27.6;
     double distance;
-    public final double middleOfScreen = 300, ticksPerCM = 0, distanceFromArmStart = 0;
+    public final double middleOfScreen = 300, tickPerCM = 19.34, distanceFromArmStart = 25;
 
     public LimelightSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         this.telemetry = telemetry;
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.start();
+        telemetry.setMsTransmissionInterval(11);
         limelight.pipelineSwitch(pipeline);
-
+        limelight.start();
     }
 
     public double getXDistance() {
+        updateResults();
         result = limelight.getLatestResult();
         return result.getPythonOutput()[0];
     }
 
     public double getAngle() {
+        updateResults();
         return result.getPythonOutput()[4];
     }
 
@@ -41,8 +43,14 @@ public class LimelightSubsystem extends SubsystemBase {
     }
 
     public double getYDistance() {
-        distance = (limelightH - sampleH) * Math.tan(Math.toRadians(result.getPythonOutput()[1] + limelightAngle)) * ticksPerCM + distanceFromArmStart;
+        updateResults();
+        distance = ((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 18.5) * tickPerCM;
         return distance;
+    }
+
+    public double getRawY() {
+        updateResults();
+        return result.getPythonOutput()[1];
     }
 
     public void startLimelight() {
@@ -51,6 +59,11 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public void stopLimelight() {
         limelight.stop();
+    }
+
+    public void updateResults() {
+        result = limelight.getLatestResult();
+
     }
 
 }

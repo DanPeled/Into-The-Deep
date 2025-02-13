@@ -9,28 +9,24 @@ import com.arcrobotics.ftclib.command.button.Button;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.MotorControlAlgorithm;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
-import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeManualGotoCmd;
-import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGotoCmd;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeReleaseCmd;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGrabCmd;
 
 @Config
 @TeleOp
+@Disabled
 public class BasicDischargeTest extends CommandOpMode {
     GamepadEx systemGamepad;
     private DischargeSubsystem dischargeSubsystem;
     FtcDashboard dashboard = FtcDashboard.getInstance();
     Telemetry dashboardTelemetry = dashboard.getTelemetry();
     MultipleTelemetry multipleTelemetry = new MultipleTelemetry(telemetry, dashboardTelemetry);
-    DischargeManualGotoCmd dischargePowerCmd;
     public static boolean gotoo = false, home = false;
     boolean wasGoto = false, washome = false;
 
@@ -53,26 +49,28 @@ public class BasicDischargeTest extends CommandOpMode {
         Button B = new GamepadButton(systemGamepad, GamepadKeys.Button.B);
 
 
-        dPadUp.whenPressed(new DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry));
+        dPadUp.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight));
         dPadDown.whenPressed(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
-        dPadLeft.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry));
+        dPadLeft.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight));
         leftBumper.whenPressed(new DischargeReleaseCmd(dischargeSubsystem));
         rightBumper.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
         X.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
         Y.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
-        B.whenPressed(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 210, telemetry));
-        A.whenPressed(new DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry));
+        B.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight - 210));
+        A.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight));
         //schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
 
         while (opModeInInit()) {
             CommandScheduler.getInstance().run();
         }
+
+        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, false, telemetry));
     }
 
     @Override
     public void run() {
         if (gotoo && !wasGoto) {
-            schedule(new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry));
+            schedule(new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight));
             wasGoto = true;
             washome = false;
             home = false;

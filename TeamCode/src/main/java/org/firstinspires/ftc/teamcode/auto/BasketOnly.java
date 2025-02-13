@@ -42,7 +42,7 @@ public class BasketOnly extends CommandOpMode {
 
         schedule(new SequentialCommandGroup(
                 new ParallelCommandGroup(
-                        new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
+                        new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.8, 180, 0.05, 0.5)),
                 new ParallelCommandGroup(
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.18, 0.37, 180, 0.03, 0.5),
@@ -54,8 +54,8 @@ public class BasketOnly extends CommandOpMode {
                         new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                         new IntakeCommands.SampleIntakeCmd(intakeSubsystem)),
                 new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
-                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
-                new WaitCommand(1000),
+                new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highBasketHeight),
+                //new WaitCommand(1000),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.18, 0.37, 180, 0.03, 0.5),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new ParallelCommandGroup(
@@ -70,7 +70,7 @@ public class BasketOnly extends CommandOpMode {
                         new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.2, 0.7, 180, 0.05, 0.5)
                 ),
-                new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry),
+                new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
                 new WaitCommand(1500),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.19, 0.34, 180, 0.03, 0.5),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),

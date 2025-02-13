@@ -118,6 +118,11 @@ public class IntakeCommands {
 //            }
             return intakeSubsystem.isHome();
         }
+
+        @Override
+        public void end(boolean interrupted) {
+            intakeSubsystem.resetEncoders();
+        }
     }
 
     public static class SlideHomeTouchCmd extends CommandBase {
@@ -623,6 +628,7 @@ public class IntakeCommands {
         public void initialize() {
             super.initialize();
             transferring = true;
+            DischargeCommands.MotorControl.setMode(DischargeCommands.MotorControl.Mode.DO_NOTHING);
         }
 
         @Override

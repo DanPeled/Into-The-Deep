@@ -13,16 +13,18 @@ public class LimelightCommands {
     public static class AlignXCmd extends CommandBase {
         LimelightSubsystem limelight;
         MecanumDrive mecanumDrive;
-        final double kp = 0.01;
+        final double kp = 0.05;
         double currentPipeline;
 
-        public AlignXCmd(LimelightSubsystem limelight) {
+        public AlignXCmd(LimelightSubsystem limelight, MecanumDrive mecanumDrive) {
             this.limelight = limelight;
+            this.mecanumDrive = mecanumDrive;
         }
 
         @Override
         public void initialize() {
-            limelight.startLimelight();
+//            limelight.startLimelight();
+            mecanumDrive.setFieldOriented(false);
         }
 
         @Override
@@ -37,7 +39,7 @@ public class LimelightCommands {
 
         @Override
         public void end(boolean interrupted) {
-            limelight.stopLimelight();
+            mecanumDrive.setFieldOriented(true);
         }
     }
 
@@ -45,19 +47,32 @@ public class LimelightCommands {
         LimelightSubsystem limelightSubsystem;
         IntakeSubsystem intakeSubsystem;
         DischargeSubsystem dischargeSubsystem;
+        MecanumDrive mecanumDrive;
+        double wantedAngle;
 
-        public LimelightIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem) {
+        public LimelightIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem, MecanumDrive mecanumDrive) {
             this.intakeSubsystem = intakeSubsystem;
             this.limelightSubsystem = limelightSubsystem;
-            addCommands(new AlignXCmd(limelightSubsystem),
-                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, false, (int) limelightSubsystem.getYDistance()),
+            this.dischargeSubsystem = dischargeSubsystem;
+            this.mecanumDrive = mecanumDrive;
+            addCommands(new AlignXCmd(limelightSubsystem, mecanumDrive),
+                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, (int) limelightSubsystem.getYDistance()),
+                    new IntakeCommands.SetRotationCmd(intakeSubsystem, wantedAngle),
                     new IntakeCommands.SampleIntakeCmd(intakeSubsystem),
                     new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
+            addRequirements(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive);
         }
 
         @Override
         public void initialize() {
-            limelightSubsystem.startLimelight();
+            super.initialize();
+//            limelightSubsystem.startLimelight();
+            wantedAngle = limelightSubsystem.getAngle();
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+//            limelightSubsystem.stopLimelight();
         }
     }
 

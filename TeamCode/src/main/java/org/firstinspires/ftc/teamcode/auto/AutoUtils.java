@@ -35,11 +35,11 @@ public class AutoUtils {
     }
 
     public static CommandBase dischargeGotoChamber(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
-        return new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highChamberHeight, telemetry);
+        return new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight);
     }
 
     public static CommandBase dischargeGotoBasket(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
-        return new DischargeCommands.DischargeGotoCmd(dischargeSubsystem, dischargeSubsystem.highBasketHeight, telemetry);
+        return new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight);
     }
 
     public static CommandBase chamberGoto(MecanumDrive mecanumDrive, Telemetry telemetry) {
