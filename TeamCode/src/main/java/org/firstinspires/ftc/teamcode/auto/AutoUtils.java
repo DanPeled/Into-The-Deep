@@ -17,13 +17,15 @@ import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
 public class AutoUtils {
     public static void initCommands(CommandOpMode commandOpMode, DischargeSubsystem dischargeSubsystem, IntakeSubsystem intakeSubsystem) {
         commandOpMode.schedule(new SequentialCommandGroup(
+                new DischargeCommands.MotorControl(dischargeSubsystem, () -> 0.0, false, commandOpMode.telemetry),
                 new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem),
                 new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
                 new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
                 //new IntakeCommands.Wait(intakeSubsystem, 1),
                 new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
                 new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
-                new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
+                new DischargeCommands.GoHomeCmd(dischargeSubsystem)
+        ));
     }
 
     public static CommandBase inwardsPark(MecanumDrive mecanumDrive, Telemetry telemetry) {
@@ -35,11 +37,11 @@ public class AutoUtils {
     }
 
     public static CommandBase dischargeGotoChamber(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
-        return new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight);
+        return new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight, dischargeSubsystem);
     }
 
     public static CommandBase dischargeGotoBasket(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
-        return new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight);
+        return new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight, dischargeSubsystem);
     }
 
     public static CommandBase chamberGoto(MecanumDrive mecanumDrive, Telemetry telemetry) {
@@ -91,7 +93,7 @@ public class AutoUtils {
     }
 
     public static CommandBase sampleIntake(IntakeSubsystem intakeSubsystem) {
-        return new IntakeCommands.SampleIntakeCmd(intakeSubsystem);
+        return new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem);
     }
 
     public static CommandBase transfer(DischargeSubsystem dischargeSubsystem, IntakeSubsystem intakeSubsystem) {

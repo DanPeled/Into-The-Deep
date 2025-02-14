@@ -55,7 +55,7 @@ public class BasicIntakeTest extends CommandOpMode {
         rightStickButton.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE));
         B.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, 0.5, 0));
         X.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, -0.5, 2));
-        back.whenPressed(new IntakeCommands.SampleIntakeCmd(intakeSubsystem));
+        back.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem));
 
 
         //schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));

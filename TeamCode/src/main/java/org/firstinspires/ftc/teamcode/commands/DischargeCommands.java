@@ -4,7 +4,6 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
@@ -191,13 +190,16 @@ public class DischargeCommands {
 
                 case DO_NOTHING:
                     dischargeSubsystem.setPower(0);
+                    if (manual > 0.15) {
+                        mode = Mode.MANUAL_MOVEMENT;
+                    }
                     break;
 
                 case GO_TO_TARGET:
                     if (allowManualTargetAdjustment && Math.abs(manual) > 0.2) {
                         targetPosition += manual; // Adjust target dynamically
                     }
-                    double pidOutput = calculateGoToTargetPID(error);
+                    double pidOutput = calculateGoToTargetPID(error, currentPosition);
                     dischargeSubsystem.setPower(pidOutput);
                     if (Math.abs(error) <= 20) {
                         mode = Mode.STAY_STILL;
@@ -206,7 +208,7 @@ public class DischargeCommands {
                     break;
 
                 case MANUAL_MOVEMENT:
-                    dischargeSubsystem.setPower(manual);
+                    dischargeSubsystem.setPower(-manual);
                     if (Math.abs(manual) < 0.15) {
                         mode = Mode.STAY_STILL;
                         stayStillTarget = currentPosition;
@@ -224,10 +226,11 @@ public class DischargeCommands {
             }
         }
 
-        private double calculateGoToTargetPID(double error) {
-            if (Math.abs(error) >= 100) {
+        private double calculateGoToTargetPID(double error, int curPos) {
+            if (curPos < 125)
+                return 0.65;
+            if (Math.abs(error) >= 100)
                 return Math.signum(error); // Full power in the direction of the target
-            }
             error /= 1000; //normalize error
             return goToKp * error + (Math.signum(error) * goToMin);
         }
@@ -266,8 +269,9 @@ public class DischargeCommands {
     public static class GoToTarget extends CommandBase {
         private final int target;
 
-        public GoToTarget(int target) {
+        public GoToTarget(int target, DischargeSubsystem dischargeSubsystem) {
             this.target = target;
+            addRequirements(dischargeSubsystem);
         }
 
         @Override
@@ -300,7 +304,7 @@ public class DischargeCommands {
 
         @Override
         public boolean isFinished() {
-            return Math.abs(MotorControl.getTargetPosition() - dischargeSubsystem.getLiftPosInCM()) < 30;
+            return Math.abs(MotorControl.getTargetPosition() - dischargeSubsystem.getLiftPosInCM()) < 80;
         }
     }
 
@@ -312,11 +316,12 @@ public class DischargeCommands {
         double maxDuration;
         final int minTargetOffset = 50;
         ElapsedTime elapsedTime = new ElapsedTime();
+        double downTimer = 0;
         boolean switched = false;
 
         public GoHomeCmd(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
-            maxDuration = 5;
+            maxDuration = 3;
             addRequirements(dischargeSubsystem);
         }
 
@@ -350,6 +355,8 @@ public class DischargeCommands {
 //                elapsedTime.reset();
 //                switched = true;
 //            }
+//            if (downTimer == 0 && curPos < 200)
+//                downTimer = elapsedTime.seconds();
 
 
         }
@@ -496,9 +503,9 @@ public class DischargeCommands {
     public static class ChamberDischargeCmd extends SequentialCommandGroup {
         public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 250),
-                    new WaitCommand(100),
-                    new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(100),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 150),
+                    //new WaitCommand(100),
+                    new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(200),
                     new DischargeCommands.GoHomeCmd(dischargeSubsystem));
             addRequirements(dischargeSubsystem);
         }

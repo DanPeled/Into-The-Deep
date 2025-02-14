@@ -11,8 +11,9 @@ public class LimelightSubsystem extends SubsystemBase {
     int pipeline = 0;
     LLResult result;
     final double limelightH = 41.5, sampleH = 3.8, limelightAngle = 27.6;
-    double distance;
+    int distance;
     public final double middleOfScreen = 300, tickPerCM = 19.34, distanceFromArmStart = 25;
+    public double alignedY = 0;
 
     public LimelightSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         this.telemetry = telemetry;
@@ -42,9 +43,10 @@ public class LimelightSubsystem extends SubsystemBase {
         return pipeline;
     }
 
-    public double getYDistance() {
+    public int getYDistance() {
         updateResults();
-        distance = ((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 18.5) * tickPerCM;
+        distance = Math.min((int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 20) * tickPerCM), 1700);
+        alignedY = distance;
         return distance;
     }
 
@@ -65,5 +67,6 @@ public class LimelightSubsystem extends SubsystemBase {
         result = limelight.getLatestResult();
 
     }
+
 
 }

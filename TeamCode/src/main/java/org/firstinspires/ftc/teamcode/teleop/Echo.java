@@ -92,10 +92,10 @@ public class Echo extends CommandOpMode {
         while (opModeInInit()) {
             super.run();
         }
-        limeLightSubsystem.startLimelight();
+//        limeLightSubsystem.startLimelight();
         limeLightSubsystem.setPipeline(Pipelines.YELLOW);
         //schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
-        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, false, telemetry));
+        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, true, telemetry));
 
 
         mecanumX = () -> driverGamepad.getLeftX();
@@ -160,7 +160,7 @@ public class Echo extends CommandOpMode {
                     systemA.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.WaitForTransferEnd(),
                             new SetStateCommands.ChamberStateCmd(), //change to chamber state
-                            new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight)));
+                            new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight, dischargeSubsystem)));
 
 //                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
 //                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
@@ -169,7 +169,7 @@ public class Echo extends CommandOpMode {
                             new IntakeCommands.WaitForTransferEnd(),
                             new SetStateCommands.BasketStateCmd(), //change to chamber state
                             //new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
-                            new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight))); //ToDo: make it not go up randomly
+                            new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight, dischargeSubsystem))); //ToDo: make it not go up randomly
 
                     systemB.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.StartIntakeCmd(intakeSubsystem),
@@ -189,16 +189,16 @@ public class Echo extends CommandOpMode {
                     systemDPadUp.whenPressed(new LimelightCommands.LimelightIntake(limeLightSubsystem, intakeSubsystem,
                             dischargeSubsystem, mecanumDrive));
                     systemDPadDown.whenPressed(new SequentialCommandGroup(
-                            new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, (int) limeLightSubsystem.getYDistance()),
+                            new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, limeLightSubsystem::getYDistance),
                             new SetStateCommands.IntakeStateCmd()));
                     systemDPadLeft.whenHeld(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
                     break;
                 case INTAKE:
 
-                    systemDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.1, () -> 0.0, () -> 0.0,
-                            () -> 0.3, true));
-                    systemDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.1, () -> 0.0, () -> 0.0,
-                            () -> 0.3, true));
+//                    systemDPadLeft.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> -0.1, () -> 0.0, () -> 0.0,
+//                            () -> 0.3, true));
+//                    systemDPadRight.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.1, () -> 0.0, () -> 0.0,
+//                            () -> 0.3, true));
 
                     mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
                             systemGamepad::getRightX, driverGamepad::getLeftY, () -> 0.0,
@@ -208,7 +208,7 @@ public class Echo extends CommandOpMode {
                             systemGamepad::getLeftY));
 
                     systemA.whenPressed(new IntakeCommands.SampleReverseIntakeCmd(intakeSubsystem)).and(new Trigger(() -> IntakeCommands.Transfer.transferring));
-                    systemA.whenReleased(new IntakeCommands.SampleIntakeCmd(intakeSubsystem)).and(new Trigger(() -> IntakeCommands.Transfer.transferring));
+                    systemA.whenReleased(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem)).and(new Trigger(() -> IntakeCommands.Transfer.transferring));
 
                     systemB.whenPressed(new IntakeCommands.RestartIntakeCmd(intakeSubsystem));
 
@@ -226,8 +226,22 @@ public class Echo extends CommandOpMode {
 //                    systemDPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 1));
 
                     systemDPadDown.whenPressed(
-                            new IntakeCommands.SetRotationCmd(intakeSubsystem, (limeLightSubsystem.getAngle() + 90) / 180)
+                            new IntakeCommands.SetRotationCmd(intakeSubsystem,
+                                    (1 - (limeLightSubsystem.getAngle() + 90) / 180 - 0.5) * 2 / 3 + 0.5)
                     );
+                    systemDPadUp.whenPressed(
+                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 0)
+                    );
+                    systemDPadLeft.whenPressed(
+                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 1)
+                    );
+                    systemDPadLeft.whenReleased(
+                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.6)
+                    );
+                    systemDPadRight.whenPressed(
+                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.75)
+                    );
+                    systemDPadRight.whenReleased(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.25));
 
 
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(
@@ -263,12 +277,12 @@ public class Echo extends CommandOpMode {
                     systemA.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.ChamberStateCmd(), //change to chamber state
                             new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
-                            new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight))); //go to chamber
+                            new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight, dischargeSubsystem))); //go to chamber
 
                     systemY.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.BasketStateCmd(), //change to basket state
                             new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
-                            new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight))); //go to high basket
+                            new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight, dischargeSubsystem))); //go to high basket
 
                     break;
                 case CHAMBER:
@@ -302,11 +316,11 @@ public class Echo extends CommandOpMode {
 
                     systemA.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.ChamberStateCmd(), //change to chamber state
-                            new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight))); //go to chamber
+                            new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight, dischargeSubsystem))); //go to chamber
 
                     systemY.whenPressed(new SequentialCommandGroup(
                             new SetStateCommands.BasketStateCmd(), //change to basket state
-                            new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight))); //go to high basket
+                            new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight, dischargeSubsystem))); //go to high basket
 
                     break;
             }
@@ -339,10 +353,14 @@ public class Echo extends CommandOpMode {
         multipleTelemetry.addData("tick1", intakeSubsystem.getMotorPosition());
         multipleTelemetry.addData("tick2", intakeSubsystem.getMotor2Position());
         multipleTelemetry.addData("cm", limeLightSubsystem.getYDistance() / limeLightSubsystem.tickPerCM);
-//        multipleTelemetry.addData("lift mode", DischargeCommands.MotorControl.getMode());
-//        multipleTelemetry.addData("lift target", DischargeCommands.MotorControl.getTargetPosition());
-//        multipleTelemetry.addData("lift error", DischargeCommands.MotorControl.getTargetPosition() - dischargeSubsystem.getLiftPosInCM());
-//        multipleTelemetry.addData("lift stay still target", DischargeCommands.MotorControl.getStayStillTarget());
+        multipleTelemetry.addData("fhd", limeLightSubsystem.alignedY);
+        telemetry.addData("servo angle", 1 - (limeLightSubsystem.getAngle() + 90) / 180);
+        multipleTelemetry.addData("lift mode", DischargeCommands.MotorControl.getMode());
+        multipleTelemetry.addData("lift target", DischargeCommands.MotorControl.getTargetPosition());
+        multipleTelemetry.addData("lift error", DischargeCommands.MotorControl.getTargetPosition() - dischargeSubsystem.getLiftPosInCM());
+        multipleTelemetry.addData("lift stay still target", DischargeCommands.MotorControl.getStayStillTarget());
+        multipleTelemetry.addData("lift stay still target", DischargeCommands.MotorControl.getTargetPosition() - dischargeSubsystem.getPosition());
+        multipleTelemetry.addData("servo pos", intakeSubsystem.getZServoPosition());
 //        telemetry.addData("y saved",SavedVariables.y);
         multipleTelemetry.update();
         telemetry.update();

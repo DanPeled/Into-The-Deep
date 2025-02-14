@@ -126,12 +126,17 @@ public class MecanumCommands {
             currentPos = mecanumDrive.getPosition();
             double[] localVector = {x - currentPos.x, y - currentPos.y};
             double MovementAngle = Math.atan2(localVector[0], localVector[1]);
-            double length = Range.clip(Math.hypot(localVector[0], localVector[1]), -1, 1);
+            double length = Math.hypot(localVector[0], localVector[1]);
+
+
             if (Math.abs(length) < minPower) {
                 length = Math.signum(length) * minPower;
             }
-            localVector[0] = Math.sin(MovementAngle) * length;
-            localVector[1] = Math.cos(MovementAngle) * length;
+            double speed = length;
+            speed = Range.clip(speed, -1, 1);
+
+            localVector[0] = Math.sin(MovementAngle) * speed;
+            localVector[1] = Math.cos(MovementAngle) * speed;
             rotation = Utils.calcDeltaAngle(wantedAngle + 180, mecanumDrive.getAdjustedHeading()) * kp;
 
             if (noRotation) {
