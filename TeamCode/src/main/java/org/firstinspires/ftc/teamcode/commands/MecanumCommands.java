@@ -82,11 +82,16 @@ public class MecanumCommands {
         @Override
         public void execute() {
             if (runtime.seconds() <= interval) {
-                mecanumDrive.drive(switched, 0, 0, 0.2);
+                mecanumDrive.drive(switched, 0, 0, speed);
             } else {
                 runtime.reset();
                 switched *= -1;
             }
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.drive(0, 0, 0, 0);
         }
     }
 

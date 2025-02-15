@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.commands;
 
 import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 
@@ -72,8 +73,9 @@ public class LimelightCommands {
                     new WaitCommand(500),
 //                    new IntakeCommands.SampleReverseIntakeCmd(intakeSubsystem).withTimeout(2000),
                     new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE),
-                    new IntakeCommands.SpinCmd(intakeSubsystem, -1, 1),
-
+                    new ParallelCommandGroup(
+                            new IntakeCommands.SpinCmd(intakeSubsystem, -1, 1),
+                            new MecanumCommands.ShakeCmd(mecanumDrive, 0.07, 0.1).withTimeout(1000)),
                     new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem),
                     new WaitCommand(500),
                     new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1200, 1, true),
