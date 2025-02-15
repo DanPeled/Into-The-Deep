@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
+import org.firstinspires.ftc.teamcode.SavedVariables;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
@@ -100,4 +101,10 @@ public class AutoUtils {
         return new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem);
     }
 
+    public static void savePosition(MecanumDrive mecanumDrive) {
+        SavedVariables.angle = mecanumDrive.getAdjustedHeading();
+        SavedVariables.x = mecanumDrive.getPosition().x;
+        SavedVariables.y = mecanumDrive.getPosition().y;
+
+    }
 }

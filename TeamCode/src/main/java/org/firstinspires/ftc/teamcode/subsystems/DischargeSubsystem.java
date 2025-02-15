@@ -12,11 +12,13 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 public class DischargeSubsystem extends SubsystemBase {
     private final DcMotorEx lowerMotor, upperMotor;
     private Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
-    final double clawServoHoldPos = 0.2, clawServoReleasePos = 0.37;
+    final double clawServoHoldPos = 0.1, clawServoReleasePos = 0.323;
     private final TouchSensor touchSensor;
     MultipleTelemetry telemetry;
     public double timeUp = 0;
@@ -188,8 +190,11 @@ public class DischargeSubsystem extends SubsystemBase {
         return lowerMotor.getPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
-    public void setPIDFCoefficients(PIDFCoefficients pidfCoefficients) {
-        lowerMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
-        upperMotor.setPIDFCoefficients(DcMotor.RunMode.RUN_TO_POSITION, pidfCoefficients);
+    public double getCurrent() {
+        return (lowerMotor.getCurrent(CurrentUnit.AMPS) + upperMotor.getCurrent(CurrentUnit.AMPS)) / 2;
+    }
+
+    public int getAveragePosition() {
+        return (int) ((getPosition() + getPosition2()) / 2);
     }
 }

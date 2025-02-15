@@ -32,6 +32,13 @@ public class MecanumOpMode extends CommandOpMode {
         mecanumDrive.setDefaultCommand(new MecanumCommands.PowerCmd(telemetry, mecanumDrive,
                 () -> driverGamepad.getLeftX(), () -> driverGamepad.getLeftY(), () -> driverGamepad.getRightX(),
                 () -> 0.5 + 0.5 * driverGamepad.getTrigger(GamepadKeys.Trigger.RIGHT_TRIGGER), true));
+        if (driverGamepad.wasJustPressed(GamepadKeys.Button.A)) {
+            mecanumDrive.setMoverServo(0);
+        } else if (driverGamepad.wasJustPressed(GamepadKeys.Button.B)) {
+            mecanumDrive.setMoverServo(0.5);
+        } else if (driverGamepad.wasJustPressed(GamepadKeys.Button.X)) {
+            mecanumDrive.setMoverServo(1);
+        }
 
     }
 

@@ -1,24 +1,30 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import com.acmerobotics.dashboard.config.Config;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 
+import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
+import org.firstinspires.ftc.teamcode.subsystems.Pipelines;
 
 public class LimelightCommands {
+    @Config
     public static class AlignXCmd extends CommandBase {
         LimelightSubsystem limelight;
         MecanumDrive mecanumDrive;
-        final double kp = 0.005;
+        public static double kp = 0.0008;
+        public static double minPower = 0.05;
         double currentPipeline;
 
         public AlignXCmd(LimelightSubsystem limelight, MecanumDrive mecanumDrive) {
             this.limelight = limelight;
             this.mecanumDrive = mecanumDrive;
+            addRequirements(mecanumDrive, limelight);
         }
 
         @Override
@@ -29,12 +35,12 @@ public class LimelightCommands {
 
         @Override
         public void execute() {
-            mecanumDrive.drive(limelight.getXDistance() * kp + 0.05, 0, 0, 0.2);
+            mecanumDrive.drive(limelight.getXDistance() * kp + Math.signum(limelight.getXDistance()) * minPower, 0, 0, 0.5);
         }
 
         @Override
         public boolean isFinished() {
-            return limelight.getXDistance() <= 15;
+            return Math.abs(limelight.getXDistance()) <= 15;
         }
 
         @Override
@@ -58,6 +64,29 @@ public class LimelightCommands {
             this.limelightSubsystem = limelightSubsystem;
             this.dischargeSubsystem = dischargeSubsystem;
             this.mecanumDrive = mecanumDrive;
+            addCommands(new AlignXCmd(limelightSubsystem, mecanumDrive).withTimeout(1000),
+                    new WaitCommand(100),
+                    new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, limelightSubsystem::getYDistance),
+//                    new WaitCommand(1000),
+                    new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
+                    new WaitCommand(500),
+//                    new IntakeCommands.SampleReverseIntakeCmd(intakeSubsystem).withTimeout(2000),
+                    new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE),
+                    new IntakeCommands.SpinCmd(intakeSubsystem, -1, 1),
+
+                    new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem),
+                    new WaitCommand(500),
+                    new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1200, 1, true),
+                    new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
+            addRequirements(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive);
+        }
+
+        public LimelightIntake(LimelightSubsystem limelightSubsystem, IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem, MecanumDrive mecanumDrive, Pipelines pipelines) {
+            this.intakeSubsystem = intakeSubsystem;
+            this.limelightSubsystem = limelightSubsystem;
+            this.dischargeSubsystem = dischargeSubsystem;
+            this.mecanumDrive = mecanumDrive;
+            limelightSubsystem.setPipeline(pipelines);
             addCommands(new AlignXCmd(limelightSubsystem, mecanumDrive).withTimeout(1000),
                     new WaitCommand(100),
                     new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, limelightSubsystem::getYDistance),

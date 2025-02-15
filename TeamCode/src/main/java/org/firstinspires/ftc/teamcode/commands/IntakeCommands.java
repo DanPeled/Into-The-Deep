@@ -4,6 +4,7 @@ import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
+import com.arcrobotics.ftclib.command.WaitCommand;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
@@ -129,7 +130,7 @@ public class IntakeCommands {
 //                return (Math.abs(deltaTick) <= 8 && (avg < 200 || initTime));
 
 //            }
-            return intakeSubsystem.isHome();
+            return intakeSubsystem.isHome() || (intakeSubsystem.getCurrent() > 2.5 && intakeSubsystem.getAveragePosition() < 1000);
         }
 
         @Override
@@ -452,8 +453,20 @@ public class IntakeCommands {
         }
 
         public StartIntakeCmd(IntakeSubsystem subsystem, boolean auto, Supplier<Integer> position) {
-            StartIntake(subsystem, auto, position);
+//            StartIntake(subsystem, auto, position);
+            addCommands(
+                    new SpinCmd(subsystem, 0, 0),
+                    new ClawStageCmd(subsystem, ClawStages.UPPER),
+                    new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
+                    new SetRotationCmd(subsystem, 0.5),
+                    new SlideGotoCmd(subsystem, position),
+                    new ClawStageCmd(subsystem, ClawStages.MIDDLE),
+                    new SetArmsStageCmd(subsystem, ArmsStages.TOP),
+                    new WaitCommand(200),
+                    new ClawStageCmd(subsystem, ClawStages.LOWER));
+
         }
+
 
         private void StartIntake(IntakeSubsystem subsystem, boolean auto, int position) {
             if (auto) {
@@ -690,11 +703,11 @@ public class IntakeCommands {
                     new SetPowerCmd(intakeSubsystem, -0.18),
                     //new Wait(intakeSubsystem, 0.1), //for safety
                     new DischargeGrabCmd(dischargeSubsystem),
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
-                    new SetPowerCmd(intakeSubsystem, 0),
                     new SpinCmd(intakeSubsystem, -0.13, -1),
                     new Wait(intakeSubsystem, 0.15),
-                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 1 / Math.PI, false),
+                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
+                    new SetPowerCmd(intakeSubsystem, 0),
+                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 0.4, false),
                     new SpinCmd(intakeSubsystem, 0, -1));
             addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
         }

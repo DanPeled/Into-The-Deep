@@ -20,7 +20,6 @@ import org.firstinspires.ftc.teamcode.commands.DischargeCommands.DischargeGrabCm
 
 @Config
 @TeleOp
-@Disabled
 public class BasicDischargeTest extends CommandOpMode {
     GamepadEx systemGamepad;
     private DischargeSubsystem dischargeSubsystem;

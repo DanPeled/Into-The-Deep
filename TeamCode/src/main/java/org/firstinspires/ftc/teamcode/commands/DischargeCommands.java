@@ -288,18 +288,24 @@ public class DischargeCommands {
 
     public static class GoToTargetWait extends CommandBase {
         private final DischargeSubsystem dischargeSubsystem;
-        private final int target;
+        private int target;
+        Supplier<Integer> targetSupplier;
+        final boolean supplier;
+        boolean chamber = false;
 
         public GoToTargetWait(DischargeSubsystem dischargeSubsystem, int target) {
             this.dischargeSubsystem = dischargeSubsystem;
             this.target = target;
+            supplier = false;
             addRequirements(dischargeSubsystem);
         }
 
         @Override
         public void initialize() {
+
             MotorControl.setTargetPosition(target);
             MotorControl.setMode(MotorControl.Mode.GO_TO_TARGET);
+
         }
 
         @Override
@@ -363,7 +369,7 @@ public class DischargeCommands {
 
         @Override
         public boolean isFinished() {
-            return dischargeSubsystem.isHome() || elapsedTime.seconds() > maxDuration;
+            return (dischargeSubsystem.isHome() || (elapsedTime.seconds() > maxDuration) || dischargeSubsystem.getCurrent() > 7);//
 //            if (dischargeSubsystem.getGearBoxRatio() == 1) { // finish check for normal gear
 //                if (elapsedTime.seconds() > maxDuration) {
 //                    return true;
@@ -503,7 +509,7 @@ public class DischargeCommands {
     public static class ChamberDischargeCmd extends SequentialCommandGroup {
         public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 150),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 190),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(200),
                     new DischargeCommands.GoHomeCmd(dischargeSubsystem));

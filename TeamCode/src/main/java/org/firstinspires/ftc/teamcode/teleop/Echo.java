@@ -4,12 +4,14 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.button.Button;
 import com.arcrobotics.ftclib.command.button.GamepadButton;
 import com.arcrobotics.ftclib.command.button.Trigger;
 import com.arcrobotics.ftclib.gamepad.GamepadEx;
 import com.arcrobotics.ftclib.gamepad.GamepadKeys;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
@@ -29,6 +31,7 @@ import org.firstinspires.ftc.teamcode.subsystems.RobotState;
 import java.util.function.Supplier;
 
 @TeleOp
+
 public class Echo extends CommandOpMode {
 
     MecanumDrive mecanumDrive;
@@ -92,6 +95,7 @@ public class Echo extends CommandOpMode {
         while (opModeInInit()) {
             super.run();
         }
+        mecanumDrive.setHeading(SavedVariables.angle);
 //        limeLightSubsystem.startLimelight();
         limeLightSubsystem.setPipeline(Pipelines.YELLOW);
         //schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
@@ -188,10 +192,11 @@ public class Echo extends CommandOpMode {
                             new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
                     systemDPadUp.whenPressed(new LimelightCommands.LimelightIntake(limeLightSubsystem, intakeSubsystem,
                             dischargeSubsystem, mecanumDrive));
+//                    systemDPadDown.toggleWhenPressed(new InstantCommand( () -> mecanumDrive.setMoverServo(0.5)),new InstantCommand( () -> mecanumDrive.setMoverServo(0)));
                     systemDPadDown.whenPressed(new SequentialCommandGroup(
                             new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, limeLightSubsystem::getYDistance),
                             new SetStateCommands.IntakeStateCmd()));
-                    systemDPadLeft.whenHeld(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
+                    systemDPadLeft.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
                     break;
                 case INTAKE:
 
@@ -235,13 +240,13 @@ public class Echo extends CommandOpMode {
                     systemDPadLeft.whenPressed(
                             new IntakeCommands.SetRotationCmd(intakeSubsystem, 1)
                     );
-                    systemDPadLeft.whenReleased(
-                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.6)
-                    );
-                    systemDPadRight.whenPressed(
-                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.75)
-                    );
-                    systemDPadRight.whenReleased(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.25));
+//                    systemDPadLeft.whenReleased(
+//                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.6)
+//                    );
+//                    systemDPadRight.whenPressed(
+//                            new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.75)
+//                    );
+//                    systemDPadRight.whenReleased(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.25));
 
 
                     systemLeftBumper.whenPressed(new SequentialCommandGroup(
@@ -339,11 +344,13 @@ public class Echo extends CommandOpMode {
     }
 
     private void telemetries() {
+        telemetry.addData("currentIntake", intakeSubsystem.getCurrent());
+        telemetry.addData("isTouching", dischargeSubsystem.isHome());
         telemetry.addData("discharge default command", dischargeSubsystem.getDefaultCommand().getName());
         telemetry.addData("discharge current command", dischargeSubsystem.getCurrentCommand().getName());
         telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());
         telemetry.addData("intake current command", intakeSubsystem.getCurrentCommand().getName());
-
+        telemetry.addData("current", dischargeSubsystem.getCurrent());
         multipleTelemetry.addData("x limelight", limeLightSubsystem.getXDistance());
         multipleTelemetry.addData("y limelight", limeLightSubsystem.getYDistance());
         multipleTelemetry.addData("angle limelight", limeLightSubsystem.getAngle());

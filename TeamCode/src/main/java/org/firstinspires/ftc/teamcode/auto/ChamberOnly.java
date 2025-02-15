@@ -60,8 +60,7 @@ public class ChamberOnly extends CommandOpMode {
                 new MecanumCommands.SetRotationCmd(mecanumDrive, -90).withTimeout(500),
                 new WaitCommand(150),
 //                new InstantCommand(() -> mecanumDrive.resetPos(pos)),
-                goToConstVelocity(2.6, 0.7, -90, 0.15, 1),
-                goToConstVelocity(2.6, 0.7, -90, 0.05, 0.65),
+//                new m
 
                 goToConstVelocity(2.68, 1.5, -90, 0.08, 0.8), //go back slow
 
@@ -72,13 +71,9 @@ public class ChamberOnly extends CommandOpMode {
                 goToConstVelocity(2.91, 1.5, -90, 0.05, 0.65), //go back slow
 
                 goToConstVelocity(3.15, 1.5, -90, 0.05, 0.45),  //behind sample
-                goToConstVelocity(3.15, 0.5, -90, 0.08, 1), //observation
+                goToConstVelocity(3.15, 0.5, -90, 0.08, 1) //observation
 
-                goToConstVelocity(3.15, 1.5, -90, 0.1, 1), //go back fast
-                goToConstVelocity(3.15, 1.5, -90, 0.06, 0.65), //go back slow
 
-                goToConstVelocity(3.35, 1.5, -90, 0.05, 0.56), //behind sample
-                goToConstVelocity(3.35, 0.5, -90, 0.08, 1) //observation
         ));
 //        schedule(new SequentialCommandGroup(
 //                new ParallelCommandGroup(
@@ -136,11 +131,15 @@ public class ChamberOnly extends CommandOpMode {
 
     }
 
+    private CommandBase goTo(double x, double y, double angle, double sensitivity, double speed) {
+        return new MecanumCommands.GotoCmd(telemetry, mecanumDrive, x, y, angle, sensitivity, speed);
+    }
+
     @Override
     public void run() {
         telemetry.addData("x", mecanumDrive.getPosition().x);
         telemetry.addData("y", mecanumDrive.getPosition().y);
-
+        AutoUtils.savePosition(mecanumDrive);
         telemetry.update();
         super.run();
     }

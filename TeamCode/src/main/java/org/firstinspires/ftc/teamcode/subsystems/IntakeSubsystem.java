@@ -4,17 +4,20 @@ import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
+
 import lombok.Setter;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private final DcMotor rMotor;
-    private final DcMotor lMotor;
+    private final DcMotorEx rMotor;
+    private final DcMotorEx lMotor;
     private final Servo hServo; // claw up & down
     private final Servo rServo; // claw rotation
     private final Servo armsServo; // claw arms angle
@@ -34,8 +37,8 @@ public class IntakeSubsystem extends SubsystemBase {
 
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
-        rMotor = hardwareMap.dcMotor.get("leftIntakeMotor");
-        lMotor = hardwareMap.dcMotor.get("rightIntakeMotor");
+        rMotor = hardwareMap.get(DcMotorEx.class, "leftIntakeMotor");
+        lMotor = hardwareMap.get(DcMotorEx.class, "rightIntakeMotor");
         lMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -156,6 +159,10 @@ public class IntakeSubsystem extends SubsystemBase {
             targetPos = minSlidesPos;
         if (targetPos > maxArmLength)
             targetPos = maxArmLength;
+    }
+
+    public double getCurrent() {
+        return (lMotor.getCurrent(CurrentUnit.AMPS) + lMotor.getCurrent(CurrentUnit.AMPS)) / 2;
     }
 
 
