@@ -4,7 +4,6 @@ import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandOpMode;
-import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
@@ -12,7 +11,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
-import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.LimelightCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
@@ -65,20 +63,20 @@ public class LimelightChamber extends CommandOpMode {
 //                new InstantCommand(() -> this.pos = new Point(mecanumDrive.getPosition().x,mecanumDrive.getPosition().y)),
 //                new InstantCommand(() -> mecanumDrive.resetPos(pos)),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 0.7, 180, 0.02, 1),
-                new LimelightCommands.LimelightIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
+                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.lowChamberHeight),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem),
 
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.3, 0.7, 180, 0.02, 1),
-                new LimelightCommands.LimelightIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
+                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.lowChamberHeight),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem),
 
                 new MecanumCommands.SetRotationCmd(mecanumDrive, 0).withTimeout(500),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.3, 0.5, 180, 0.02, 1),
-                new LimelightCommands.LimelightIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE)
+                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE)
         ));
 //        schedule(new SequentialCommandGroup(
 //                new ParallelCommandGroup(

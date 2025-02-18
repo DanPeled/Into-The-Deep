@@ -166,6 +166,10 @@ public class IntakeSubsystem extends SubsystemBase {
         return (lMotor.getCurrent(CurrentUnit.AMPS) + lMotor.getCurrent(CurrentUnit.AMPS)) / 2;
     }
 
+    public double getPower() {
+        return (rMotor.getPower() + lMotor.getPower()) / 2;
+    }
+
 
     // make second button that while pressing it it goes to half of height and pushes things
     // away and then lowers one more stage and picks up the sample

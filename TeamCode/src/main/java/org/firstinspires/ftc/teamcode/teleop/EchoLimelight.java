@@ -5,13 +5,14 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.commands.LimelightCommands;
 
-@Disabled
+
 @TeleOp
 public class EchoLimelight extends Echo {
     @Override
     public void noneBindings() {
         super.noneBindings();
-        systemB.whenPressed(new LimelightCommands.LimelightIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive));
+        systemB.whenPressed(new LimelightCommands.LimelightCompleteSubIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive));
+        systemX.whenPressed(new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive));
 
     }
 }

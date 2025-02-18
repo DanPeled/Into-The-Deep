@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
-import org.firstinspires.ftc.teamcode.commands.LimelightCommands;
 import org.firstinspires.ftc.teamcode.commands.MecanumCommands;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
@@ -48,17 +47,17 @@ public class BasketOnly extends CommandOpMode {
         schedule(new SequentialCommandGroup(
 
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight),
-                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.35, 0.3, 225, 0.03, 0.7),
-                new WaitCommand(400),
-
+                new WaitCommand(700),
                 new ParallelCommandGroup(
-                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.335, 0.35, 225, 0.03, 0.7),
+                        new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.285, 0.285, 225, 0.025, 0.7),
                         new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1700)),
-                //new WaitCommand(100),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+
+
+                //new WaitCommand(100),
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.58, 0.59, 180, 0.005, 0.75),
+                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.58, 0.59, 180, 0.015, 0.75),
                                 new WaitCommand(100),
                                 new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem)),
                         new SequentialCommandGroup(
@@ -81,7 +80,7 @@ public class BasketOnly extends CommandOpMode {
 
                 new ParallelCommandGroup(
                         new SequentialCommandGroup(
-                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.34, 0.59, 180, 0.005, 0.75),
+                                new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.34, 0.59, 180, 0.015, 0.75),
                                 new WaitCommand(100),
                                 new IntakeCommands.SampleGroundIntakeCmd(intakeSubsystem)),
                         new SequentialCommandGroup(new WaitCommand(800), new DischargeCommands.GoHomeCmd(dischargeSubsystem))),
@@ -91,7 +90,7 @@ public class BasketOnly extends CommandOpMode {
                                 new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
 //                                new ParallelCommandGroup(
                                 new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highBasketHeight)),
-//                                        new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1200))),
+//                   בםגק שכאקר צקקאופ 'ןאי                      new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, 1200))),
                         new SequentialCommandGroup(
                                 new WaitCommand(400),
                                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 0.35, 0.45, 225, 0.03, 1))

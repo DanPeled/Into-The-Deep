@@ -483,15 +483,11 @@ public class IntakeCommands {
                         new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
                         new SetRotationCmd(subsystem, 0.5),
                         new SlideGotoCmd(subsystem, position),
-                        new ParallelCommandGroup(
-                                new SetArmsStageCmd(subsystem, ArmsStages.TOP),
-                                new SequentialCommandGroup(
-                                        new WaitCommand(2000),
-                                        new ClawStageCmd(subsystem, ClawStages.LOWER)
-                                )
-
-                        ),
+                        new ClawStageCmd(subsystem, ClawStages.LOWER),
+                        new SetArmsStageCmd(subsystem, ArmsStages.TOP),
                         new WaitCommand(100)
+
+
                 );
             } else {
                 addCommands(
@@ -500,16 +496,8 @@ public class IntakeCommands {
                         new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
                         new SetRotationCmd(subsystem, 0.5),
                         new SlideUntilCmd(subsystem, position, 1, true),
-                        new SetArmsStageCmd(subsystem, ArmsStages.TOP),
                         new ClawStageCmd(subsystem, ClawStages.LOWER),
-                        new ParallelCommandGroup(
-                                new SetArmsStageCmd(subsystem, ArmsStages.TOP),
-                                new SequentialCommandGroup(
-                                        new WaitCommand(2000),
-                                        new ClawStageCmd(subsystem, ClawStages.LOWER)
-                                )
-
-                        ),
+                        new SetArmsStageCmd(subsystem, ArmsStages.TOP),
                         new WaitCommand(100)
                 );
                 addRequirements(subsystem);
