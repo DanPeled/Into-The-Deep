@@ -48,15 +48,15 @@ public class BasicDischargeTest extends CommandOpMode {
         Button B = new GamepadButton(systemGamepad, GamepadKeys.Button.B);
 
 
-        dPadUp.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight, dischargeSubsystem));
+        dPadUp.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight));
         dPadDown.whenPressed(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
-        dPadLeft.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight, dischargeSubsystem));
+        dPadLeft.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight));
         leftBumper.whenPressed(new DischargeReleaseCmd(dischargeSubsystem));
         rightBumper.whenPressed(new DischargeGrabCmd(dischargeSubsystem));
         X.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
         Y.whenPressed(new DischargeCommands.GearBoxClimbCmd(dischargeSubsystem));
-        B.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight - 210, dischargeSubsystem));
-        A.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight, dischargeSubsystem));
+        B.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 210));
+        A.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight));
         //schedule(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
 
         while (opModeInInit()) {
@@ -69,7 +69,7 @@ public class BasicDischargeTest extends CommandOpMode {
     @Override
     public void run() {
         if (gotoo && !wasGoto) {
-            schedule(new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight, dischargeSubsystem));
+            schedule(new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight));
             wasGoto = true;
             washome = false;
             home = false;

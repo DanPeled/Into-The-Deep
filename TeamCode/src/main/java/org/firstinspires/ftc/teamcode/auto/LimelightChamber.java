@@ -44,7 +44,7 @@ public class LimelightChamber extends CommandOpMode {
                 new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
 //        AutoUtils.initCommands(this, dischargeSubsystem, intakeSubsystem);
         limelightSubsystem.setPipeline(Pipelines.BLUE);
-//        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, () -> 0.0, true, telemetry));
+        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, () -> 0.0, true, telemetry));
         while (opModeInInit()) {
             super.run();
         }
@@ -53,7 +53,7 @@ public class LimelightChamber extends CommandOpMode {
         schedule(new SequentialCommandGroup(
                 new ParallelCommandGroup(
                         new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 1.8, 0.955, 0, 0.05, 1),
-                        new DischargeCommands.GoToTarget(dischargeSubsystem.highChamberHeight, dischargeSubsystem)),
+                        new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)),
                 new WaitCommand(300),
 
                 new DischargeCommands.ChamberDischargeCmd(dischargeSubsystem, telemetry),
@@ -66,13 +66,13 @@ public class LimelightChamber extends CommandOpMode {
 //                new InstantCommand(() -> mecanumDrive.resetPos(pos)),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 0.7, 180, 0.02, 1),
                 new LimelightCommands.LimelightIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
-                new DischargeCommands.GoToTarget(dischargeSubsystem.lowChamberHeight, dischargeSubsystem),
+                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.lowChamberHeight),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem),
 
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.3, 0.7, 180, 0.02, 1),
                 new LimelightCommands.LimelightIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
-                new DischargeCommands.GoToTarget(dischargeSubsystem.lowChamberHeight, dischargeSubsystem),
+                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.lowChamberHeight),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem),
 
@@ -138,6 +138,7 @@ public class LimelightChamber extends CommandOpMode {
 
     @Override
     public void run() {
+        AutoUtils.savePosition(mecanumDrive);
         telemetry.addData("x", mecanumDrive.getPosition().x);
         telemetry.addData("y", mecanumDrive.getPosition().y);
 

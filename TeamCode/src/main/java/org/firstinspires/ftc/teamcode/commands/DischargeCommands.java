@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.commands;
 
+import com.arcrobotics.ftclib.command.Command;
 import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
@@ -160,10 +161,10 @@ public class DischargeCommands {
         private static int targetPosition = 0;
         private static int stayStillTarget = 0;
 
-        private final double goToKp = 10;
+        private final double goToKp = 8;
         private final double stayStillKp = 10;
-        private final double goToMin = 0.05;
-        private final double stayStillMin = 0.08;
+        private final double goToMin = 0.2;
+        private final double stayStillMin = 0.2;
 
         public MotorControl(DischargeSubsystem dischargeSubsystem, Supplier<Double> manualPower,
                             boolean allowManualTargetAdjustment, Telemetry telemetry) {
@@ -227,9 +228,11 @@ public class DischargeCommands {
         }
 
         private double calculateGoToTargetPID(double error, int curPos) {
+            if (curPos < 60)
+                return 0.6;
             if (curPos < 125)
-                return 0.65;
-            if (Math.abs(error) >= 100)
+                return 0.75;
+            if (Math.abs(error) >= 200)
                 return Math.signum(error); // Full power in the direction of the target
             error /= 1000; //normalize error
             return goToKp * error + (Math.signum(error) * goToMin);
@@ -237,7 +240,7 @@ public class DischargeCommands {
 
         private double calculateStayStillPID(double error) {
             error /= 1000; //normalize error
-            return stayStillKp * error + stayStillMin;
+            return stayStillKp * error + (Math.signum(error) * stayStillMin);
         }
 
         public static void setMode(Mode newMode) {
@@ -259,17 +262,12 @@ public class DischargeCommands {
         public static double getStayStillTarget() {
             return stayStillTarget;
         }
-
-        @Override
-        public boolean isFinished() {
-            return false;
-        }
     }
 
     public static class GoToTarget extends CommandBase {
         private final int target;
 
-        public GoToTarget(int target, DischargeSubsystem dischargeSubsystem) {
+        public GoToTarget(DischargeSubsystem dischargeSubsystem, int target) {
             this.target = target;
             addRequirements(dischargeSubsystem);
         }
@@ -310,7 +308,7 @@ public class DischargeCommands {
 
         @Override
         public boolean isFinished() {
-            return Math.abs(MotorControl.getTargetPosition() - dischargeSubsystem.getLiftPosInCM()) < 80;
+            return Math.abs(MotorControl.getTargetPosition() - dischargeSubsystem.getLiftPosInCM()) < 60;
         }
     }
 
@@ -509,16 +507,28 @@ public class DischargeCommands {
     public static class ChamberDischargeCmd extends SequentialCommandGroup {
         public ChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 190),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 140),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem), new WaitCommand(200),
                     new DischargeCommands.GoHomeCmd(dischargeSubsystem));
             addRequirements(dischargeSubsystem);
         }
     }
-    public static class ResetDischarge extends CommandBase{
+
+    public static class AutoChamberDischargeCmd extends SequentialCommandGroup {
+        public AutoChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
+            addCommands(
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 140),
+                    //new WaitCommand(100),
+                    new DischargeReleaseCmd(dischargeSubsystem));
+            addRequirements(dischargeSubsystem);
+        }
+    }
+
+    public static class ResetDischarge extends CommandBase {
         DischargeSubsystem dischargeSubsystem;
-        public ResetDischarge(DischargeSubsystem dischargeSubsystem){
+
+        public ResetDischarge(DischargeSubsystem dischargeSubsystem) {
             this.dischargeSubsystem = dischargeSubsystem;
         }
 
@@ -526,6 +536,55 @@ public class DischargeCommands {
         public void initialize() {
             dischargeSubsystem.resetEncoders();
 //            dischargeSubsystem.runToPosition();
+        }
+    }
+
+
+    public static class SequentialRaceWrapper extends CommandBase {
+        private final Command[] commands;
+        private int currentCommandIndex = 0;
+
+        public SequentialRaceWrapper(Command... commands) {
+            this.commands = commands;
+        }
+
+        @Override
+        public void initialize() {
+            System.out.println("Starting SequentialRaceWrapper");
+            if (commands.length > 0) {
+                commands[0].initialize();
+            }
+        }
+
+        @Override
+        public void execute() {
+            if (currentCommandIndex < commands.length) {
+                Command currentCommand = commands[currentCommandIndex];
+
+                currentCommand.execute();
+
+                if (currentCommand.isFinished()) {
+                    currentCommand.end(false); // Cleanly finish the command
+                    currentCommandIndex++;
+
+                    if (currentCommandIndex < commands.length) {
+                        commands[currentCommandIndex].initialize();
+                    }
+                }
+            }
+        }
+
+        @Override
+        public boolean isFinished() {
+            return currentCommandIndex >= commands.length;
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            System.out.println("SequentialRaceWrapper ended, interrupted? " + interrupted);
+            if (interrupted && currentCommandIndex < commands.length) {
+                commands[currentCommandIndex].end(true);
+            }
         }
     }
 

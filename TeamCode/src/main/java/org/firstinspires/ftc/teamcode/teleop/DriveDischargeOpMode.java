@@ -49,7 +49,7 @@ public class DriveDischargeOpMode extends CommandOpMode {
         Button rightBumper = new GamepadButton(systemGamepad, GamepadKeys.Button.RIGHT_BUMPER);
         Button A = new GamepadButton(systemGamepad, GamepadKeys.Button.A);
 
-        dPadUp.whenPressed(new DischargeCommands.GoToTarget(1600, dischargeSubsystem));
+        dPadUp.whenPressed(new DischargeCommands.GoToTarget(dischargeSubsystem, 1600));
         dPadDown.whenPressed(new DischargeCommands.GoHomeCmd(dischargeSubsystem));
         dPadLeft.whenPressed(new DischargeCommands.DischargeGrabCmd(dischargeSubsystem));
         leftBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));

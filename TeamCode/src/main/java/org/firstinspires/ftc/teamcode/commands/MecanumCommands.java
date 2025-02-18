@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.commands;
 
 import com.arcrobotics.ftclib.command.CommandBase;
+import com.arcrobotics.ftclib.kinematics.wpilibkinematics.ChassisSpeeds;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
@@ -66,13 +67,66 @@ public class MecanumCommands {
         }
     }
 
-    public static class ShakeCmd extends CommandBase {
+    public static class IntakePowerCmd extends CommandBase {
+        Supplier<Double> xS;
+        Supplier<Double> yS;
+        Supplier<Double> rS;
+        Supplier<Double> xD;
+        Supplier<Double> yD;
+        Supplier<Double> rD;
+        Supplier<Double> boost;
+        double xSum, ySum, rSum;
+        final MecanumDrive mecanumDrive;
+        final Telemetry telemetry;
+        final double rotationModifier = 0.75;
+        ChassisSpeeds fieldSpeeds;
+
+        public IntakePowerCmd(Telemetry telemetry, MecanumDrive mecanumDrive,
+                              Supplier<Double> xS, Supplier<Double> yS, Supplier<Double> rS,
+                              Supplier<Double> xD, Supplier<Double> yD, Supplier<Double> rD,
+                              Supplier<Double> boost) {
+            this.xS = xS;
+            this.yS = yS;
+            this.rS = () -> rS.get() * rotationModifier;
+            this.xD = xD;
+            this.yD = yD;
+            this.rD = () -> rD.get() * rotationModifier;
+            this.boost = boost;
+            this.mecanumDrive = mecanumDrive;
+            this.telemetry = telemetry;
+
+
+            addRequirements(mecanumDrive);
+        }
+
+        @Override
+        public void execute() {
+//            telemetry.addData("X", x.get());
+//            telemetry.addData("Y", y.get());
+//            telemetry.addData("TURN", r.get());
+            mecanumDrive.setFieldOriented(true);
+            fieldSpeeds = mecanumDrive.calcDriveSpeeds(xD.get(), yD.get());
+            xSum = Range.clip(fieldSpeeds.vxMetersPerSecond + xS.get() * 0.3, -1, 0.8);
+            ySum = Range.clip(fieldSpeeds.vyMetersPerSecond + yS.get() * 0.3, -1, 0.8);
+            rSum = fieldSpeeds.omegaRadiansPerSecond;
+            mecanumDrive.setFieldOriented(false);
+            mecanumDrive.drive(xSum, ySum, rSum, boost.get());
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+            mecanumDrive.drive(0, 0, 0, 0);
+        }
+    }
+
+
+    public static class MecanumShakeCmd extends CommandBase {
         double speed, interval;
         ElapsedTime runtime = new ElapsedTime();
         MecanumDrive mecanumDrive;
         int switched = 1;
 
-        public ShakeCmd(MecanumDrive mecanumDrive, double speed, double interval) {
+        public MecanumShakeCmd(MecanumDrive mecanumDrive, double speed, double interval) {
             this.interval = interval;
             this.speed = speed;
             this.mecanumDrive = mecanumDrive;
@@ -276,6 +330,35 @@ public class MecanumCommands {
         }
     }
 
+    public static class chamberWait extends CommandBase {
+        MecanumDrive mecanumDrive;
+        ElapsedTime elapsedTime = new ElapsedTime();
+        final double maxTime;
+        Point currentPos;
+        final double chamberPos = 0.93;
+
+        public chamberWait(MecanumDrive mecanumDrive) {
+            this.mecanumDrive = mecanumDrive;
+            maxTime = 1;
+        }
+
+        public chamberWait(MecanumDrive mecanumDrive, double maxTime) {
+            this.mecanumDrive = mecanumDrive;
+            this.maxTime = maxTime;
+        }
+
+        @Override
+        public void initialize() {
+            elapsedTime.reset();
+        }
+
+        @Override
+        public boolean isFinished() {
+            currentPos = mecanumDrive.getPosition();
+            return elapsedTime.seconds() > maxTime || currentPos.y > chamberPos;
+        }
+    }
+
     public static class ConstantVelocityGotoCmd extends CommandBase {
         double x, y, wantedAngle, wantedDistance;
         double kp = 0.025;
@@ -355,6 +438,7 @@ public class MecanumCommands {
 
         @Override
         public boolean isFinished() {
+            if (currentPos == null) return false;
             return (((Math.hypot(currentPos.x - x, currentPos.y - y) < sensitivity) || (900 <= wantedDistance))
                     && ((Math.abs(wantedAngle + 180 - mecanumDrive.getAdjustedHeading()) < 10) || noRotation));
         }

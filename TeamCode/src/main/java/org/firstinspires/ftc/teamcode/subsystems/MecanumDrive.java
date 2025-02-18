@@ -175,15 +175,13 @@ public Servo moverServo;
         x += extraX;
         y += extraY;
         rotation += extraR;
+
         x *= boost * 3;
         y *= boost * 3;
         rotation *= boost * 2;
-        ChassisSpeeds speeds;
-        if (isFieldOriented) {
-            speeds = ChassisSpeeds.fromFieldRelativeSpeeds(-x, y, 0, Rotation2d.fromDegrees(getAdjustedHeading()));
-        } else {
-            speeds = new ChassisSpeeds(-x, y, 0);
-        }
+
+        ChassisSpeeds speeds = calcDriveSpeeds(x, y);
+
 
 // Now use this in our kinematics
         MecanumDriveWheelSpeeds wheelSpeeds = kinematics.toWheelSpeeds(speeds);
@@ -211,6 +209,14 @@ public Servo moverServo;
 //        telemetry.addData("posy", imu.getPosition().y);
 
         telemetry.update();
+    }
+
+    public ChassisSpeeds calcDriveSpeeds(double x, double y) {
+        if (isFieldOriented) {
+            return ChassisSpeeds.fromFieldRelativeSpeeds(-x, y, 0, Rotation2d.fromDegrees(getAdjustedHeading()));
+        } else {
+            return new ChassisSpeeds(-x, y, 0);
+        }
     }
 
     public double getHeading() {

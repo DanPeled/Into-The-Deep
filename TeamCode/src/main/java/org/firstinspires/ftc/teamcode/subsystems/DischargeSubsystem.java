@@ -18,7 +18,7 @@ public class DischargeSubsystem extends SubsystemBase {
     private final DcMotorEx lowerMotor, upperMotor;
     private Servo gearBoxServo, clawServo;
     double servoDischargePos = 0, servoClimbPos = 1;
-    final double clawServoHoldPos = 0.1, clawServoReleasePos = 0.323;
+    final double clawServoHoldPos = 0.38, clawServoReleasePos = 0.58;
     private final TouchSensor touchSensor;
     MultipleTelemetry telemetry;
     public double timeUp = 0;
@@ -35,7 +35,7 @@ public class DischargeSubsystem extends SubsystemBase {
     public double minLiftPos = 20;
     public final double minClimbLiftPos = 170;
 
-    public final int highChamberHeight = 825;//880
+    public final int highChamberHeight = 790;//880
     public final int lowChamberHeight = 350;
     public final int chamberReleaseDeltaSlides = 100;
 

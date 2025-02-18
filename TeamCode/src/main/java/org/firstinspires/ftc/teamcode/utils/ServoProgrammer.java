@@ -13,7 +13,7 @@ public class ServoProgrammer extends LinearOpMode {
     //0.2 close 0.37 open
     @Override
     public void runOpMode() throws InterruptedException {
-        servo = hardwareMap.get(Servo.class, "servo");
+        servo = hardwareMap.get(Servo.class, "clawServo");
         waitForStart();
         while (opModeIsActive() && !isStopRequested()) {
             if (gamepad1.dpad_up) {

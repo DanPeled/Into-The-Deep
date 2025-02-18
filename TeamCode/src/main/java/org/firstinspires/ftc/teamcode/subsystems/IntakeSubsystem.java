@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.subsystems;
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.arcrobotics.ftclib.command.SubsystemBase;
+import com.arcrobotics.ftclib.hardware.ServoEx;
 import com.qualcomm.robotcore.hardware.CRServo;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -31,7 +32,7 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public final int manualTicksPerSecond = 785;
     public final double slidesSpeed = 1;
-    public final double slidesLowSpeed = 0.3;
+    public final double slidesLowSpeed = 0.4;
     public boolean end = false;
     TouchSensor leftTouch, rightTouch;
 
