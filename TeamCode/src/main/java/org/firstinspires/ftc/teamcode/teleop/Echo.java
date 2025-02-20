@@ -193,6 +193,8 @@ public class Echo extends CommandOpMode {
                 new SetStateCommands.ChamberStateCmd(), //change to chamber state
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight))); //go to chamber
 
+        systemB.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
+
         systemY.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.BasketStateCmd(), //change to basket state
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight))); //go to high basket
@@ -334,13 +336,13 @@ public class Echo extends CommandOpMode {
                 //new DischargeCommands.GoToTarget(dischargeSubsystem.highBasketHeight),
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight))); //ToDo: make it not go up randomly
 
-//        systemB.whenPressed(new SequentialCommandGroup(
-//                new IntakeCommands.StartIntakeCmd(intakeSubsystem),
-//                new SetStateCommands.IntakeStateCmd())).and(new Trigger(() -> !driverStart.get()));
         systemB.whenPressed(new SequentialCommandGroup(
-                new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
-                new SetStateCommands.IntakeStateCmd()
-        ));
+                new IntakeCommands.StartIntakeCmd(intakeSubsystem),
+                new SetStateCommands.IntakeStateCmd())).and(new Trigger(() -> !driverStart.get()));
+//        systemB.whenPressed(new SequentialCommandGroup(
+//                new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
+//                new SetStateCommands.IntakeStateCmd()
+//        ));
 
         systemX.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
 
@@ -348,6 +350,7 @@ public class Echo extends CommandOpMode {
 //                    systemRightStick.whenPressed(new DischargeCommands.GearBoxDischargeCmd(dischargeSubsystem));
 
         systemBack.whenPressed(new IntakeCommands.SlideHomeCmd(intakeSubsystem, false));
+        systemDPadLeft.whenPressed(new DischargeCommands.HpDischarge(dischargeSubsystem));
 
         systemLeftBumper.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.NoneStateCmd(),
@@ -357,7 +360,7 @@ public class Echo extends CommandOpMode {
 //                            new IntakeCommands.StartIntakeCmd(intakeSubsystem, true, limeLightSubsystem::getYDistance),
 //                            new SetStateCommands.IntakeStateCmd()));
 //                    systemDPadLeft.whenPressed(new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive));
-        systemDPadDown.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0)));
+        systemDPadDown.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
     }
 
     private void telemetries() {

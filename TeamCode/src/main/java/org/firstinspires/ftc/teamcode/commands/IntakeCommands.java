@@ -489,6 +489,7 @@ public class IntakeCommands {
 
 
                 );
+
             } else {
                 addCommands(
                         new SpinCmd(subsystem, 0, 0),

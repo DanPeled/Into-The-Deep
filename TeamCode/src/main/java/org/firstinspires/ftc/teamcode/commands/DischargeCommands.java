@@ -163,8 +163,12 @@ public class DischargeCommands {
 
         private final double goToKp = 8;
         private final double stayStillKp = 10;
+        //        private final double stayStillKi = 0.01;
+//        private double Integral = 0;
+//        private double lastTime = 0;
         private final double goToMin = 0.2;
         private final double stayStillMin = 0.2;
+//        private ElapsedTime elapsedTime = new ElapsedTime();
 
         public MotorControl(DischargeSubsystem dischargeSubsystem, Supplier<Double> manualPower,
                             boolean allowManualTargetAdjustment, Telemetry telemetry) {
@@ -205,6 +209,7 @@ public class DischargeCommands {
                     if (Math.abs(error) <= 20) {
                         mode = Mode.STAY_STILL;
                         stayStillTarget = targetPosition;
+//                        lastTime = elapsedTime.seconds();
                     }
                     break;
 
@@ -213,6 +218,7 @@ public class DischargeCommands {
                     if (Math.abs(manual) < 0.15) {
                         mode = Mode.STAY_STILL;
                         stayStillTarget = currentPosition;
+//                        lastTime = elapsedTime.seconds();
                     }
                     break;
 
@@ -239,8 +245,12 @@ public class DischargeCommands {
         }
 
         private double calculateStayStillPID(double error) {
+//            double time = elapsedTime.seconds();
+//            Integral += error * stayStillKi * (time - lastTime);
             error /= 1000; //normalize error
+//            lastTime = time;
             return stayStillKp * error + (Math.signum(error) * stayStillMin);
+
         }
 
         public static void setMode(Mode newMode) {
@@ -399,7 +409,7 @@ public class DischargeCommands {
             dischargeSubsystem.setPower(0);
             MotorControl.setMode(MotorControl.Mode.DO_NOTHING);
 
-            if (dischargeSubsystem.getGearBoxRatio() == 1 && !interrupted) {
+            if (dischargeSubsystem.getGearBoxRatio() == dischargeSubsystem.dischargeRatio && !interrupted) {
                 dischargeSubsystem.minLiftPos = dischargeSubsystem.getPosition() + minTargetOffset;
                 dischargeSubsystem.setTargetPosInTicks(dischargeSubsystem.getPosition() + minTargetOffset);
                 dischargeSubsystem.resetEncoders();
@@ -518,7 +528,7 @@ public class DischargeCommands {
     public static class AutoChamberDischargeCmd extends SequentialCommandGroup {
         public AutoChamberDischargeCmd(DischargeSubsystem dischargeSubsystem, Telemetry telemetry) {
             addCommands(
-                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 140),
+                    new GoToTargetWait(dischargeSubsystem, dischargeSubsystem.highChamberHeight - 150),
                     //new WaitCommand(100),
                     new DischargeReleaseCmd(dischargeSubsystem));
             addRequirements(dischargeSubsystem);
@@ -538,7 +548,6 @@ public class DischargeCommands {
 //            dischargeSubsystem.runToPosition();
         }
     }
-
 
     public static class SequentialRaceWrapper extends CommandBase {
         private final Command[] commands;
@@ -585,6 +594,16 @@ public class DischargeCommands {
             if (interrupted && currentCommandIndex < commands.length) {
                 commands[currentCommandIndex].end(true);
             }
+        }
+    }
+
+    public static class HpDischarge extends SequentialCommandGroup {
+        public HpDischarge(DischargeSubsystem dischargeSubsystem) {
+            addCommands(
+                    new DischargeCommands.GoToTargetWait(dischargeSubsystem, dischargeSubsystem.lowChamberHeight),
+                    new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
+                    new WaitCommand(600),
+                    new DischargeCommands.GoHomeCmd(dischargeSubsystem));
         }
     }
 

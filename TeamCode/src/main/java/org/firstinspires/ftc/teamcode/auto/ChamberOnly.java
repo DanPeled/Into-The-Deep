@@ -62,7 +62,8 @@ public class ChamberOnly extends CommandOpMode {
                                 goToTwoSpeeds(2.92, 1.4, -90, 0.05, 0.65, 0.5, 0.15), //behind sample
                                 goToTwoSpeeds(2.94, 0.7, -90, 0.08, 0.8, 0.65, 0.2), //observation
 
-                                goToTwoSpeeds(3, 1.22, -90, 0.06, 0.8, 0.34, 0.17) //go back fast
+                                goToTwoSpeeds(3, 1.3, -90, 0.1, 0.8, 0.34, 0.15) //go back fast
+//                                goToTwoSpeeds(3, 1.22, -90, 0.05, 0.8, 0.34, 0.12) //go back fast
                         ),
 
 //                        new SequentialCommandGroup(
@@ -162,7 +163,7 @@ public class ChamberOnly extends CommandOpMode {
                             new SequentialCommandGroup(
                                     wait(500),
                                     goTo(dischargeX, 0.76, 0, 0.08, 1.3),
-                                    moverGoGo(0),
+                                    moverGoGo(0.08),
                                     goTo(dischargeX, 0.86, 0, 0.05, 1.3))),
 
 

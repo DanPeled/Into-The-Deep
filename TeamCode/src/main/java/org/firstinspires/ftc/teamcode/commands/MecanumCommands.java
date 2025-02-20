@@ -106,8 +106,8 @@ public class MecanumCommands {
 //            telemetry.addData("TURN", r.get());
             mecanumDrive.setFieldOriented(true);
             fieldSpeeds = mecanumDrive.calcDriveSpeeds(xD.get(), yD.get());
-            xSum = Range.clip(fieldSpeeds.vxMetersPerSecond + xS.get() * 0.3, -1, 0.8);
-            ySum = Range.clip(fieldSpeeds.vyMetersPerSecond + yS.get() * 0.3, -1, 0.8);
+            xSum = Range.clip(fieldSpeeds.vxMetersPerSecond + xS.get() * 0.45, -1, 0.8);
+            ySum = Range.clip(fieldSpeeds.vyMetersPerSecond + yS.get() * 0.45, -1, 0.8);
             rSum = fieldSpeeds.omegaRadiansPerSecond;
             mecanumDrive.setFieldOriented(false);
             mecanumDrive.drive(xSum, ySum, rSum, boost.get());

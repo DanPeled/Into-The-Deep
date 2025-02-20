@@ -173,13 +173,17 @@ public class LimelightCommands {
                             new SequentialCommandGroup(
                                     new WaitCommand(500),
                                     new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle))),
-                    new WaitCommand(500),
+
+//                    new WaitCommand(500),
 //                    new IntakeCommands.SampleReverseIntakeCmd(intakeSubsystem).withTimeout(2000),
 //                    new ParallelCommandGroup(
 //                            new IntakeCommands.SpinCmd(intakeSubsystem, -1, 1),
 //                            new MecanumCommands.MecanumShakeCmd(mecanumDrive, 0.08, 0.1).withTimeout(1000),
 //                            new IntakeCommands.IntakeShakeCmd(intakeSubsystem, 0.4, 0.1).withTimeout(1000)),
-                    new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem),
+//                    new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem)
+//                    new WaitCommand(500),
+//                    new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1200, 1, true),
+//                    new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)
                     new InstantCommand(new Runnable() {
                         @Override
                         public void run() {
@@ -187,9 +191,6 @@ public class LimelightCommands {
                             intakeSubsystem.runWithoutEncoders();
                         }
                     })
-//                    new WaitCommand(500),
-//                    new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1200, 1, true),
-//                    new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)
             );
             addRequirements(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive);
         }
@@ -216,16 +217,24 @@ public class LimelightCommands {
                             new SequentialCommandGroup(
                                     new WaitCommand(500),
                                     new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle))),
-                    new WaitCommand(500),
+
+//                    new WaitCommand(500),
 //                    new IntakeCommands.SampleReverseIntakeCmd(intakeSubsystem).withTimeout(2000),
 //                    new ParallelCommandGroup(
 //                            new IntakeCommands.SpinCmd(intakeSubsystem, -1, 1),
 //                            new MecanumCommands.MecanumShakeCmd(mecanumDrive, 0.08, 0.1).withTimeout(1000),
 //                            new IntakeCommands.IntakeShakeCmd(intakeSubsystem, 0.4, 0.1).withTimeout(1000)),
-                    new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem)
+//                    new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem)
 //                    new WaitCommand(500),
 //                    new IntakeCommands.SlideUntilCmd(intakeSubsystem, 1200, 1, true),
 //                    new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)
+                    new InstantCommand(new Runnable() {
+                        @Override
+                        public void run() {
+                            intakeSubsystem.setArmPower(0);
+                            intakeSubsystem.runWithoutEncoders();
+                        }
+                    })
             );
             addRequirements(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive);
         }
