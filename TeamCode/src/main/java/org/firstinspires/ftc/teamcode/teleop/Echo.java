@@ -15,6 +15,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.SavedVariables;
+import org.firstinspires.ftc.teamcode.auto.AutoUtils;
 import org.firstinspires.ftc.teamcode.commands.DischargeCommands;
 import org.firstinspires.ftc.teamcode.commands.IntakeCommands;
 import org.firstinspires.ftc.teamcode.commands.LimelightCommands;
@@ -96,9 +97,8 @@ public class Echo extends CommandOpMode {
         }
         mecanumDrive.setHeading(SavedVariables.angle);
 //        limeLightSubsystem.startLimelight();
-        limeLightSubsystem.setPipeline(Pipelines.YELLOW);
-        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
-        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, true, telemetry));
+//        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
+//        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, true, telemetry));
 
 
         mecanumX = () -> driverGamepad.getLeftX();
@@ -114,6 +114,7 @@ public class Echo extends CommandOpMode {
 
     @Override
     public void run() {
+        AutoUtils.savePosition(mecanumDrive);
         if (controllersState != robotState) {
             CommandScheduler.getInstance().clearButtons();
 
@@ -248,8 +249,7 @@ public class Echo extends CommandOpMode {
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem,
                 systemGamepad::getLeftY));
 
-        systemA.whenPressed(new IntakeCommands.SampleReverseIntakeCmd(intakeSubsystem)).and(new Trigger(() -> IntakeCommands.Transfer.transferring));
-        systemA.whenReleased(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem)).and(new Trigger(() -> IntakeCommands.Transfer.transferring));
+        systemA.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem));/*.and(new Trigger(() -> IntakeCommands.Transfer.transferring))*/
 
         systemB.whenPressed(new IntakeCommands.RestartIntakeCmd(intakeSubsystem));
 
@@ -363,20 +363,20 @@ public class Echo extends CommandOpMode {
         systemDPadDown.toggleWhenPressed(new InstantCommand(() -> mecanumDrive.setMoverServo(0.5)), new InstantCommand(() -> mecanumDrive.setMoverServo(0.08)));
     }
 
-    private void telemetries() {
-        telemetry.addData("currentIntake", intakeSubsystem.getCurrent());
-        telemetry.addData("isTouching", dischargeSubsystem.isHome());
-        telemetry.addData("discharge default command", dischargeSubsystem.getDefaultCommand().getName());
-        telemetry.addData("discharge current command", dischargeSubsystem.getCurrentCommand().getName());
-        telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());
-        telemetry.addData("intake current command", intakeSubsystem.getCurrentCommand().getName());
-        telemetry.addData("current", dischargeSubsystem.getCurrent());
-        telemetry.addData("intakePower", intakeSubsystem.getPower());
-        //multipleTelemetry.addData("x limelight", limeLightSubsystem.getXDistance());
-        //multipleTelemetry.addData("y limelight", limeLightSubsystem.getYDistance());
-        //multipleTelemetry.addData("angle limelight", limeLightSubsystem.getAngle());
-        //multipleTelemetry.addData("pipeline", limeLightSubsystem.getCurrentPipeline());
-        //telemetry.addData("y", limeLightSubsystem.getRawY());
+    public void telemetries() {
+//        telemetry.addData("currentIntake", intakeSubsystem.getCurrent());
+//        telemetry.addData("isTouching", dischargeSubsystem.isHome());
+//        telemetry.addData("discharge default command", dischargeSubsystem.getDefaultCommand().getName());
+//        telemetry.addData("discharge current command", dischargeSubsystem.getCurrentCommand().getName());
+//        telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());
+//        telemetry.addData("intake current command", intakeSubsystem.getCurrentCommand().getName());
+//        telemetry.addData("current", dischargeSubsystem.getCurrent());
+//        telemetry.addData("intakePower", intakeSubsystem.getPower());
+        multipleTelemetry.addData("x limelight", limeLightSubsystem.getXDistance());
+        multipleTelemetry.addData("y limelight", limeLightSubsystem.getYDistance());
+        multipleTelemetry.addData("angle limelight", limeLightSubsystem.getAngle());
+        multipleTelemetry.addData("pipeline", limeLightSubsystem.getCurrentPipeline());
+        telemetry.addData("y", limeLightSubsystem.getRawY());
 //        multipleTelemetry.addData("ticka", intakeSubsystem.getAveragePosition());
 //        multipleTelemetry.addData("tick1", intakeSubsystem.getMotorPosition());
 //        multipleTelemetry.addData("tick2", intakeSubsystem.getMotor2Position());
@@ -390,8 +390,8 @@ public class Echo extends CommandOpMode {
 //        multipleTelemetry.addData("lift stay still target", DischargeCommands.MotorControl.getTargetPosition() - dischargeSubsystem.getPosition());
 //        multipleTelemetry.addData("servo pos", intakeSubsystem.getZServoPosition());
 //        telemetry.addData("y saved",SavedVariables.y);
-        telemetry.addData("robot x,y", mecanumDrive.getPosition());
-        telemetry.addData("robot angle", mecanumDrive.getHeading());
+//        telemetry.addData("robot x,y", mecanumDrive.getPosition());
+//        telemetry.addData("robot angle", mecanumDrive.getHeading());
         multipleTelemetry.update();
         telemetry.update();
     }

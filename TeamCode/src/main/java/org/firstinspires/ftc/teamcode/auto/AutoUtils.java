@@ -24,7 +24,6 @@ public class AutoUtils {
                 new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
                 //new IntakeCommands.Wait(intakeSubsystem, 1),
                 new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true),
-                new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
                 new DischargeCommands.MotorControl(dischargeSubsystem, () -> 0.0, false, commandOpMode.telemetry),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem)
         ));

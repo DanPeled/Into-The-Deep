@@ -377,7 +377,7 @@ public class DischargeCommands {
 
         @Override
         public boolean isFinished() {
-            return (dischargeSubsystem.isHome() || (elapsedTime.seconds() > maxDuration) || dischargeSubsystem.getCurrent() > 7);//
+            return (dischargeSubsystem.isHome() || (elapsedTime.seconds() > maxDuration) || dischargeSubsystem.getCurrent() > 8);//
 //            if (dischargeSubsystem.getGearBoxRatio() == 1) { // finish check for normal gear
 //                if (elapsedTime.seconds() > maxDuration) {
 //                    return true;

@@ -6,7 +6,7 @@ import com.qualcomm.hardware.limelightvision.*;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 public class LimelightSubsystem extends SubsystemBase {
-    private final Limelight3A limelight;
+    public final Limelight3A limelight;
     MultipleTelemetry telemetry;
     int pipeline = 0;
     LLResult result;

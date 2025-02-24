@@ -5,6 +5,7 @@ import com.arcrobotics.ftclib.command.CommandScheduler;
 import com.arcrobotics.ftclib.command.ParallelCommandGroup;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
@@ -34,12 +35,56 @@ public class IntakeCommands {
         }
     }
 
+    public static class OpenScrewCmd extends CommandBase {
+        IntakeSubsystem intakeSubsystem;
+        final boolean wait;
+
+        public OpenScrewCmd(IntakeSubsystem intakeSubsystem, boolean wait) {
+            this.intakeSubsystem = intakeSubsystem;
+            this.wait = wait;
+//            addRequirements(intakeSubsystem);
+        }
+
+        @Override
+        public void initialize() {
+            intakeSubsystem.openScrew();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return intakeSubsystem.isScrewOpened() || !wait;
+        }
+    }
+
+    public static class CloseScrewCmd extends CommandBase {
+        IntakeSubsystem intakeSubsystem;
+        final boolean wait;
+
+        public CloseScrewCmd(IntakeSubsystem intakeSubsystem, boolean wait) {
+            this.intakeSubsystem = intakeSubsystem;
+            this.wait = wait;
+            addRequirements(intakeSubsystem);
+        }
+
+        @Override
+        public void initialize() {
+            intakeSubsystem.closeScrew();
+        }
+
+        @Override
+        public boolean isFinished() {
+            return !intakeSubsystem.isScrewOpened() || !wait;
+        }
+    }
+
     public static class SlideGotoCmd extends CommandBase {
         IntakeSubsystem subsystem;
         int position = 0;
         Supplier<Integer> positionSupplier;
         boolean limelight = false;
         final int maxPosition = 3000;
+        final double ratio = 435.0 / 1150.0;
+
 
         public SlideGotoCmd(IntakeSubsystem subsystem, int position) {
             this.subsystem = subsystem;
@@ -48,7 +93,7 @@ public class IntakeCommands {
             } else if (position < 0) {
                 position = 0;
             }
-            this.position = position;
+            this.position = (int) (position * ratio);
             addRequirements(subsystem);
         }
 
@@ -220,22 +265,21 @@ public class IntakeCommands {
     }
 
     //doesn't have addRequirements(subsystem);
-    public static class SetArmsStageCmd extends CommandBase {
-        IntakeSubsystem subsystem;
-        double armsStage;
-        ElapsedTime elapsedTime = new ElapsedTime();
 
-        public SetArmsStageCmd(IntakeSubsystem subsystem, double armsStage) {
-            this.subsystem = subsystem;
-            this.armsStage = armsStage;
-            addRequirements(subsystem);
+    public static class RotateBackCmd extends CommandBase {
+        IntakeSubsystem intakeSubsystem;
+
+        public RotateBackCmd(IntakeSubsystem intakeSubsystem) {
+            this.intakeSubsystem = intakeSubsystem;
         }
+
 
         @Override
         public void initialize() {
-            elapsedTime.reset();
-            subsystem.setArmsStage(armsStage);
-
+            if (intakeSubsystem.getZServoPosition() < 0.5)
+                intakeSubsystem.setRotationServoPosition(0);
+            else
+                intakeSubsystem.setRotationServoPosition(1);
         }
 
         @Override
@@ -243,7 +287,6 @@ public class IntakeCommands {
             return true;
         }
     }
-
     public static class SetRotationCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         double position;
@@ -265,10 +308,12 @@ public class IntakeCommands {
 
         @Override
         public void initialize() {
-            if (limelight)
-                intakeSubsystem.setRotationServoPosition((1 - (positionSupplier.get() + 90) / 180 - 0.5) * 2 / 3 + 0.5);
-            else
-                intakeSubsystem.setRotationServoPosition(position);
+            if (limelight) {
+                position = (positionSupplier.get() > 0) ? positionSupplier.get() : 180 + positionSupplier.get();
+                intakeSubsystem.setRotationServoPosition((position / 180 - 0.5) * 2 / 3 + 0.5);//((1 - (positionSupplier.get() + 90) / 180 - 0.5) * 2 / 3 + 0.5)
+
+            } else
+                intakeSubsystem.setRotationServoPosition((position - 0.5) * 2 / 3 + 0.5);
         }
 
         @Override
@@ -366,38 +411,6 @@ public class IntakeCommands {
     }
 
 
-    public static class SpinCmd extends CommandBase {
-        IntakeSubsystem intakeSubsystem;
-        ElapsedTime runtime = new ElapsedTime();
-        final double duration, power;
-        double startTime;
-
-        //power from -1 to 1
-        public SpinCmd(IntakeSubsystem intakeSubsystem, double power, double duration) {
-            this.intakeSubsystem = intakeSubsystem;
-//            addRequirements(intakeSubsystem);
-            this.duration = duration;
-            this.power = power;
-        }
-
-        @Override
-        public void initialize() {
-            intakeSubsystem.setSpinPower(power);
-            startTime = runtime.seconds();
-        }
-
-        @Override
-        public boolean isFinished() {
-            return (duration <= 0) || ((runtime.seconds() - startTime) > duration);
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            if (duration != -1)
-                intakeSubsystem.setSpinPower(0);
-        }
-    }
-
     public static class SetPowerCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         double power;
@@ -458,17 +471,12 @@ public class IntakeCommands {
             StartIntake(subsystem, auto, position);
         }
 
-        public StartIntakeCmd(IntakeSubsystem subsystem, boolean auto, Supplier<Integer> position) {
+        public StartIntakeCmd(IntakeSubsystem subsystem, Supplier<Integer> position) {
 //            StartIntake(subsystem, auto, position);
             addCommands(
-                    new SpinCmd(subsystem, 0, 0),
                     new ClawStageCmd(subsystem, ClawStages.UPPER),
-                    new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
-                    new SetRotationCmd(subsystem, 0.5),
+                    new SetRotationCmd(subsystem, 0),
                     new SlideGotoCmd(subsystem, position),
-                    new ClawStageCmd(subsystem, ClawStages.MIDDLE),
-                    new SetArmsStageCmd(subsystem, ArmsStages.TOP),
-                    new WaitCommand(200),
                     new ClawStageCmd(subsystem, ClawStages.LOWER));
 
 
@@ -478,57 +486,24 @@ public class IntakeCommands {
         private void StartIntake(IntakeSubsystem subsystem, boolean auto, int position) {
             if (auto) {
                 addCommands(
-                        new SpinCmd(subsystem, 0, 0),
                         new ClawStageCmd(subsystem, ClawStages.UPPER),
-                        new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
-                        new SetRotationCmd(subsystem, 0.5),
+                        new SetRotationCmd(subsystem, 0),
                         new SlideGotoCmd(subsystem, position),
-                        new ClawStageCmd(subsystem, ClawStages.LOWER),
-                        new SetArmsStageCmd(subsystem, ArmsStages.TOP),
-                        new WaitCommand(100)
-
-
+                        new ClawStageCmd(subsystem, ClawStages.INTAKE)
                 );
 
             } else {
                 addCommands(
-                        new SpinCmd(subsystem, 0, 0),
                         new ClawStageCmd(subsystem, ClawStages.UPPER),
-                        new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
-                        new SetRotationCmd(subsystem, 0.5),
+                        new SetRotationCmd(subsystem, 0),
                         new SlideUntilCmd(subsystem, position, 1, true),
-                        new ClawStageCmd(subsystem, ClawStages.LOWER),
-                        new SetArmsStageCmd(subsystem, ArmsStages.TOP),
-                        new WaitCommand(100)
+                        new WaitCommand(1000),
+                        new ClawStageCmd(subsystem, ClawStages.INTAKE)
                 );
                 addRequirements(subsystem);
             }
         }
 
-        private void StartIntake(IntakeSubsystem subsystem, boolean auto, Supplier<Integer> position) {
-            if (auto) {
-                addCommands(
-                        new SpinCmd(subsystem, 0, 0),
-                        new ClawStageCmd(subsystem, ClawStages.UPPER),
-                        new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
-                        new SetRotationCmd(subsystem, 0.5),
-                        new SlideGotoCmd(subsystem, position),
-                        new ClawStageCmd(subsystem, ClawStages.LOWER),
-                        //new Wait(subsystem, 0.0),
-                        new SetArmsStageCmd(subsystem, ArmsStages.TOP));
-            } else {
-                addCommands(
-                        new SpinCmd(subsystem, 0, 0),
-                        new ClawStageCmd(subsystem, ClawStages.UPPER),
-                        new SetArmsStageCmd(subsystem, ArmsStages.SHRINK),
-                        new SetRotationCmd(subsystem, 0.5),
-                        new SlideUntilCmd(subsystem, position.get(), 1, true),
-                        new ClawStageCmd(subsystem, ClawStages.LOWER),
-                        //new Wait(subsystem, 0.0),
-                        new SetArmsStageCmd(subsystem, ArmsStages.TOP));
-                addRequirements(subsystem);
-            }
-        }
 
         @Override
         public void initialize() {
@@ -548,6 +523,7 @@ public class IntakeCommands {
         final int maxPosition = 3000;
         double power;
         boolean wait;
+        final double ratio = 435.0 / 1150.0;
 
         public SlideUntilCmd(IntakeSubsystem subsystem, int position, double power, boolean wait) {
             this.power = power;
@@ -558,7 +534,7 @@ public class IntakeCommands {
             } else if (position < 0) {
                 position = 0;
             }
-            this.position = position;
+            this.position = (int) (position * ratio);
             addRequirements(subsystem);
         }
 
@@ -590,8 +566,9 @@ public class IntakeCommands {
     public static class RestartIntakeCmd extends SequentialCommandGroup {
         public RestartIntakeCmd(IntakeSubsystem subsystem) {
             addCommands(
-                    new SpinCmd(subsystem, 0, 0),
-                    new SetArmsStageCmd(subsystem, ArmsStages.TOP));
+                    new CloseScrewCmd(subsystem, true),
+                    new ClawStageCmd(subsystem, ClawStages.INTAKE)
+            );
             addRequirements(subsystem);
         }
 
@@ -608,21 +585,20 @@ public class IntakeCommands {
 
     public static class SampleSubmIntakeCmd extends SequentialCommandGroup {
         public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem) {
-            final double
-                    spinPower = 1,
-                    middleTime = 0.5,
-                    grabbingTime = 0.75,
-                    holdingPower = 0.07;
-
-
             addCommands(
-                    //new ParallelCommandGroup(
-                    //        new SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE),
-                    //        new SpinCmd(intakeSubsystem, -spinPower, middleTime)),
-                    new ParallelCommandGroup(
-                            new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
-                            new SpinCmd(intakeSubsystem, spinPower, grabbingTime)),
-                    new SpinCmd(intakeSubsystem, holdingPower, -1));
+                    new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
+                    new WaitCommand(200),
+                    new OpenScrewCmd(intakeSubsystem, false)
+            );
+            addRequirements(intakeSubsystem);
+        }
+
+        public SampleSubmIntakeCmd(IntakeSubsystem intakeSubsystem, boolean wait) {
+            addCommands(
+                    new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
+                    new WaitCommand(200),
+                    new OpenScrewCmd(intakeSubsystem, wait)
+            );
             addRequirements(intakeSubsystem);
         }
     }
@@ -636,46 +612,28 @@ public class IntakeCommands {
                     holdingPower = 0.07;
 
 
-            addCommands(
-                    //new ParallelCommandGroup(
-                    //        new SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE),
-                    //        new SpinCmd(intakeSubsystem, -spinPower, middleTime)),
-                    new ParallelCommandGroup(
-                            new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
-                            new SpinCmd(intakeSubsystem, spinPower, grabbingTime)),
-                    new SpinCmd(intakeSubsystem, holdingPower, -1));
+            addCommands(new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
+                    new WaitCommand(200),
+                    new OpenScrewCmd(intakeSubsystem, false));
             addRequirements(intakeSubsystem);
         }
-    }
+    }//todo: remove later
 
 
-    public static class SampleReverseIntakeCmd extends ParallelCommandGroup {
-        public SampleReverseIntakeCmd(IntakeSubsystem intakeSubsystem) {
-            final double spinPower = 1,
-                    middleTime = 0.5,
-                    grabbingTime = 0.75,
-                    holdingPower = 0.05;
 
-            addCommands(
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE),
-                    new SpinCmd(intakeSubsystem, -spinPower, -1));
-
-            addRequirements(intakeSubsystem);
-        }
-    }
 
     public static class ReturnArmForTransferCmd extends SequentialCommandGroup {
         public ReturnArmForTransferCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
 
             addCommands(
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
-                    new SetRotationCmd(intakeSubsystem, 0.5),
-                    //new Wait(intakeSubsystem, 0.1),
-                    //new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
+                    new RotateBackCmd(intakeSubsystem),
                     new Wait(intakeSubsystem, 0.25),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
                     new Wait(intakeSubsystem, 0.2),
-                    new SlideHomeCmd(intakeSubsystem, initTime));
+                    new ParallelCommandGroup(
+                            new SlideHomeCmd(intakeSubsystem, initTime),
+                            new SetRotationCmd(intakeSubsystem, 0)
+                    ));
             addRequirements(intakeSubsystem);
         }
 
@@ -685,33 +643,18 @@ public class IntakeCommands {
         public ReturnArmForAutoTransferCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
 
             addCommands(
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
-                    new SetRotationCmd(intakeSubsystem, 0.5),
+                    new RotateBackCmd(intakeSubsystem),
                     new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
                     //new Wait(intakeSubsystem, 0),
-                    new SlideHomeCmd(intakeSubsystem, initTime));
+                    new ParallelCommandGroup(
+                            new SlideHomeCmd(intakeSubsystem, initTime),
+                            new SetRotationCmd(intakeSubsystem, 0)
+                    ));
             addRequirements(intakeSubsystem);
         }
 
     }
 
-    public static class ReturnArmForHMCmd extends SequentialCommandGroup {
-
-        public ReturnArmForHMCmd(IntakeSubsystem intakeSubsystem) {
-
-            addCommands(
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.SHRINK),
-                    new SetRotationCmd(intakeSubsystem, 0.5),
-                    //new Wait(intakeSubsystem, 0.0),
-                    new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),
-                    new Wait(intakeSubsystem, 1),
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
-                    new ClawStageCmd(intakeSubsystem, ClawStages.UPPER),//for safety
-                    new SlideUntilCmd(intakeSubsystem, 300, 1, true));
-            addRequirements(intakeSubsystem);
-        }
-
-    }
 
     public static class Transfer extends SequentialCommandGroup {
         final int slidesBackAfterTransfer = 5;
@@ -722,19 +665,16 @@ public class IntakeCommands {
             this.intakeSubsystem = intakeSubsystem;
             addCommands(
                     new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                    new IntakeCommands.SpinCmd(intakeSubsystem, 0.06, -1),
                     new ParallelCommandGroup(
                             new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                             new ReturnArmForTransferCmd(intakeSubsystem, false)),
                     new SetPowerCmd(intakeSubsystem, -0.18),
                     //new Wait(intakeSubsystem, 0.1), //for safety
                     new DischargeGrabCmd(dischargeSubsystem),
-                    new SpinCmd(intakeSubsystem, -0.13, -1),
-                    new Wait(intakeSubsystem, 0.15),
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
+                    new CloseScrewCmd(intakeSubsystem, true),
                     new SetPowerCmd(intakeSubsystem, 0),
-                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 0.4, false),
-                    new SpinCmd(intakeSubsystem, 0, -1));
+                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 0.4, false)
+            );
             addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
         }
 
@@ -762,19 +702,16 @@ public class IntakeCommands {
             this.intakeSubsystem = intakeSubsystem;
             addCommands(
                     new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                    new IntakeCommands.SpinCmd(intakeSubsystem, 0.06, -1),
                     new ParallelCommandGroup(
                             new DischargeCommands.GoHomeCmd(dischargeSubsystem),
                             new ReturnArmForAutoTransferCmd(intakeSubsystem, false)),
                     new SetPowerCmd(intakeSubsystem, -0.18),
                     //new Wait(intakeSubsystem, 0.1), //for safety
                     new DischargeGrabCmd(dischargeSubsystem),
-                    new SpinCmd(intakeSubsystem, -0.13, -1),
-                    new Wait(intakeSubsystem, 0.15),
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER),
+                    new CloseScrewCmd(intakeSubsystem, true),
                     new SetPowerCmd(intakeSubsystem, 0),
-                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.getMotorPosition() + slidesBackAfterTransfer, 0.6, false),
-                    new SpinCmd(intakeSubsystem, 0, -1));
+                    new SlideUntilCmd(intakeSubsystem, intakeSubsystem.minSlidesPos + slidesBackAfterTransfer, 0.4, false)
+            );
             addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
         }
 
@@ -809,35 +746,6 @@ public class IntakeCommands {
         }
     }
 
-    public static class InverseTransfer extends SequentialCommandGroup {
-        final int slidesBackAfterTransfer = 10;
-        public static boolean transferring = false;
-
-        public InverseTransfer(IntakeSubsystem intakeSubsystem, DischargeSubsystem dischargeSubsystem) {
-            addCommands(
-
-                    new DischargeCommands.GoHomeCmd(dischargeSubsystem),
-                    new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
-                    new SpinCmd(intakeSubsystem, 0.5, 0.1),
-                    new SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM),
-                    new SpinCmd(intakeSubsystem, 0.05, -1),
-                    new SlideUntilCmd(intakeSubsystem, 1700, 1, false),
-                    new ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
-                    new RestartIntakeCmd(intakeSubsystem));
-            addRequirements(intakeSubsystem, dischargeSubsystem); //may be unnecessary
-        }
-
-        @Override
-        public void initialize() {
-            super.initialize();
-            transferring = true;
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            transferring = false;
-        }
-    }
 
     public static class SetPositionCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;

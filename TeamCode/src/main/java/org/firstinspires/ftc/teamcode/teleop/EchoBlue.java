@@ -16,6 +16,12 @@ import org.firstinspires.ftc.teamcode.subsystems.Pipelines;
 @TeleOp
 public class EchoBlue extends Echo {
     @Override
+    public void initialize() {
+        super.initialize();
+        limeLightSubsystem.setPipeline(Pipelines.BLUE);
+    }
+
+    @Override
     public void noneBindings() {
         systemLeftStick.whenPressed(new DischargeCommands.ResetDischarge(dischargeSubsystem));
         systemRightBumper.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
@@ -51,10 +57,9 @@ public class EchoBlue extends Echo {
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highBasketHeight)));
 
         systemB.whenPressed(new SequentialCommandGroup(
-                new LimelightCommands.AlignXCmd(limeLightSubsystem, mecanumDrive),
-                new SetStateCommands.IntakeStateCmd()));
+                new LimelightCommands.LimelightCompleteSubIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive)));
         systemX.whenPressed(new SequentialCommandGroup(
-                new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
+                new LimelightCommands.LimelightStartIntake(limeLightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
                 new SetStateCommands.IntakeStateCmd()));
 
         systemDPadUp.whenPressed(new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));

@@ -63,20 +63,20 @@ public class LimelightChamber extends CommandOpMode {
 //                new InstantCommand(() -> this.pos = new Point(mecanumDrive.getPosition().x,mecanumDrive.getPosition().y)),
 //                new InstantCommand(() -> mecanumDrive.resetPos(pos)),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3, 0.7, 180, 0.02, 1),
-                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
+                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.lowChamberHeight),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem),
 
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.3, 0.7, 180, 0.02, 1),
-                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE),
+                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive),
                 new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.lowChamberHeight),
                 new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem),
 
                 new MecanumCommands.SetRotationCmd(mecanumDrive, 0).withTimeout(500),
                 new MecanumCommands.GotoCmd(telemetry, mecanumDrive, 3.3, 0.5, 180, 0.02, 1),
-                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive, Pipelines.BLUE)
+                new LimelightCommands.LimelightCompleteSubIntake(limelightSubsystem, intakeSubsystem, dischargeSubsystem, mecanumDrive)
         ));
 //        schedule(new SequentialCommandGroup(
 //                new ParallelCommandGroup(

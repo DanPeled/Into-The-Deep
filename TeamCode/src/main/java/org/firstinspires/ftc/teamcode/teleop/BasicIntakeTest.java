@@ -43,19 +43,17 @@ public class BasicIntakeTest extends CommandOpMode {
         Button X = new GamepadButton(systemGamepad, GamepadKeys.Button.X);
         Button back = new GamepadButton(systemGamepad, GamepadKeys.Button.BACK);
         //important stuff
-        Y.whenPressed(new IntakeCommands.SlideGotoCmd(intakeSubsystem, 500));
+        B.whenPressed(new IntakeCommands.RotateBackCmd(intakeSubsystem));
+        Y.whenPressed(new IntakeCommands.SlideGotoCmd(intakeSubsystem, 1200));
         A.whenPressed(new IntakeCommands.SlideHomeCmd(intakeSubsystem, false));
+        X.whenPressed(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, false));
         dPadUp.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.LOWER));
         dPadDown.whenPressed(new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.UPPER));
-        dPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0));
-        dPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 1));
-        leftBumper.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TOP));
-        rightBumper.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.BOTTOM));
-        leftStickButton.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.TRANSFER));
-        rightStickButton.whenPressed(new IntakeCommands.SetArmsStageCmd(intakeSubsystem, ArmsStages.MIDDLE));
-        B.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, 0.5, 0));
-        X.whenPressed(new IntakeCommands.SpinCmd(intakeSubsystem, -0.5, 2));
+        dPadRight.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.75));
+        dPadLeft.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.25));
         back.whenPressed(new IntakeCommands.SampleSubmIntakeCmd(intakeSubsystem));
+        leftBumper.whenPressed(new IntakeCommands.OpenScrewCmd(intakeSubsystem, false));
+        rightBumper.whenPressed(new IntakeCommands.CloseScrewCmd(intakeSubsystem, false));
 
 
         //schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));

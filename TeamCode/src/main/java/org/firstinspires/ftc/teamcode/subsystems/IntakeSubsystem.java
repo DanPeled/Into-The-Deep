@@ -10,6 +10,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.hardware.TouchSensor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
@@ -21,8 +22,7 @@ public class IntakeSubsystem extends SubsystemBase {
     private final DcMotorEx lMotor;
     private final Servo hServo; // claw up & down
     private final Servo rServo; // claw rotation
-    private final Servo armsServo; // claw arms angle
-    private final CRServo spinServo; // claw up & down
+    private final CRServo screwServo;
     MultipleTelemetry telemetry;
 
     int positionCorrection = 0;
@@ -35,7 +35,37 @@ public class IntakeSubsystem extends SubsystemBase {
     public final double slidesLowSpeed = 0.4;
     public boolean end = false;
     TouchSensor leftTouch, rightTouch;
+    ElapsedTime screwTimer = new ElapsedTime();
+    private final double openScrewTime = 0.5;
+    private final double holdPower = 0;
+    private boolean opened = false;
 
+    @Override
+    public void periodic() {
+        if ((screwTimer.seconds() > openScrewTime) && Math.abs(screwServo.getPower()) > 0.2) {
+            if (screwServo.getPower() < 0) {
+                screwServo.setPower(holdPower);
+                opened = true;
+            } else {
+                screwServo.setPower(0);
+                opened = false;
+            }
+        }
+    }
+
+    public boolean isScrewOpened() {
+        return opened;
+    }
+
+    public void openScrew() {
+        screwServo.setPower(-1);
+        screwTimer.reset();
+    }
+
+    public void closeScrew() {
+        screwServo.setPower(1);
+        screwTimer.reset();
+    }
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
         rMotor = hardwareMap.get(DcMotorEx.class, "leftIntakeMotor");
@@ -47,8 +77,7 @@ public class IntakeSubsystem extends SubsystemBase {
         lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hServo = hardwareMap.servo.get("heightServo");
         rServo = hardwareMap.servo.get("rotationServo");
-        armsServo = hardwareMap.servo.get("armsServo");
-        spinServo = hardwareMap.crservo.get("spinServo");
+        screwServo = hardwareMap.crservo.get("spinServo");
         leftTouch = hardwareMap.touchSensor.get("leftTouch");
 //        rightTouch = hardwareMap.touchSensor.get("rightTouch");
 
@@ -102,18 +131,6 @@ public class IntakeSubsystem extends SubsystemBase {
 
     public void setHServoPosition(double position) {
         hServo.setPosition(position);
-    }
-
-    public void setArmsStage(double stage) {
-        armsServo.setPosition(stage);
-    }
-
-    public double getGripServoPosition() {
-        return armsServo.getPosition();
-    }
-
-    public void setSpinPower(double power) {
-        spinServo.setPower(power);
     }
 
     public int getMotorPosition() {
