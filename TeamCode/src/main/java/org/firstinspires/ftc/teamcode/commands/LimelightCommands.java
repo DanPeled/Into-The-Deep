@@ -8,6 +8,7 @@ import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.WaitCommand;
 
 import org.firstinspires.ftc.teamcode.subsystems.ArmsStages;
+import org.firstinspires.ftc.teamcode.subsystems.ClawStages;
 import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
@@ -77,9 +78,16 @@ public class LimelightCommands {
                     new AlignXCmd(limelightSubsystem, mecanumDrive)/*.withTimeout(1000)*/,
                     new WaitCommand(100),
                     new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance),
+                    new WaitCommand(1000),
                     new ParallelCommandGroup(
+
                             new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
-                            new IntakeCommands.OpenScrewCmd(intakeSubsystem, true)
+                            new SequentialCommandGroup(
+                                    new WaitCommand(200),
+                                    new IntakeCommands.ClawStageCmd(intakeSubsystem, ClawStages.LOWER),
+                                    new IntakeCommands.OpenScrewCmd(intakeSubsystem, true)
+
+                            )
                     ),
                     new WaitCommand(500),
                     new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem));
@@ -122,13 +130,11 @@ public class LimelightCommands {
                     new AlignXCmd(limelightSubsystem, mecanumDrive)/*.withTimeout(1000)*/,
                     new WaitCommand(100),
                     new IntakeCommands.StartIntakeCmd(intakeSubsystem, limelightSubsystem::getYDistance),
+                    new WaitCommand(1000),
                     new ParallelCommandGroup(
                             new IntakeCommands.SetRotationCmd(intakeSubsystem, limelightSubsystem::getAngle),
                             new IntakeCommands.OpenScrewCmd(intakeSubsystem, true)
                     ),
-                    new WaitCommand(500),
-
-                    new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem),
 
                     new InstantCommand(new Runnable() {
                         @Override

@@ -18,7 +18,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import lombok.Setter;
 
 public class IntakeSubsystem extends SubsystemBase {
-    private final DcMotorEx rMotor;
+//    private final DcMotorEx rMotor;
     private final DcMotorEx lMotor;
     private final Servo hServo; // claw up & down
     private final Servo rServo; // claw rotation
@@ -37,7 +37,7 @@ public class IntakeSubsystem extends SubsystemBase {
     TouchSensor leftTouch, rightTouch;
     ElapsedTime screwTimer = new ElapsedTime();
     private final double openScrewTime = 0.5;
-    private final double holdPower = 0;
+    private final double holdPower = -0.1;
     private boolean opened = false;
 
     @Override
@@ -68,39 +68,40 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public IntakeSubsystem(HardwareMap hardwareMap, MultipleTelemetry telemetry) {
-        rMotor = hardwareMap.get(DcMotorEx.class, "leftIntakeMotor");
+//        rMotor = hardwareMap.get(DcMotorEx.class, "leftIntakeMotor");
         lMotor = hardwareMap.get(DcMotorEx.class, "rightIntakeMotor");
         lMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         hServo = hardwareMap.servo.get("heightServo");
         rServo = hardwareMap.servo.get("rotationServo");
         screwServo = hardwareMap.crservo.get("spinServo");
         leftTouch = hardwareMap.touchSensor.get("leftTouch");
 //        rightTouch = hardwareMap.touchSensor.get("rightTouch");
-
+        screwTimer.reset();
+        screwServo.setPower(0);
         //resetEncoders();
         this.telemetry = telemetry;
 
     }    // make one button that extends the arm and lowers the claw while opening it
 
     public void setArmPower(double power) {
-        if (rMotor.getCurrentPosition() <= 0 || lMotor.getCurrentPosition() <= 0) {
-            rMotor.setPower(Range.clip(power, 0, 1));
+        if (/*rMotor.getCurrentPosition() <= 0 ||*/ lMotor.getCurrentPosition() <= 0) {
+//            rMotor.setPower(Range.clip(power, 0, 1));
             lMotor.setPower(Range.clip(power, 0, 1));
-        } else if (rMotor.getCurrentPosition() >= maxArmLength || lMotor.getCurrentPosition() >= maxArmLength) {
-            rMotor.setPower(Range.clip(power, -1, 0));
+        } else if (/*rMotor.getCurrentPosition() >= maxArmLength ||*/ lMotor.getCurrentPosition() >= maxArmLength) {
+//            rMotor.setPower(Range.clip(power, -1, 0));
             lMotor.setPower(Range.clip(power, -1, 0));
         } else {
-            rMotor.setPower(power);
+//            rMotor.setPower(power);
             lMotor.setPower(power);
         }
     }
 
     public void setRawPower(double power) {
-        rMotor.setPower(power);
+//        rMotor.setPower(power);
         lMotor.setPower(power);
     }
 
@@ -113,12 +114,12 @@ public class IntakeSubsystem extends SubsystemBase {
     }//|| rightTouch.isPressed()
 
     public void armGoToTarget() {
-        rMotor.setTargetPosition((int) targetPos);
+//        rMotor.setTargetPosition((int) targetPos);
         lMotor.setTargetPosition((int) targetPos);
     }
 
     public double getAveragePosition() {
-        return ((double) rMotor.getCurrentPosition() + (double) lMotor.getCurrentPosition()) / 2 + positionCorrection;
+        return (/*(double) rMotor.getCurrentPosition() +*/ (double) lMotor.getCurrentPosition()) / 1 + positionCorrection;
     }
 
     public void setRotationServoPosition(double position) {
@@ -134,7 +135,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public int getMotorPosition() {
-        return rMotor.getCurrentPosition() + positionCorrection;
+        return lMotor.getCurrentPosition() + positionCorrection;
     }
 
     public int getMotor2Position() {
@@ -150,20 +151,20 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void resetEncoders() {
-        rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+//        rMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         lMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         runWithoutEncoders();
     }
 
     public void runWithoutEncoders() {
-        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+//        rMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         lMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     public void runWithEncoders() {
         lMotor.setPower(slidesSpeed);
-        rMotor.setPower(slidesSpeed);
-        rMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+//        rMotor.setPower(slidesSpeed);
+//        rMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         lMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
     }
 
@@ -184,7 +185,7 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public double getPower() {
-        return (rMotor.getPower() + lMotor.getPower()) / 2;
+        return (/*rMotor.getPower() +*/ lMotor.getPower()) / 1;
     }
 
 

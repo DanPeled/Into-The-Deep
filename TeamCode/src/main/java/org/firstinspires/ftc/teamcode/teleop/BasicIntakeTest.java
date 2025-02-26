@@ -72,6 +72,7 @@ public class BasicIntakeTest extends CommandOpMode {
     public void run() {
         super.run();
         telemetry.addData("motor pos", intakeSubsystem.getAveragePosition());
+        telemetry.addData("current", intakeSubsystem.getCurrent());
         telemetry.update();
     }
 }

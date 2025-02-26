@@ -83,7 +83,7 @@ public class IntakeCommands {
         Supplier<Integer> positionSupplier;
         boolean limelight = false;
         final int maxPosition = 3000;
-        final double ratio = 435.0 / 1150.0;
+        final double ratio = (435.0 / 1150.0) * (58.0 / 46.0);
 
 
         public SlideGotoCmd(IntakeSubsystem subsystem, int position) {
@@ -106,7 +106,7 @@ public class IntakeCommands {
         @Override
         public void initialize() {
             if (limelight) {
-                subsystem.setTargetPos(positionSupplier.get());
+                subsystem.setTargetPos((int) (positionSupplier.get() * ratio));
             } else {
                 subsystem.setTargetPos(position);
             }
@@ -117,7 +117,7 @@ public class IntakeCommands {
         @Override
         public boolean isFinished() {
             if (limelight) {
-                return Math.abs(subsystem.getMotorPosition() - positionSupplier.get()) <= 15;
+                return Math.abs(subsystem.getMotorPosition() - positionSupplier.get() * ratio) <= 15;
             }
             return Math.abs(subsystem.getMotorPosition() - position) <= 15;
         }
@@ -155,7 +155,6 @@ public class IntakeCommands {
             } else if (intakeSubsystem.getMotorPosition() > 60) {
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesSpeed);
             } else {
-//                intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
                 intakeSubsystem.setRawPower(-intakeSubsystem.slidesLowSpeed);
             }
 
@@ -176,70 +175,16 @@ public class IntakeCommands {
 //                return (Math.abs(deltaTick) <= 8 && (avg < 200 || initTime));
 
 //            }
-            return intakeSubsystem.isHome() || (intakeSubsystem.getCurrent() > 2.5 && intakeSubsystem.getAveragePosition() < 1000);
+            return intakeSubsystem.isHome() || (intakeSubsystem.getCurrent() > 90 && intakeSubsystem.getAveragePosition() < 400);
         }
 
         @Override
         public void end(boolean interrupted) {
-            intakeSubsystem.resetEncoders();
-        }
-    }
-
-    public static class SlideHomeTouchCmd extends CommandBase {
-        IntakeSubsystem intakeSubsystem;
-        double lastTick;
-        double lastTime = 0;
-        final double maxDuration = 3;
-        final boolean initTime;
-        final int minPosOffset = 40;
-        ElapsedTime elapsedTime = new ElapsedTime();
-
-        public SlideHomeTouchCmd(IntakeSubsystem intakeSubsystem, boolean initTime) {
-            this.intakeSubsystem = intakeSubsystem;
-            this.initTime = initTime;
-            //addRequirements(intakeSubsystem);
-
-        }
-
-        @Override
-        public void initialize() {
-            lastTick = intakeSubsystem.getAveragePosition();
-            elapsedTime.reset();
-            intakeSubsystem.setArmPower(0);
-            intakeSubsystem.runWithoutEncoders();
-            addRequirements(intakeSubsystem);
-        }
-
-        @Override
-        public void execute() {
-            if (initTime) {
-                intakeSubsystem.setRawPower(-0.2);
-            } else {
-                intakeSubsystem.setRawPower(-1);
-            }
-
-        }
-
-        @Override
-        public boolean isFinished() {
-
-
-            return intakeSubsystem.isHome() || (!initTime && elapsedTime.seconds() > maxDuration);
-
-        }
-
-        @Override
-        public void end(boolean interrupted) {
-            intakeSubsystem.setArmPower(0);
-            intakeSubsystem.end = true;
-            if (!interrupted) {
+            if (!interrupted)
                 intakeSubsystem.resetEncoders();
-                intakeSubsystem.setTargetPos(intakeSubsystem.getMotorPosition() + minPosOffset);
-                intakeSubsystem.minSlidesPos = intakeSubsystem.getMotorPosition() + minPosOffset;
-            }
-
         }
     }
+
 
     public static class ClawStageCmd extends CommandBase {
         IntakeSubsystem subsystem;
@@ -287,6 +232,7 @@ public class IntakeCommands {
             return true;
         }
     }
+
     public static class SetRotationCmd extends CommandBase {
         IntakeSubsystem intakeSubsystem;
         double position;
@@ -310,7 +256,11 @@ public class IntakeCommands {
         public void initialize() {
             if (limelight) {
                 position = (positionSupplier.get() > 0) ? positionSupplier.get() : 180 + positionSupplier.get();
-                intakeSubsystem.setRotationServoPosition((position / 180 - 0.5) * 2 / 3 + 0.5);//((1 - (positionSupplier.get() + 90) / 180 - 0.5) * 2 / 3 + 0.5)
+                double wanted = ((position / 180 - 0.5) * 2 / 3 + 0.5);
+                if (wanted > 0.75) {
+                    wanted = 0;
+                }
+                intakeSubsystem.setRotationServoPosition(wanted);//((1 - (positionSupplier.get() + 90) / 180 - 0.5) * 2 / 3 + 0.5)
 
             } else
                 intakeSubsystem.setRotationServoPosition((position - 0.5) * 2 / 3 + 0.5);
@@ -377,7 +327,7 @@ public class IntakeCommands {
         @Override
         public void execute() {
             if (isEnabled) {
-                intakeSubsystem.setArmPower(power.get() * 0.5);
+                intakeSubsystem.setRawPower(power.get() * 1);
             }
 //            if (isEnabled) {
 //                double timeMilli = elapsedTime.milliseconds();
@@ -457,7 +407,7 @@ public class IntakeCommands {
 
     //if doesnt work check if everything needs to not have addRequirements(subsystem);
     public static class StartIntakeCmd extends SequentialCommandGroup {
-        private final int pos = 1060;
+        private final int pos = 1300;
 
         public StartIntakeCmd(IntakeSubsystem subsystem) {
             StartIntake(subsystem, false, pos);
@@ -477,7 +427,7 @@ public class IntakeCommands {
                     new ClawStageCmd(subsystem, ClawStages.UPPER),
                     new SetRotationCmd(subsystem, 0),
                     new SlideGotoCmd(subsystem, position),
-                    new ClawStageCmd(subsystem, ClawStages.LOWER));
+                    new ClawStageCmd(subsystem, ClawStages.ROTATE));
 
 
         }
@@ -523,7 +473,7 @@ public class IntakeCommands {
         final int maxPosition = 3000;
         double power;
         boolean wait;
-        final double ratio = 435.0 / 1150.0;
+        final double ratio = (435.0 / 1150.0) * (58.0 / 46.0);
 
         public SlideUntilCmd(IntakeSubsystem subsystem, int position, double power, boolean wait) {
             this.power = power;
@@ -618,8 +568,6 @@ public class IntakeCommands {
             addRequirements(intakeSubsystem);
         }
     }//todo: remove later
-
-
 
 
     public static class ReturnArmForTransferCmd extends SequentialCommandGroup {

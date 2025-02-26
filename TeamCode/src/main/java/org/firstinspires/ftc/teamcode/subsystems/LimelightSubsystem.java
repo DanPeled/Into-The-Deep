@@ -31,7 +31,7 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public double getAngle() {
         updateResults();
-        return result.getPythonOutput()[4];
+        return -result.getPythonOutput()[4];
     }
 
     public void setPipeline(Pipelines pipeline) {
@@ -45,7 +45,9 @@ public class LimelightSubsystem extends SubsystemBase {
 
     public int getYDistance() {
         updateResults();
-        distance = Math.min((int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 24) * tickPerCM), 1700);
+        distance = Math.min(
+                (int) (((limelightH - sampleH) * Math.tan(Math.toRadians(-result.getPythonOutput()[1] / 240 * 42 + limelightAngle)) + distanceFromArmStart + 38.1) * tickPerCM)
+                , 1900);
         alignedY = distance;
         return distance;
     }

@@ -2,8 +2,10 @@ package org.firstinspires.ftc.teamcode.teleop;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
+import com.arcrobotics.ftclib.command.CommandBase;
 import com.arcrobotics.ftclib.command.CommandOpMode;
 import com.arcrobotics.ftclib.command.CommandScheduler;
+import com.arcrobotics.ftclib.command.ConditionalCommand;
 import com.arcrobotics.ftclib.command.InstantCommand;
 import com.arcrobotics.ftclib.command.SequentialCommandGroup;
 import com.arcrobotics.ftclib.command.button.Button;
@@ -25,9 +27,12 @@ import org.firstinspires.ftc.teamcode.subsystems.DischargeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.IntakeSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.LimelightSubsystem;
 import org.firstinspires.ftc.teamcode.subsystems.MecanumDrive;
-import org.firstinspires.ftc.teamcode.subsystems.Pipelines;
 import org.firstinspires.ftc.teamcode.subsystems.RobotState;
+import org.opencv.core.Point;
 
+import java.util.LinkedList;
+import java.util.Queue;
+import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
 @TeleOp
@@ -63,14 +68,25 @@ public class Echo extends CommandOpMode {
     Button driverStart;
     Button systemBack;
     Button systemLeftStick, systemRightStick;
-
+    Queue<CommandBase> queue = new LinkedList<>();
+    Runnable pullQueue;
+    boolean queueable = false;
+    BooleanSupplier queueableSup = () -> !queueable;
 
     @Override
     public void initialize() {
+        pullQueue = new Runnable() {
+            @Override
+            public void run() {
+                if (queue.size() > 0 && queueable) {
+                    schedule(queue.remove());
+                }
+            }
+        };
         driverGamepad = new GamepadEx(gamepad1);
         systemGamepad = new GamepadEx(gamepad2);
 
-        mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, this);
+        mecanumDrive = new MecanumDrive(multipleTelemetry, hardwareMap, new Point(SavedVariables.x, SavedVariables.y), SavedVariables.angle, this);
         dischargeSubsystem = new DischargeSubsystem(hardwareMap, multipleTelemetry);
         intakeSubsystem = new IntakeSubsystem(hardwareMap, multipleTelemetry);
         limeLightSubsystem = new LimelightSubsystem(hardwareMap, multipleTelemetry);
@@ -95,7 +111,6 @@ public class Echo extends CommandOpMode {
         while (opModeInInit()) {
             super.run();
         }
-        mecanumDrive.setHeading(SavedVariables.angle);
 //        limeLightSubsystem.startLimelight();
 //        schedule(new IntakeCommands.ReturnArmForTransferCmd(intakeSubsystem, true));
 //        schedule(new DischargeCommands.MotorControl(dischargeSubsystem, systemGamepad::getRightY, true, telemetry));
@@ -164,7 +179,6 @@ public class Echo extends CommandOpMode {
     public void chamberBindings() {
         systemRightStick.whenPressed(new DischargeCommands.DischargeReleaseCmd(dischargeSubsystem));
 
-
         driverDPadDown.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> -0.2, () -> 0.0,
                 () -> 0.3, true));
         driverDPadUp.whileHeld(new MecanumCommands.PowerCmd(telemetry, mecanumDrive, () -> 0.0, () -> 0.2, () -> 0.0,
@@ -224,11 +238,20 @@ public class Echo extends CommandOpMode {
                 new SetStateCommands.NoneStateCmd(),
                 new DischargeCommands.GoHomeCmd(dischargeSubsystem)));
 
-
         systemA.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.ChamberStateCmd(), //change to chamber state
-                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
-                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight))); //go to chamber
+                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)));
+//        systemA.whenPressed(
+//                new ConditionalCommand(
+//                        new SequentialCommandGroup(
+//                                new SetStateCommands.ChamberStateCmd(), //change to chamber state
+//                                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
+//                                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)),
+//                        new SequentialCommandGroup(
+//                                new SetStateCommands.ChamberStateCmd(),
+//                                new InstantCommand( () -> queue.add(new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)))
+//                        ),
+//                        queueableSup)); //go to chamber
 
         systemY.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.BasketStateCmd(), //change to basket state
@@ -259,7 +282,9 @@ public class Echo extends CommandOpMode {
 
         systemX.whenPressed(new SequentialCommandGroup(
                 new SetStateCommands.NoneStateCmd(),
-                new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem)
+                new IntakeCommands.Transfer(intakeSubsystem, dischargeSubsystem).whenFinished(pullQueue).beforeStarting(() -> {
+                    queueable = true;
+                })
         ), false);
 
 //                    systemDPadUp.whenPressed(new IntakeCommands.SetRotationCmd(intakeSubsystem, 0.5));
@@ -320,12 +345,33 @@ public class Echo extends CommandOpMode {
         intakeSubsystem.setDefaultCommand(new IntakeCommands.IntakeManualGoToCmd(intakeSubsystem, systemGamepad::getLeftY));
 
 
-        driverA.whenHeld(new MecanumCommands.SetRotationCmd(mecanumDrive, 0));
+        driverA.whenPressed(AutoUtils.goToHPFromChamber(mecanumDrive, telemetry).beforeStarting(() -> {
+            queueable = true;
+        }).whenFinished(pullQueue), false);
 
-        systemA.whenPressed(new SequentialCommandGroup(
-                new IntakeCommands.WaitForTransferEnd(),
-                new SetStateCommands.ChamberStateCmd(), //change to chamber state
-                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)));
+        driverB.whenPressed(new SequentialCommandGroup(new SetStateCommands.BasketStateCmd(),
+                AutoUtils.driverBasketPrep(mecanumDrive, dischargeSubsystem, telemetry).beforeStarting(() -> {
+                    queueable = true;
+                }).whenFinished(pullQueue)), false);
+
+        driverY.whenPressed(new SequentialCommandGroup(new SetStateCommands.ChamberStateCmd(),
+                AutoUtils.driverChamberPrep(mecanumDrive, dischargeSubsystem, telemetry).beforeStarting(() -> {
+                    queueable = true;
+                }).whenFinished(pullQueue)), false);
+
+        driverX.whenPressed(AutoUtils.goToHPFromSub(mecanumDrive, dischargeSubsystem, telemetry).beforeStarting(() -> queueable = true).whenFinished(pullQueue), false);
+
+        systemA.whenPressed(
+                new ConditionalCommand(
+                        new SequentialCommandGroup(
+                                new SetStateCommands.ChamberStateCmd(), //change to chamber state
+                                new DischargeCommands.DischargeGrabCmd(dischargeSubsystem),
+                                new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)),
+                        new SequentialCommandGroup(
+                                new SetStateCommands.ChamberStateCmd(),
+                                new InstantCommand(() -> queue.add(new DischargeCommands.GoToTarget(dischargeSubsystem, dischargeSubsystem.highChamberHeight)))
+                        ),
+                        queueableSup));
 
 //                            new DischargeCommands.DischargeGotoCmd(dischargeSubsystem
 //                                    , dischargeSubsystem.highChamberHeight, multipleTelemetry))); //go to chamber
@@ -364,8 +410,8 @@ public class Echo extends CommandOpMode {
     }
 
     public void telemetries() {
-//        telemetry.addData("currentIntake", intakeSubsystem.getCurrent());
-//        telemetry.addData("isTouching", dischargeSubsystem.isHome());
+        telemetry.addData("currentIntake", intakeSubsystem.getCurrent());
+        telemetry.addData("isTouching", dischargeSubsystem.isHome());
 //        telemetry.addData("discharge default command", dischargeSubsystem.getDefaultCommand().getName());
 //        telemetry.addData("discharge current command", dischargeSubsystem.getCurrentCommand().getName());
 //        telemetry.addData("intake default command", intakeSubsystem.getDefaultCommand().getName());
@@ -377,12 +423,12 @@ public class Echo extends CommandOpMode {
         multipleTelemetry.addData("angle limelight", limeLightSubsystem.getAngle());
         multipleTelemetry.addData("pipeline", limeLightSubsystem.getCurrentPipeline());
         telemetry.addData("y", limeLightSubsystem.getRawY());
-//        multipleTelemetry.addData("ticka", intakeSubsystem.getAveragePosition());
-//        multipleTelemetry.addData("tick1", intakeSubsystem.getMotorPosition());
-//        multipleTelemetry.addData("tick2", intakeSubsystem.getMotor2Position());
-        //multipleTelemetry.addData("cm", limeLightSubsystem.getYDistance() / limeLightSubsystem.tickPerCM);
-        //multipleTelemetry.addData("fhd", limeLightSubsystem.alignedY);
-        //telemetry.addData("servo angle", 1 - (limeLightSubsystem.getAngle() + 90) / 180);
+        multipleTelemetry.addData("ticka", intakeSubsystem.getAveragePosition());
+        multipleTelemetry.addData("tick1", intakeSubsystem.getMotorPosition());
+        multipleTelemetry.addData("tick2", intakeSubsystem.getMotor2Position());
+        multipleTelemetry.addData("cm", limeLightSubsystem.getYDistance() / limeLightSubsystem.tickPerCM);
+        multipleTelemetry.addData("fhd", limeLightSubsystem.alignedY);
+        telemetry.addData("servo angle", 1 - (limeLightSubsystem.getAngle() + 90) / 180);
 //        multipleTelemetry.addData("lift mode", DischargeCommands.MotorControl.getMode());
 //        multipleTelemetry.addData("lift target", DischargeCommands.MotorControl.getTargetPosition());
 //        multipleTelemetry.addData("lift error", DischargeCommands.MotorControl.getTargetPosition() - dischargeSubsystem.getLiftPosInCM());
